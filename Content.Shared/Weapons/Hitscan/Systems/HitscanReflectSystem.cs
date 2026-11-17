@@ -2,11 +2,10 @@ using Content.Shared.Weapons.Hitscan.Components;
 using Content.Shared.Weapons.Hitscan.Events;
 using Content.Shared.Weapons.Ranged.Events;
 using Content.Shared.Weapons.Reflect;
-using Robust.Shared.Random;
 
 namespace Content.Shared.Weapons.Hitscan.Systems;
 
-public sealed class HitscanReflectSystem : EntitySystem
+public sealed partial class HitscanReflectSystem : EntitySystem
 {
     public override void Initialize()
     {

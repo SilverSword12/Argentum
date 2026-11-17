@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Shared.Examine;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
@@ -8,6 +7,7 @@ using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
+using System.Numerics;
 
 namespace Content.Client.Popups;
 
@@ -96,7 +96,7 @@ public sealed class PopupOverlay : Overlay
 
             // Should handle fade here too wyci.
             if (!args.WorldBounds.Contains(mapPos.Position) || !_examine.InRangeUnOccluded(viewPos, mapPos, distance,
-                    e => e == popup.InitialPos.EntityId || e == ourEntity, entMan: _entManager))
+                    e => e == popup.InitialPos.EntityId || e == ourEntity))
                 continue;
 
             var pos = Vector2.Transform(mapPos.Position, matrix);

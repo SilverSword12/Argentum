@@ -1,20 +1,19 @@
-﻿using Content.Server.Chat.Managers;
+using Content.Server.Chat.Managers;
 using Content.Shared.CCVar;
 using Content.Shared.Chat;
-using NetCord;
 using NetCord.Gateway;
 using Robust.Shared.Asynchronous;
 using Robust.Shared.Configuration;
 
 namespace Content.Server.Discord.DiscordLink;
 
-public sealed class DiscordChatLink : IPostInjectInit
+public sealed partial class DiscordChatLink : IPostInjectInit
 {
-    [Dependency] private readonly DiscordLink _discordLink = default!;
-    [Dependency] private readonly IConfigurationManager _configurationManager = default!;
-    [Dependency] private readonly IChatManager _chatManager = default!;
-    [Dependency] private readonly ITaskManager _taskManager = default!;
-    [Dependency] private readonly ILogManager _logManager = default!;
+    [Dependency] private DiscordLink _discordLink = default!;
+    [Dependency] private IConfigurationManager _configurationManager = default!;
+    [Dependency] private IChatManager _chatManager = default!;
+    [Dependency] private ITaskManager _taskManager = default!;
+    [Dependency] private ILogManager _logManager = default!;
 
     private ISawmill _sawmill = default!;
 
@@ -25,9 +24,9 @@ public sealed class DiscordChatLink : IPostInjectInit
     {
         _discordLink.OnMessageReceived += OnMessageReceived;
 
-        #if DEBUG
+#if DEBUG
         _discordLink.RegisterCommandCallback(OnDebugCommandRun, "debug");
-        #endif
+#endif
 
         _configurationManager.OnValueChanged(CCVars.OocDiscordChannelId, OnOocChannelIdChanged, true);
         _configurationManager.OnValueChanged(CCVars.AdminChatDiscordChannelId, OnAdminChannelIdChanged, true);
@@ -41,13 +40,13 @@ public sealed class DiscordChatLink : IPostInjectInit
         _configurationManager.UnsubValueChanged(CCVars.AdminChatDiscordChannelId, OnAdminChannelIdChanged);
     }
 
-    #if DEBUG
+#if DEBUG
     private void OnDebugCommandRun(CommandReceivedEventArgs ev)
     {
         var args = string.Join('\n', ev.Arguments);
         _sawmill.Info($"Provided arguments: \n{args}");
     }
-    #endif
+#endif
 
     private void OnOocChannelIdChanged(string channelId)
     {

@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Client.Items;
 using Content.Client.Message;
 using Content.Client.Stylesheets;
@@ -12,15 +11,16 @@ using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Client.SprayPainter;
 
 /// <summary>
 /// Client-side spray painter functions. Caches information for spray painter windows and updates the UI to reflect component state.
 /// </summary>
-public sealed class SprayPainterSystem : SharedSprayPainterSystem
+public sealed partial class SprayPainterSystem : SharedSprayPainterSystem
 {
-    [Dependency] private readonly UserInterfaceSystem _ui = default!;
+    [Dependency] private UserInterfaceSystem _ui = default!;
 
     public List<SprayPainterDecalEntry> Decals = [];
     public Dictionary<string, List<string>> PaintableGroupsByCategory = new();
@@ -60,12 +60,12 @@ public sealed class SprayPainterSystem : SharedSprayPainterSystem
     {
         PaintableGroupsByCategory.Clear();
         PaintableStylesByGroup.Clear();
-        foreach (var category in Proto.EnumeratePrototypes<PaintableGroupCategoryPrototype>().OrderBy(x => x.ID))
+        foreach (var category in ProtoMan.EnumeratePrototypes<PaintableGroupCategoryPrototype>().OrderBy(x => x.ID))
         {
             var groupList = new List<string>();
             foreach (var groupId in category.Groups)
             {
-                if (!Proto.Resolve(groupId, out var group))
+                if (!ProtoMan.Resolve(groupId, out var group))
                     continue;
 
                 groupList.Add(groupId);
@@ -77,7 +77,7 @@ public sealed class SprayPainterSystem : SharedSprayPainterSystem
         }
 
         Decals.Clear();
-        foreach (var decalPrototype in Proto.EnumeratePrototypes<DecalPrototype>().OrderBy(x => x.ID))
+        foreach (var decalPrototype in ProtoMan.EnumeratePrototypes<DecalPrototype>().OrderBy(x => x.ID))
         {
             if (!decalPrototype.Tags.Contains("station")
                 && !decalPrototype.Tags.Contains("markings")

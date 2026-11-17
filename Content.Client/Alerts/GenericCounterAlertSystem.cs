@@ -8,9 +8,9 @@ namespace Content.Client.Alerts;
 /// <summary>
 /// This handles <see cref="GenericCounterAlertComponent"/>
 /// </summary>
-public sealed class GenericCounterAlertSystem : EntitySystem
+public sealed partial class GenericCounterAlertSystem : EntitySystem
 {
-    [Dependency] private readonly SpriteSystem _sprite = default!;
+    [Dependency] private SpriteSystem _sprite = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -21,8 +21,8 @@ public sealed class GenericCounterAlertSystem : EntitySystem
     private void OnUpdateAlertSprite(Entity<GenericCounterAlertComponent> ent, ref UpdateAlertSpriteEvent args)
     {
         var sprite = args.SpriteViewEnt.Comp;
-
-        var ev = new GetGenericAlertCounterAmountEvent(args.Alert);
+        
+        var ev = new GetGenericAlertCounterAmountEvent(args.Alert, args.SpriteViewEnt);
         RaiseLocalEvent(args.ViewerEnt, ref ev);
 
         if (!ev.Handled)
@@ -36,7 +36,7 @@ public sealed class GenericCounterAlertSystem : EntitySystem
         var maxDigitCount = GetMaxDigitCount((ent, ent, sprite));
 
         // Clamp it to a positive number that we can actually display in full (no rollover to 0)
-        var amount = (int) Math.Clamp(ev.Amount.Value, 0, Math.Pow(10, maxDigitCount) - 1);
+        var amount = (int)Math.Clamp(ev.Amount.Value, 0, Math.Pow(10, maxDigitCount) - 1);
 
         // This is super wack but ig it works?
         var digitCount = ent.Comp.HideLeadingZeroes
@@ -62,7 +62,7 @@ public sealed class GenericCounterAlertSystem : EntitySystem
             if (!_sprite.LayerMapTryGet(ent.Owner, ent.Comp.DigitKeys[i], out var layer, false))
                 continue;
 
-            var result = amount / (int) Math.Pow(10, i) % 10;
+            var result = amount / (int)Math.Pow(10, i) % 10;
             _sprite.LayerSetRsiState(ent.Owner, layer, result.ToString());
 
             if (ent.Comp.CenterGlyph)

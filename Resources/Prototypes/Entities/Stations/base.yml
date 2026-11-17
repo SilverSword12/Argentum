@@ -3,6 +3,10 @@
   abstract: true
   components:
     - type: StationData
+    - type: CrewAssignments
+    - type: CrewRecords
+    - type: CrewAccesses
+
 
 - type: entity
   id: BaseStationCargo
@@ -30,20 +34,12 @@
 - type: entity
   id: BaseStationRecords
   abstract: true
-  components:
-    - type: StationRecords
 
 - type: entity
   id: BaseStationArrivals
   abstract: true
   components:
     - type: StationArrivals
-
-- type: entity
-  id: BaseStationGateway
-  abstract: true
-  components:
-    - type: GatewayGenerator
 
 - type: entity
   id: BaseStationShuttles
@@ -89,9 +85,6 @@
           minCount: 12
           maxCount: 16
           addComponents:
-          - type: Gravity
-            enabled: true
-            inherent: true
           - type: IFF
             flags: HideLabel
             color: "#88b0d1"
@@ -126,23 +119,10 @@
     - type: StationEmergencyShuttle
 
 - type: entity
-  id: BaseStationAlertLevels
-  abstract: true
-  components:
-    - type: AlertLevel
-      alertLevelPrototype: stationAlerts
-
-- type: entity
   id: BaseStationExpeditions
   abstract: true
   components:
     - type: SalvageExpeditionData
-
-- type: entity
-  id: BaseStationMagnet
-  abstract: true
-  components:
-    - type: SalvageMagnetData
 
 - type: entity
   id: BaseStationSalvageJobs

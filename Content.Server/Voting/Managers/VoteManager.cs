@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Content.Server.Administration;
 using Content.Server.Administration.Logs;
 using Content.Server.Administration.Managers;
@@ -11,7 +7,7 @@ using Content.Server.Maps;
 using Content.Shared.Administration;
 using Content.Shared.CCVar;
 using Content.Shared.Database;
-using Content.Shared.Ghost;
+using Content.Shared.Ghost.Components;
 using Content.Shared.Players.PlayTimeTracking;
 using Content.Shared.Voting;
 using Robust.Server.Player;
@@ -23,23 +19,27 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Collections;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Content.Server.Voting.Managers
 {
     public sealed partial class VoteManager : IVoteManager
     {
-        [Dependency] private readonly IServerNetManager _netManager = default!;
-        [Dependency] private readonly IConfigurationManager _cfg = default!;
-        [Dependency] private readonly IGameTiming _timing = default!;
-        [Dependency] private readonly IPlayerManager _playerManager = default!;
-        [Dependency] private readonly IChatManager _chatManager = default!;
-        [Dependency] private readonly IAdminManager _adminMgr = default!;
-        [Dependency] private readonly IRobustRandom _random = default!;
-        [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-        [Dependency] private readonly IGameMapManager _gameMapManager = default!;
-        [Dependency] private readonly IEntityManager _entityManager = default!;
-        [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly ISharedPlaytimeManager _playtimeManager = default!;
+        [Dependency] private IServerNetManager _netManager = default!;
+        [Dependency] private IConfigurationManager _cfg = default!;
+        [Dependency] private IGameTiming _timing = default!;
+        [Dependency] private IPlayerManager _playerManager = default!;
+        [Dependency] private IChatManager _chatManager = default!;
+        [Dependency] private IAdminManager _adminMgr = default!;
+        [Dependency] private IRobustRandom _random = default!;
+        [Dependency] private IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IGameMapManager _gameMapManager = default!;
+        [Dependency] private IEntityManager _entityManager = default!;
+        [Dependency] private IAdminLogManager _adminLogger = default!;
+        [Dependency] private ISharedPlaytimeManager _playtimeManager = default!;
 
         private int _nextVoteId = 1;
 
@@ -276,7 +276,7 @@ namespace Content.Server.Voting.Managers
                 msg.IsYourVoteDirty = dirty;
                 if (dirty)
                 {
-                    msg.YourVote = (byte) cast;
+                    msg.YourVote = (byte)cast;
                 }
             }
 
@@ -290,7 +290,7 @@ namespace Content.Server.Voting.Managers
             for (var i = 0; i < msg.Options.Length; i++)
             {
                 ref var entry = ref v.Entries[i];
-                msg.Options[i] = (msg.DisplayVotes ? (ushort) entry.Votes : (ushort) 0, entry.Text);
+                msg.Options[i] = (msg.DisplayVotes ? (ushort)entry.Votes : (ushort)0, entry.Text);
             }
 
             player.Channel.SendMessage(msg);
@@ -401,7 +401,7 @@ namespace Content.Server.Voting.Managers
                 .ToImmutableArray();
             // Store all votes in order for webhooks
             var voteTally = new List<int>();
-            foreach(var entry in v.Entries)
+            foreach (var entry in v.Entries)
             {
                 voteTally.Add(entry.Votes);
             }

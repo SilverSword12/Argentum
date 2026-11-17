@@ -22,12 +22,33 @@
   - HandheldStationMap
   - ClothingHeadHatWelding
   - ClothingHeadHatCone
+  - ClothingHeadHatHardhatYellowEmpty
+  - AccessConfigurator
+  - GridConfigurator
+  - ToolboxMechanical
+  - VoiceSensorCopper
+  - SignallerCopper
+  - OreBag
+  - ConstructionBag # Persistence: add construction bag
+  - PlantBag
+  - ClothingShoesSkates
+  - Floodlight
 
 - type: latheRecipePack
   id: AtmosStatic
   recipes:
   - AirTank
   - GasAnalyzer
+# Persistence: make other gas tanks craftable
+  - OxygenTank
+  - NitrogenTank
+  - NitrousOxideTank
+  - PlasmaTank
+  - EmergencyOxygenTank
+  - EmergencyNitrogenTank
+  - EmergencyFunnyOxygenTank
+# Persistence: make emergency eva suit craftable
+  - EmergencyEVAsuit
 
 - type: latheRecipePack
   id: ElectronicsStatic
@@ -47,17 +68,37 @@
   - CellRechargerCircuitboard
   - WeaponCapacitorRechargerCircuitboard
   - FreezerElectronics
+  - MorgueElectronics
+  - BarSignElectronics
+  - ShredderMachineCircuitboard
 
 - type: latheRecipePack
   id: EngineeringBoardsStatic
   recipes:
   - SpaceHeaterMachineCircuitBoard
+  - AlertsComputerCircuitboard
+  - AtmosMonitoringComputerCircuitboard
+  - PowerComputerCircuitboard
+  - MCTNMachineCircuitboard
+  - TrappedFluidExtractorMachineCircuitboard
+  - GridControlComputerCircuitboard
+
+- type: latheRecipePack
+  id: EngineeringHardhatsStatic # Persi14
+  recipes:
+  - ClothingHeadHatHardhatBlueEmpty
+  - ClothingHeadHatHardhatOrangeEmpty
+  - ClothingHeadHatHardhatRedEmpty
+  - ClothingHeadHatHardhatWhiteEmpty
+  - ClothingHeadHatHardhatYellowEmpty
 
 ## Dynamic
 
 - type: latheRecipePack
   id: AdvancedTools
   recipes:
+  - RCD
+  - HCD
   - PowerDrill
   - WelderExperimental
   - JawsOfLife
@@ -83,10 +124,16 @@
   - SolarControlComputerCircuitboard
   - SolarTrackerElectronics
   - GasRecyclerMachineCircuitboard
+  - GasGeneratorMachineCircuitboard
   - PortableGeneratorPacmanMachineCircuitboard
   - PortableGeneratorSuperPacmanMachineCircuitboard
+  - PortableGeneratorMegamanMachineCircuitboard
   - PortableGeneratorJrPacmanMachineCircuitboard
+  - PortableGeneratorOldmanMachineCircuitboard
   - EmitterCircuitboard
   - TelecomServerCircuitboard
   - SMESAdvancedMachineCircuitboard
   - HolopadMachineCircuitboard
+  - HolopadLongRangeMachineCircuitboard
+  - StationAnchorCircuitboard
+  - TelecomServerAdvancedCircuitboard

@@ -1,8 +1,8 @@
 using Content.Client.Shuttles.UI;
 using Content.Shared.Shuttles.BUIStates;
+using Content.Shared.Shuttles.Components;
 using Content.Shared.Shuttles.Events;
 using JetBrains.Annotations;
-using Robust.Client.GameObjects;
 using Robust.Client.UserInterface;
 
 namespace Content.Client.Shuttles.BUI;
@@ -23,6 +23,10 @@ public sealed class IFFConsoleBoundUserInterface : BoundUserInterface
 
         _window = this.CreateWindowCenteredLeft<IFFConsoleWindow>();
         _window.ShowIFF += SendIFFMessage;
+        _window.ShowVessel += SendVesselMessage;
+        _window.ShowFactionTag += SendFactionTagMessage;
+        _window.OnSetColor += SendColorMessage;
+        _window.SetDesignation += SendDesignationMessage;
     }
 
     protected override void UpdateState(BoundUserInterfaceState state)
@@ -40,6 +44,38 @@ public sealed class IFFConsoleBoundUserInterface : BoundUserInterface
         SendMessage(new IFFShowIFFMessage()
         {
             Show = obj,
+        });
+    }
+
+    private void SendVesselMessage(bool obj)
+    {
+        SendMessage(new IFFShowVesselMessage()
+        {
+            Show = obj,
+        });
+    }
+
+    private void SendFactionTagMessage(bool obj)
+    {
+        SendMessage(new IFFShowFactionTagMessage()
+        {
+            Show = obj,
+        });
+    }
+
+    private void SendColorMessage(string colorHex)
+    {
+        SendMessage(new IFFSetColorMessage()
+        {
+            ColorHex = colorHex,
+        });
+    }
+
+    private void SendDesignationMessage(IFFDesignation designation)
+    {
+        SendMessage(new IFFSetDesignationMessage()
+        {
+            Designation = designation,
         });
     }
 

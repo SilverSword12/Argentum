@@ -1,17 +1,17 @@
 using Content.Client.Items;
 using Content.Client.Light.Components;
+using Content.Client.Light.EntitySystems;
 using Content.Shared.Light;
 using Content.Shared.Light.Components;
 using Content.Shared.Toggleable;
 using Robust.Client.GameObjects;
-using Content.Client.Light.EntitySystems;
 
 namespace Content.Client.Light;
 
-public sealed class HandheldLightSystem : SharedHandheldLightSystem
+public sealed partial class HandheldLightSystem : SharedHandheldLightSystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly LightBehaviorSystem _lightBehavior = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private LightBehaviorSystem _lightBehavior = default!;
 
     public override void Initialize()
     {
@@ -37,13 +37,8 @@ public sealed class HandheldLightSystem : SharedHandheldLightSystem
         return true;
     }
 
-    private void OnAppearanceChange(EntityUid uid, HandheldLightComponent? component, ref AppearanceChangeEvent args)
+    private void OnAppearanceChange(EntityUid uid, HandheldLightComponent component, ref AppearanceChangeEvent args)
     {
-        if (!Resolve(uid, ref component))
-        {
-            return;
-        }
-
         if (!_appearance.TryGetData<bool>(uid, ToggleableVisuals.Enabled, out var enabled, args.Component))
         {
             return;

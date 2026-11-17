@@ -34,7 +34,7 @@ public sealed partial class EntityWhitelist
     /// <summary>
     ///     Component names that are allowed in the whitelist.
     /// </summary>
-    [DataField(customTypeSerializer:typeof(CustomArraySerializer<string, ComponentNameSerializer>))]
+    [DataField(customTypeSerializer: typeof(CustomArraySerializer<string, ComponentNameSerializer>))]
     public string[]? Components;
 
     /// <summary>
@@ -51,6 +51,12 @@ public sealed partial class EntityWhitelist
     /// </summary>
     [DataField]
     public List<ProtoId<TagPrototype>>? Tags;
+
+    /// <summary>
+    ///     Ids that the item may come from.
+    /// </summary>
+    [DataField]
+    public List<EntProtoId>? PrototypeIds;
 
     /// <summary>
     ///     If false, an entity only requires one of these components or tags to pass the whitelist. If true, an

@@ -3,13 +3,38 @@
 - type: latheRecipePack
   id: SecurityEquipmentStatic
   recipes:
-  - ClothingEyesHudSecurity
+#  - ClothingEyesHudSecurity # Moffstation - Replaced by modular HUDs
   - ForensicPad
   - Handcuffs
   - TargetClown
   - TargetHuman
   - TargetSyndicate
   - Zipties
+  - ClothingBeltTanMilitaryWebbing
+  - ClothingHeadHelmetMilitaryWoodland
+  - ClothingHeadHelmetMilitaryDesert
+  - ClothingHeadHelmetMilitaryArctic
+  - ClothingHeadHelmetRiot
+  - ClothingHeadHelmetBasic
+  - ClothingMaskGasSecurity
+  - ClothingEyesGlassesSecurity
+  - ClothingEyesGlassesMercenary
+  - ClothingBeltSecurity
+  - ClothingBeltHolster
+  - ClothingBeltBandolier
+  - ClothingBeltSecurityWebbing
+  - ClothingBeltMercWebbing
+  - ClothingBeltMilitaryWebbing
+  - ClothingShoesBootsJack
+  - ClothingShoesBootsCombat
+  - ClothingShoesHighheelBoots
+  - ClothingShoesBootsMerc
+  - ClothingShoesBootsWinterSec
+  - ClothingShoesBootsCowboyBrown
+  - ClothingShoesBootsCowboyBlack
+  - ClothingShoesBootsCowboyWhite
+  - ClothingShoesBootsCowboyFancy
+  - SecurityBola
 
 # Practice ammo/mags and practice weapons
 - type: latheRecipePack
@@ -20,12 +45,15 @@
   - MagazineBoxMagnumPractice
   - MagazineBoxPistolPractice
   - MagazineBoxRiflePractice
+  - MagazineBoxCaselessRiflePracticeRecipe
   - WeaponDisablerPractice
   - WeaponLaserCarbinePractice
   - MagazineLightRiflePractice
   - MagazineRiflePractice
   - MagazinePistolPractice
+  - MagazinePistolCaselessRiflePracticeRecipe
   - SpeedLoaderMagnumPractice
+  - MagazineMarineRiflePractice
   - MagazinePistolSubMachineGunPractice
   - WeaponFlareGunSecurity
 
@@ -38,10 +66,12 @@
   - MagazineBoxLightRifle
   - MagazineBoxMagnum
   - MagazineBoxPistol
+  - MagazineBoxCaselessRifleRecipe
   - MagazineBoxRifle
   - MagazineLightRifle
   - MagazineLightRifleEmpty
   - MagazinePistol
+  - MagazinePistolCaselessRifleRecipe
   - MagazinePistolEmpty
   - MagazinePistolSubMachineGun
   - MagazinePistolSubMachineGunEmpty
@@ -51,6 +81,8 @@
   - MagazineRifleEmpty
   - SpeedLoaderMagnum
   - SpeedLoaderMagnumEmpty
+  - MagazineMarineRifle
+  - MagazineMarineRifleEmpty
 
 - type: latheRecipePack
   id: SecurityWeaponsStatic
@@ -73,6 +105,9 @@
   - PowerCageSmall
   - TelescopicShield
   - ClothingBackpackHarmpack
+  - ClothingHandsMercGlovesCombat
+  - ClothingHandsTacticalMaidGloves
+  - ClothingHandsGlovesCombat
 
 - type: latheRecipePack
   id: SecurityBoards
@@ -123,6 +158,8 @@
   - MagazineShotgunIncendiary
   - SpeedLoaderMagnumIncendiary
   - SpeedLoaderMagnumUranium
+  - MagazineMarineRifleIncendiary
+  - MagazineMarineRifleUranium
 
 - type: latheRecipePack
   id: SecurityWeapons
@@ -133,6 +170,8 @@
   - WeaponLaserCarbine
   - WeaponXrayCannon
   - WeaponTemperatureGun
+  - RiotLaserShield
+
 
 - type: latheRecipePack
   id: SecurityDisablers

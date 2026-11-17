@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using Content.Shared.Actions;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Anomaly.Components;
 using Content.Shared.Anomaly.Prototypes;
@@ -18,25 +18,26 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
-using Content.Shared.Actions;
 
 namespace Content.Shared.Anomaly;
 
-public abstract class SharedAnomalySystem : EntitySystem
+public abstract partial class SharedAnomalySystem : EntitySystem
 {
-    [Dependency] protected readonly IGameTiming Timing = default!;
-    [Dependency] private readonly INetManager _net = default!;
-    [Dependency] protected readonly IRobustRandom Random = default!;
-    [Dependency] protected readonly ISharedAdminLogManager AdminLog = default!;
-    [Dependency] protected readonly SharedAudioSystem Audio = default!;
-    [Dependency] protected readonly SharedAppearanceSystem Appearance = default!;
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] protected readonly SharedPopupSystem Popup = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
+    [Dependency] protected IGameTiming Timing = default!;
+    [Dependency] private INetManager _net = default!;
+    [Dependency] protected IRobustRandom Random = default!;
+    [Dependency] protected ISharedAdminLogManager AdminLog = default!;
+    [Dependency] protected SharedAudioSystem Audio = default!;
+    [Dependency] protected SharedAppearanceSystem Appearance = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] protected SharedPopupSystem Popup = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+
+    [Dependency] private EntityQuery<PhysicsComponent> _physQuery = default!;
 
     public override void Initialize()
     {
@@ -97,13 +98,13 @@ public abstract class SharedAnomalySystem : EntitySystem
             Audio.PlayPvs(component.PulseSound, uid);
 
         var pulse = EnsureComp<AnomalyPulsingComponent>(uid);
-        pulse.EndTime  = Timing.CurTime + pulse.PulseDuration;
+        pulse.EndTime = Timing.CurTime + pulse.PulseDuration;
         Appearance.SetData(uid, AnomalyVisuals.IsPulsing, true);
 
         var powerMod = 1f;
         if (component.CurrentBehavior != null)
         {
-            var beh = _prototype.Index<AnomalyBehaviorPrototype>(component.CurrentBehavior);
+            var beh = ProtoMan.Index<AnomalyBehaviorPrototype>(component.CurrentBehavior);
             powerMod = beh.PulsePowerModifier;
         }
         var ev = new AnomalyPulseEvent(uid, component.Stability, component.Severity, powerMod);
@@ -129,7 +130,7 @@ public abstract class SharedAnomalySystem : EntitySystem
         if (HasComp<AnomalySupercriticalComponent>(ent))
             return;
 
-        if(!Resolve(ent, ref ent.Comp))
+        if (!Resolve(ent, ref ent.Comp))
             return;
 
         AdminLog.Add(LogType.Anomaly, LogImpact.High, $"Anomaly {ToPrettyString(ent.Owner)} began to go supercritical.");
@@ -169,7 +170,7 @@ public abstract class SharedAnomalySystem : EntitySystem
         var powerMod = 1f;
         if (component.CurrentBehavior != null)
         {
-            var beh = _prototype.Index<AnomalyBehaviorPrototype>(component.CurrentBehavior);
+            var beh = ProtoMan.Index<AnomalyBehaviorPrototype>(component.CurrentBehavior);
             powerMod = beh.PulsePowerModifier;
         }
 
@@ -310,7 +311,7 @@ public abstract class SharedAnomalySystem : EntitySystem
         //Apply behavior modifier
         if (component.CurrentBehavior != null)
         {
-            var behavior = _prototype.Index(component.CurrentBehavior.Value);
+            var behavior = ProtoMan.Index(component.CurrentBehavior.Value);
             lenght *= behavior.PulseFrequencyModifier;
         }
         return lenght;
@@ -392,7 +393,7 @@ public abstract class SharedAnomalySystem : EntitySystem
             return null;
 
         // How many spawn points we will be aiming to return
-        var amount = (int) (MathHelper.Lerp(settings.MinAmount, settings.MaxAmount, severity * stability * powerModifier) + 0.5f);
+        var amount = (int)(MathHelper.Lerp(settings.MinAmount, settings.MaxAmount, severity * stability * powerModifier) + 0.5f);
 
         // When the entity is in a container or buckled (such as a hosted anomaly), local coordinates will not be comparable
         // to tile coordinates.
@@ -409,7 +410,6 @@ public abstract class SharedAnomalySystem : EntitySystem
         if (tilerefs.Count == 0)
             return null;
 
-        var physQuery = GetEntityQuery<PhysicsComponent>();
         var resultList = new List<TileRef>();
         while (resultList.Count < amount)
         {
@@ -437,12 +437,12 @@ public abstract class SharedAnomalySystem : EntitySystem
                 var valid = true;
                 foreach (var ent in _map.GetAnchoredEntities(xform.GridUid.Value, grid, tileref.GridIndices))
                 {
-                    if (!physQuery.TryGetComponent(ent, out var body))
+                    if (!_physQuery.TryGetComponent(ent, out var body))
                         continue;
 
                     if (body.BodyType != BodyType.Static ||
                         !body.Hard ||
-                        (body.CollisionLayer & (int) CollisionGroup.Impassable) == 0)
+                        (body.CollisionLayer & (int)CollisionGroup.Impassable) == 0)
                         continue;
 
                     valid = false;
@@ -480,7 +480,7 @@ public abstract class SharedAnomalySystem : EntitySystem
 
     public AnomalyStabilityVisuals GetStabilityVisualOrStable(Entity<AnomalyComponent?> ent)
     {
-        if(TryGetStabilityVisual(ent, out var visual))
+        if (TryGetStabilityVisual(ent, out var visual))
             return visual.Value;
 
         return AnomalyStabilityVisuals.Stable;

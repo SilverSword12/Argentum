@@ -19,10 +19,6 @@
       "directions": 4
     },
     {
-      "name": "head_n",
-      "directions": 4
-    },
-    {
       "name": "l_arm",
       "directions": 4
     },
@@ -60,10 +56,6 @@
     },
     {
       "name": "torso_m",
-      "directions": 4
-    },
-    {
-      "name": "torso_n",
       "directions": 4
     }
   ]

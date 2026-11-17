@@ -1,15 +1,18 @@
-﻿using Content.Server.Popups;
+using Content.Server._Persistence14.Shuttles;
+using Content.Server.Cargo.Components;
+using Content.Server.Popups;
 using Content.Server.Power.EntitySystems;
 using Content.Server.Shuttles.Components;
+using Content.Shared.Cargo.Components;
 using Content.Shared.Construction.Components;
 using Content.Shared.Popups;
 
 namespace Content.Server.Shuttles.Systems;
 
-public sealed class StationAnchorSystem : EntitySystem
+public sealed partial class StationAnchorSystem : EntitySystem
 {
-    [Dependency] private readonly ShuttleSystem _shuttleSystem = default!;
-    [Dependency] private readonly PopupSystem _popupSystem = default!;
+    [Dependency] private ShuttleSystem _shuttleSystem = default!;
+    [Dependency] private PopupSystem _popupSystem = default!;
 
     public override void Initialize()
     {
@@ -21,9 +24,18 @@ public sealed class StationAnchorSystem : EntitySystem
         SubscribeLocalEvent<StationAnchorComponent, ChargedMachineDeactivatedEvent>(OnDeactivated);
 
         SubscribeLocalEvent<StationAnchorComponent, MapInitEvent>(OnMapInit);
+        SubscribeLocalEvent<StationAnchorComponent, ComponentInit>(OnCompInit);
     }
 
     private void OnMapInit(Entity<StationAnchorComponent> ent, ref MapInitEvent args)
+    {
+        if (!ent.Comp.SwitchedOn)
+            return;
+
+        SetStatus(ent, true);
+    }
+
+    private void OnCompInit(Entity<StationAnchorComponent> ent, ref ComponentInit args)
     {
         if (!ent.Comp.SwitchedOn)
             return;
@@ -69,6 +81,16 @@ public sealed class StationAnchorSystem : EntitySystem
         var transform = Transform(ent);
         var grid = transform.GridUid;
         if (!grid.HasValue || !transform.Anchored && enabled || !Resolve(grid.Value, ref shuttleComponent))
+            return;
+
+        var args = new StationAnchorAttemptEvent
+        {
+            Anchor = ent.Owner,
+            Grid = grid.Value,
+            State = enabled ? StationAnchorState.Anchored : StationAnchorState.Unanchored
+        };
+        RaiseLocalEvent(ref args);
+        if (args.Cancelled)
             return;
 
         if (enabled)

@@ -1,11 +1,10 @@
-using Content.Server.Power.Components;
 using Content.Shared.Atmos.Rotting;
 using Content.Shared.Buckle.Components;
 using Content.Shared.Power;
 
 namespace Content.Server.Buckle.Systems;
 
-public sealed class AntiRotOnBuckleSystem : EntitySystem
+public sealed partial class AntiRotOnBuckleSystem : EntitySystem
 {
     public override void Initialize()
     {

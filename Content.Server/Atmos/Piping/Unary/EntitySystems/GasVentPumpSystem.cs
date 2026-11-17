@@ -1,6 +1,5 @@
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Monitor.Systems;
-using Content.Server.Atmos.Piping.Components;
 using Content.Server.Atmos.Piping.Unary.Components;
 using Content.Server.DeviceLinking.Systems;
 using Content.Server.DeviceNetwork.Systems;
@@ -9,6 +8,7 @@ using Content.Server.NodeContainer.Nodes;
 using Content.Server.Power.EntitySystems;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Atmos;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Monitor;
 using Content.Shared.Atmos.Piping.Components;
 using Content.Shared.Atmos.Piping.Unary;
@@ -19,9 +19,10 @@ using Content.Shared.Database;
 using Content.Shared.DeviceLinking.Events;
 using Content.Shared.DeviceNetwork;
 using Content.Shared.DeviceNetwork.Components;
-using Content.Shared.DoAfter;
 using Content.Shared.DeviceNetwork.Events;
+using Content.Shared.DoAfter;
 using Content.Shared.Examine;
+using Content.Shared.Labels.Components;
 using Content.Shared.Power;
 using Content.Shared.Tools.Systems;
 using Content.Shared.Verbs;
@@ -32,19 +33,19 @@ using Robust.Shared.Utility;
 namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class GasVentPumpSystem : EntitySystem
+    public sealed partial class GasVentPumpSystem : EntitySystem
     {
-        [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-        [Dependency] private readonly DeviceNetworkSystem _deviceNetSystem = default!;
-        [Dependency] private readonly DeviceLinkSystem _signalSystem = default!;
-        [Dependency] private readonly NodeContainerSystem _nodeContainer = default!;
-        [Dependency] private readonly SharedAmbientSoundSystem _ambientSoundSystem = default!;
-        [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-        [Dependency] private readonly WeldableSystem _weldable = default!;
-        [Dependency] private readonly SharedDoAfterSystem _doAfterSystem = default!;
-        [Dependency] private readonly IGameTiming _timing = default!;
-        [Dependency] private readonly PowerReceiverSystem _powerReceiverSystem = default!;
+        [Dependency] private ISharedAdminLogManager _adminLogger = default!;
+        [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+        [Dependency] private DeviceNetworkSystem _deviceNetSystem = default!;
+        [Dependency] private DeviceLinkSystem _signalSystem = default!;
+        [Dependency] private NodeContainerSystem _nodeContainer = default!;
+        [Dependency] private SharedAmbientSoundSystem _ambientSoundSystem = default!;
+        [Dependency] private SharedAppearanceSystem _appearance = default!;
+        [Dependency] private WeldableSystem _weldable = default!;
+        [Dependency] private SharedDoAfterSystem _doAfterSystem = default!;
+        [Dependency] private IGameTiming _timing = default!;
+        [Dependency] private PowerReceiverSystem _powerReceiverSystem = default!;
         public override void Initialize()
         {
             base.Initialize();
@@ -228,7 +229,12 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
             {
                 case AtmosDeviceNetworkSystem.SyncData:
                     payload.Add(DeviceNetworkConstants.Command, AtmosDeviceNetworkSystem.SyncData);
-                    payload.Add(AtmosDeviceNetworkSystem.SyncData, component.ToAirAlarmData());
+                    var name = "";
+                    if (TryComp<LabelComponent>(uid, out var labelComponent))
+                        name = labelComponent.CurrentLabel ?? "";
+                    var alarmData = component.ToAirAlarmData();
+                    alarmData.Name = name;
+                    payload.Add(AtmosDeviceNetworkSystem.SyncData, alarmData);
 
                     _deviceNetSystem.QueuePacket(uid, args.SenderAddress, payload, device: netConn);
 
@@ -241,7 +247,7 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 
                     if (previous.Enabled != setData.Enabled)
                     {
-                        string enabled = setData.Enabled ? "enabled" : "disabled" ;
+                        string enabled = setData.Enabled ? "enabled" : "disabled";
                         _adminLogger.Add(LogType.AtmosDeviceSetting, LogImpact.Medium, $"{ToPrettyString(uid)} {enabled}");
                     }
 
@@ -271,7 +277,7 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 
                     if (previous.PressureLockoutOverride != setData.PressureLockoutOverride)
                     {
-                        string enabled = setData.PressureLockoutOverride ? "enabled" : "disabled" ;
+                        string enabled = setData.PressureLockoutOverride ? "enabled" : "disabled";
                         _adminLogger.Add(LogType.AtmosDeviceSetting, LogImpact.Medium, $"{ToPrettyString(uid)} pressure lockout override {enabled}");
                     }
 

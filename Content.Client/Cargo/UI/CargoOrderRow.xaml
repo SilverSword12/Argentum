@@ -55,6 +55,12 @@
                        VerticalExpand="True"
                        StyleClasses="LabelSubText"
                        ClipText="True" />
+                <Label Name="Cost"
+                       Access="Public"
+                       HorizontalExpand="True"
+                       VerticalExpand="True"
+                       StyleClasses="LabelSubText"
+                       ClipText="True" />
             </BoxContainer>
         </BoxContainer>
 

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Content.Shared.Actions;
 using Content.Shared.Alert;
 using Content.Shared.FixedPoint;
@@ -9,16 +8,17 @@ using Content.Shared.Throwing;
 using Content.Shared.Weapons.Ranged.Components;
 using Content.Shared.Weapons.Ranged.Events;
 using Robust.Shared.Timing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Shared.CombatMode.Pacification;
 
-public sealed class PacificationSystem : EntitySystem
+public sealed partial class PacificationSystem : EntitySystem
 {
-    [Dependency] private readonly AlertsSystem _alertsSystem = default!;
-    [Dependency] private readonly SharedActionsSystem _actionsSystem = default!;
-    [Dependency] private readonly SharedCombatModeSystem _combatSystem = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private AlertsSystem _alertsSystem = default!;
+    [Dependency] private SharedActionsSystem _actionsSystem = default!;
+    [Dependency] private SharedCombatModeSystem _combatSystem = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     public override void Initialize()
     {
@@ -56,7 +56,7 @@ public sealed class PacificationSystem : EntitySystem
             return;
 
         var targetName = Identity.Entity(target, EntityManager);
-        _popup.PopupClient(Loc.GetString(reason, ("entity", targetName)), user, user);
+        _popup.PopupEntity(Loc.GetString(reason, ("entity", targetName)), user, user);
         user.Comp.NextPopupTime = _timing.CurTime + user.Comp.PopupCooldown;
         user.Comp.LastAttackedEntity = target;
     }
@@ -169,7 +169,7 @@ public struct AttemptPacifiedThrowEvent
     public EntityUid ItemUid;
     public EntityUid PlayerUid;
 
-    public AttemptPacifiedThrowEvent(EntityUid itemUid,  EntityUid playerUid)
+    public AttemptPacifiedThrowEvent(EntityUid itemUid, EntityUid playerUid)
     {
         ItemUid = itemUid;
         PlayerUid = playerUid;

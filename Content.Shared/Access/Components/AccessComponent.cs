@@ -1,7 +1,6 @@
 using Content.Shared.Access.Systems;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
-using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype.Set;
 
 namespace Content.Shared.Access.Components;
 
@@ -32,6 +31,21 @@ public sealed partial class AccessComponent : Component
     [AutoNetworkedField]
     public HashSet<ProtoId<AccessGroupPrototype>> Groups = new();
 }
+
+
+/// <summary>
+/// Event raised on an entity to find additional entities which provide access.
+/// </summary>
+public struct SetupAccessList
+{
+    public List<string> AccessList = new();
+
+    public SetupAccessList(List<string> accessList)
+    {
+        AccessList = accessList;
+    }
+}
+
 
 /// <summary>
 /// Event raised on an entity to find additional entities which provide access.

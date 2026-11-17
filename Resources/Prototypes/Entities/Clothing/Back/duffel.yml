@@ -14,6 +14,9 @@
     walkModifier: 1
     sprintModifier: 0.9
   - type: HeldSpeedModifier
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 300
 
 - type: entity
   parent: ClothingBackpackDuffel
@@ -171,10 +174,7 @@
   - type: Sprite
     sprite: Clothing/Back/Duffels/syndicate.rsi
   - type: ExplosionResistance
-    damageCoefficient: 0.1
-  - type: Storage
-    grid:
-    - 0,0,8,4
+    damageCoefficient: 0.5
 
 - type: entity
   parent: [ ClothingBackpackDuffelSyndicate, BaseSyndicateContraband ]
@@ -182,7 +182,8 @@
   abstract: true
   components:
   - type: Tag
-    tags: [] # ignore "WhitelistChameleon" tag
+    tags:
+    - Backpack # ignore "WhitelistChameleon" tag
 
 - type: entity
   parent: ClothingBackpackDuffel
@@ -190,7 +191,8 @@
   abstract: true
   components:
   - type: Tag
-    tags: [] # ignore "WhitelistChameleon" tag
+    tags:
+    - Backpack # ignore "WhitelistChameleon" tag
 
 - type: entity
   parent: ClothingBackpackDuffelSyndicate
@@ -209,8 +211,9 @@
   id: ClothingBackpackDuffelSyndicateAmmoBundle
   abstract: true
   components:
-    - type: Tag
-      tags: [] # ignore "WhitelistChameleon" tag
+  - type: Tag
+    tags:
+    - Backpack # ignore "WhitelistChameleon" tag
 
 - type: entity
   parent: ClothingBackpackDuffelSyndicate
@@ -229,14 +232,15 @@
   id: ClothingBackpackDuffelSyndicateMedicalBundle
   abstract: true
   components:
-    - type: Tag
-      tags: [] # ignore "WhitelistChameleon" tag
+  - type: Tag
+    tags:
+    - Backpack # ignore "WhitelistChameleon" tag
 
 - type: entity
-  parent: ClothingBackpackDuffel
+  parent: ClothingBackpackHoldingBase #Standardized Bluespace Bags
   id: ClothingBackpackDuffelHolding
-  name: duffelbag of holding
-  description: A duffelbag that opens into a localized pocket of bluespace.
+  name: duffel bag of holding
+  description: A duffel bag that opens into a localized pocket of bluespace.
   components:
   - type: Sprite
     sprite: Clothing/Back/Duffels/holding.rsi
@@ -254,6 +258,13 @@
   - type: ClothingSpeedModifier
     sprintModifier: 1 # makes its stats identical to other variants of bag of holding
   - type: HeldSpeedModifier
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 0
+      Steel: 500
+      Silver: 200
+      Plasma: 200
+      Uranium: 100
 
 - type: entity
   parent: [ ClothingBackpackDuffel, BaseCentcommContraband ]
@@ -265,5 +276,8 @@
     maxItemSize: Huge
   - type: ClothingSpeedModifier
     walkModifier: 1
-    sprintModifier: 1
+    sprintModifier: 0.9
   - type: HeldSpeedModifier
+  - type: Tag
+    tags:
+    - Backpack # ignore "WhitelistChameleon" tag. Maybe make a unique CBURN duffel sprite?

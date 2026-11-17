@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Server.Administration;
 using Content.Shared.Administration;
 using Content.Shared.Decals;
@@ -8,14 +7,15 @@ using Robust.Shared.Console;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Prototypes;
+using System.Numerics;
 
 namespace Content.Server.Decals.Commands
 {
     [AdminCommand(AdminFlags.Mapping)]
-    public sealed class AddDecalCommand : IConsoleCommand
+    public sealed partial class AddDecalCommand : IConsoleCommand
     {
-        [Dependency] private readonly IEntityManager _entManager = default!;
-        [Dependency] private readonly IPrototypeManager _protoManager = default!;
+        [Dependency] private IEntityManager _entManager = default!;
+        [Dependency] private IPrototypeManager _protoManager = default!;
 
         public string Command => "adddecal";
         public string Description => "Creates a decal on the map";

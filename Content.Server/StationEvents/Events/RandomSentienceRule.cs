@@ -1,21 +1,21 @@
-using System.Linq;
-using Content.Shared.Dataset;
 using Content.Server.Ghost.Roles.Components;
 using Content.Server.StationEvents.Components;
+using Content.Shared.Dataset;
 using Content.Shared.GameTicking.Components;
 using Content.Shared.Random.Helpers;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using System.Linq;
 
 namespace Content.Server.StationEvents.Events;
 
-public sealed class RandomSentienceRule : StationEventSystem<RandomSentienceRuleComponent>
+public sealed partial class RandomSentienceRule : StationEventSystem<RandomSentienceRuleComponent>
 {
     private static readonly ProtoId<LocalizedDatasetPrototype> DataSourceNames = "RandomSentienceEventData";
     private static readonly ProtoId<LocalizedDatasetPrototype> IntelligenceLevelNames = "RandomSentienceEventStrength";
 
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     protected override void Started(EntityUid uid, RandomSentienceRuleComponent component, GameRuleComponent gameRule, GameRuleStartedEvent args)
     {

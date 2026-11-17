@@ -7,15 +7,19 @@ using Content.Shared.Standing;
 using Content.Shared.Storage;
 using Content.Shared.Storage.Components;
 using Content.Shared.Storage.EntitySystems;
+using Content.Shared.Tag; // Persistence 14: NoGibTag
 using Content.Shared.Verbs;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
 using Robust.Shared.Network;
 using Robust.Shared.Timing;
+using Robust.Shared.Prototypes; // Persistence 14: NoGibTag
+using Content.Shared.Damage; // Persistence 14: Deal damage to entities which cannot be ashed.
+using Content.Shared.Damage.Systems; // Persistence 14: Deal damage to entities which cannot be ashed.
 
 namespace Content.Shared.Morgue;
 
-public abstract class SharedCrematoriumSystem : EntitySystem
+public abstract partial class SharedCrematoriumSystem : EntitySystem
 {
     [Dependency] protected readonly SharedEntityStorageSystem EntityStorage = default!;
     [Dependency] protected readonly SharedPopupSystem Popup = default!;
@@ -26,6 +30,10 @@ public abstract class SharedCrematoriumSystem : EntitySystem
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
+    [Dependency] private readonly TagSystem _tag = default!; // Persistence 14: NoGibTag
+    [Dependency] private readonly DamageableSystem _damage = default!; // Persistence 14: Deal damage to entities which cannot be ashed.
+
+    private static readonly ProtoId<TagPrototype> NoGibTag = "NoGib"; // Persistence 14: NoGibTag
 
     public override void Initialize()
     {
@@ -81,9 +89,9 @@ public abstract class SharedCrematoriumSystem : EntitySystem
         AlternativeVerb verb = new()
         {
             Text = Loc.GetString("cremate-verb-get-data-text"),
-            // TODO VERB ICON add flame/burn symbol?
             Act = () => TryCremate((uid, component, storage), args.User),
-            Impact = LogImpact.High // could be a body? or evidence? I dunno.
+            Impact = LogImpact.High, // could be a body? or evidence? I dunno.
+            Icon = component.CremateVerbIcon
         };
         args.Verbs.Add(verb);
     }
@@ -138,16 +146,24 @@ public abstract class SharedCrematoriumSystem : EntitySystem
 
         if (ent.Comp2.Contents.ContainedEntities.Count > 0)
         {
+            var spawnAsh = true;
             for (var i = ent.Comp2.Contents.ContainedEntities.Count - 1; i >= 0; i--)
             {
                 var item = ent.Comp2.Contents.ContainedEntities[i];
+                if (_tag.HasTag(item, NoGibTag))
+                {
+                    spawnAsh = false;
+                    _damage.TryChangeDamage(item, ent.Comp1.CremateDamage); // Persistence 14: Deal damage to entities which cannot be ashed.
+                    continue;
+                }
                 _container.Remove(item, ent.Comp2.Contents);
                 PredictedDel(item);
             }
-            PredictedTrySpawnInContainer(ent.Comp1.LeftOverProtoId, ent.Owner, ent.Comp2.Contents.ID, out _);
+            if (spawnAsh)
+                PredictedTrySpawnInContainer(ent.Comp1.LeftOverProtoId, ent.Owner, ent.Comp2.Contents.ID, out _);
         }
 
-        EntityStorage.OpenStorage(ent.Owner, ent.Comp2);
+        EntityStorage.OpenStorage((ent.Owner, ent.Comp2));
 
         if (_net.IsServer) // can't predict without the user
             _audio.PlayPvs(ent.Comp1.CremateFinishSound, ent.Owner);

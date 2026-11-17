@@ -26,6 +26,9 @@
         Blunt: 3
   - type: UseDelay
     delay: 1
+  - type: PhysicalComposition
+    materialComposition:
+      Wood: 200
 
 - type: entity
   name: cane blade
@@ -71,6 +74,7 @@
     slots:
     - item
   - type: ItemSlots
+    allowSmartEquip: true
     slots:
       item:
         name: CaneBlade
@@ -98,3 +102,7 @@
     containers:
       item:
       - CaneBlade
+  - type: PhysicalComposition
+    materialComposition:
+      Wood: 200
+      Steel: 100

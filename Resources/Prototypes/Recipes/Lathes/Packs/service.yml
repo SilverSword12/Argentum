@@ -18,6 +18,7 @@
   - FoodBowlBig
   - FoodPlateTin
   - FoodPlateMuffinTin
+  - EmptyCan
   - FoodKebabSkewer
   - SprayBottle
   - TrashBag
@@ -26,6 +27,12 @@
   - Holoprojector
   - WetFloorSign
   - WireBrush
+  - BSPAnchorKey
+  - PrecursorExtractor
+  - KitchenKnife
+  - RollingPin
+  - BarberScissors
+  - CigaretteFilter
 
 - type: latheRecipePack
   id: ServiceBoardsStatic
@@ -38,6 +45,38 @@
   - BoozeDispenserMachineCircuitboard
   - SodaDispenserMachineCircuitboard
   - SmartFridgeCircuitboard
+  - IdPrinterCircuitboard
+  - MessageBoardCircuitboard
+  - StationModComputerCircuitboard
+  - BlockGameArcadeComputerCircuitboard
+  - SpaceVillainArcadeComputerCircuitboard
+  - InvoicePrinterCircuitboard
+  - IDComputerCircuitboard
+  - MixingMachineCircuitboard
+  - PlushieLatheCircuitboard
+
+- type: latheRecipePack
+  id: ReligionStatic
+  recipes:
+  - Bible
+  - BibleDruid
+  - BibleCommunistManifesto
+  - BibleNarsie
+  - BibleNanoTrasen
+  - BibleHonk
+  - BibleRatvar
+  - BibleEmbrace
+
+
+- type: latheRecipePack
+  id: HydroponicsStatic
+  recipes:
+  - HydroponicsToolMiniHoe
+  - HydroponicsToolScythe
+  - HydroponicsToolHatchet
+  - HydroponicsToolSpade
+  - HydroponicsToolClippers
+  - PlantAnalyzer
 
 ## Dynamic
 
@@ -48,16 +87,20 @@
   - WeaponSprayNozzle
   - ClothingBackpackWaterTank
   - MegaSprayBottle
+  - TrashBagHolding
+  - WashingMachineCircuitboard # Funky: Footprints & Stains
 
 - type: latheRecipePack
   id: Instruments
   recipes:
   - SynthesizerInstrument
   - PushHorn
+  - PlushieSoundActivator # _Persistence14 content
 
 - type: latheRecipePack
   id: ServiceBoards
   recipes:
+  - RequisitionsConsoleCircuitboard # _Persistence14: requisitions console (T2 Requisitions Logistics)
   - BiofabricatorMachineCircuitboard
   - FatExtractorMachineCircuitboard
   - HydroponicsTrayMachineCircuitboard # roundstart gear being unlocked roundstart when
@@ -66,3 +109,5 @@
   - ReagentGrinderIndustrialMachineCircuitboard
   - JukeboxCircuitBoard
   - DawInstrumentMachineCircuitboard
+  - ComputerTelevisionCircuitboard
+  - ButcheringMachineCircuitboard

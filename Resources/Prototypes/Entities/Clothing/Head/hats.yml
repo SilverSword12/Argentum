@@ -38,8 +38,8 @@
     sprite: Clothing/Head/Hats/beret_french.rsi
   - type: Clothing
     sprite: Clothing/Head/Hats/beret_french.rsi
-  - type: AddAccentClothing
-    accent: FrenchAccent
+  - type: FrenchAccent
+    relayAccent: true
   - type: Tag
     tags:
     - PetWearable
@@ -51,8 +51,8 @@
 - type: entity
   parent: ClothingHeadBase
   id: ClothingHeadHatBeretSecurity
-  name: security beret
-  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety.
+  name: classic security beret
+  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety. A true classic.
   components:
   - type: Sprite
     sprite: Clothing/Head/Hats/beret_security.rsi
@@ -66,6 +66,66 @@
     - CorgiWearable
     - HamsterWearable
     - WhitelistChameleon
+
+- type: entity
+  parent: ClothingHeadBase
+  id: ClothingHeadHatBeretSecurityBlack
+  name: black security beret
+  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/beret_security_black.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/beret_security_black.rsi
+  - type: Tag
+    tags:
+    - ClothMade
+    - Recyclable
+    - WhitelistChameleon
+
+- type: entity
+  parent: ClothingHeadHatBeretSecurityBlack
+  id: ClothingHeadHatBeretSecurityDarkBlue
+  name: dark blue security beret
+  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/beret_security_darkblue.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/beret_security_darkblue.rsi
+
+- type: entity
+  parent: ClothingHeadHatBeretSecurityBlack
+  id: ClothingHeadHatBeretSecurityDarkRed
+  name: dark red security beret
+  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/beret_security_darkred.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/beret_security_darkred.rsi
+
+- type: entity
+  parent: ClothingHeadHatBeretSecurityBlack
+  id: ClothingHeadHatBeretSecurityLightBlue
+  name: light blue security beret
+  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/beret_security_lightblue.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/beret_security_lightblue.rsi
+
+- type: entity
+  parent: ClothingHeadHatBeretSecurityBlack
+  id: ClothingHeadHatBeretSecurityLightRed
+  name: light red security beret
+  description: A beret with the security department's insignia. For officers that are more inclined towards style than safety.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/beret_security_lightred.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/beret_security_lightred.rsi
 
 - type: entity
   parent: ClothingHeadBase
@@ -187,6 +247,7 @@
     tags:
     - PetWearable
     - CorgiWearable
+    - WhitelistChameleon
 
 - type: entity
   parent: ClothingHeadBase
@@ -198,6 +259,22 @@
     sprite: Clothing/Head/Hats/beret_physician.rsi
   - type: Clothing
     sprite: Clothing/Head/Hats/beret_physician.rsi
+  - type: Tag
+    tags:
+    - PetWearable
+    - CorgiWearable
+    - WhitelistChameleon
+
+- type: entity
+  parent: ClothingHeadBase
+  id: ClothingHeadHatBeretSeniorPhysicianNew
+  name: physician beret
+  description: Donning the colours of medical and chemistry, physicians are the pride of this department!
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/beret_seniorphysician.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/beret_seniorphysician.rsi
   - type: Tag
     tags:
     - PetWearable
@@ -265,6 +342,7 @@
     tags:
     - PetWearable
     - CorgiWearable
+    - WhitelistChameleon
 
 - type: entity
   parent: [ClothingHeadBase, BaseCommandContraband]
@@ -314,6 +392,7 @@
     tags:
     - PetWearable
     - CorgiWearable
+    - WhitelistChameleon
 
 - type: entity
   parent: ClothingHeadBase
@@ -453,7 +532,7 @@
   - type: Clothing
     sprite: Clothing/Head/Hats/outlawhat.rsi
   - type: StaticPrice
-    price: 500
+    price: 10
   - type: Tag
     tags:
     - PetWearable
@@ -503,9 +582,9 @@
     tags:
     - PetWearable
     - CorgiWearable
-  - type: AddAccentClothing
-    accent: ReplacementAccent
-    replacement: pirate
+  - type: ReplacementAccent
+    accent: pirate
+    relayAccent: true
 
 - type: entity
   parent: ClothingHeadBase
@@ -552,7 +631,6 @@
   components:
   - type: Clothing
     sprite: Clothing/Head/Hats/santahat.rsi
-  - type: Appearance
   - type: HideLayerClothing
     layers:
       Hair: HEAD
@@ -589,8 +667,8 @@
     sprite: Clothing/Head/Hats/sombrero.rsi
   - type: Clothing
     sprite: Clothing/Head/Hats/sombrero.rsi
-  - type: AddAccentClothing
-    accent: SpanishAccent
+  - type: SpanishAccent
+    relayAccent: true
   - type: Tag
     tags:
     - PetWearable
@@ -677,9 +755,8 @@
   components:
   - type: Clothing
     sprite: Clothing/Head/Hats/ushanka.rsi
-  - type: Appearance
-  - type: AddAccentClothing
-    accent: RussianAccent
+  - type: RussianAccent
+    relayAccent: true
   - type: Foldable
     canFoldInsideContainer: true
   - type: FoldableClothing
@@ -764,6 +841,7 @@
     tags:
     - PetWearable
     - CorgiWearable
+    - WhitelistChameleon
 
 - type: entity
   parent: ClothingHeadBase
@@ -1052,9 +1130,9 @@
     sprite: Clothing/Head/Hats/piratetricord.rsi
   - type: Clothing
     sprite: Clothing/Head/Hats/piratetricord.rsi
-  - type: AddAccentClothing
-    accent: ReplacementAccent
-    replacement: pirate
+  - type: ReplacementAccent
+    accent: pirate
+    relayAccent: true
 
 - type: entity
   parent: ClothingHeadBase
@@ -1333,9 +1411,9 @@
       sprite: Clothing/Head/Hats/cowboyhatbrown.rsi
     - type: Clothing
       sprite: Clothing/Head/Hats/cowboyhatbrown.rsi
-    - type: AddAccentClothing
-      accent: ReplacementAccent
-      replacement: cowboy
+    - type: ReplacementAccent
+      accent: cowboy
+      relayAccent: true
     - type: Tag
       tags:
       - PetWearable
@@ -1451,6 +1529,7 @@
         Heat: 1
   - type: Damageable
     damageModifierSet: Wood
+  - type: Injurable
   - type: Appearance
   - type: FireVisuals
     sprite: Effects/fire.rsi
@@ -1463,9 +1542,9 @@
       behaviors:
       - !type:SpawnEntitiesBehavior
         spawn:
-            Ash:
-              min: 1
-              max: 1
+          Ash:
+            min: 1
+            max: 1
       - !type:DoActsBehavior
         acts: [ "Destruction" ]
 
@@ -1483,6 +1562,7 @@
     tags:
     - PetWearable
     - CorgiWearable
+    - WhitelistChameleon
 
 - type: entity
   parent: ClothingHeadBase
@@ -1535,3 +1615,30 @@
     tags:
     - PetWearable
     - CorgiWearable
+
+- type: entity
+  parent: ClothingHeadBase
+  id: ClothingHeadHatMitreClown
+  name: honkmother mitre
+  description: It's hard for parishoners to see a banana peel on the floor when they're looking up at your glorious chapeau.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/mitre_clown.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/mitre_clown.rsi
+
+- type: entity
+  parent: ClothingHeadBase
+  id: ClothingHeadHatTramDriver
+  name: tram driver hat
+  description: It smells like confidence.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hats/tramdriver.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hats/tramdriver.rsi
+  - type: Tag
+    tags:
+    - ClothMade
+    - Recyclable
+    - WhitelistChameleon

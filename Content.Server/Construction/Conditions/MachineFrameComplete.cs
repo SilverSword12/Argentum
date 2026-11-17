@@ -55,7 +55,7 @@ namespace Content.Server.Construction.Conditions
             {
                 var amount = required - machineFrame.MaterialProgress[material];
 
-                if(amount == 0)
+                if (amount == 0)
                     continue;
                 var stack = protoManager.Index(material);
                 var stackEnt = protoManager.Index(stack.Spawn);
@@ -69,7 +69,7 @@ namespace Content.Server.Construction.Conditions
             {
                 var amount = info.Amount - machineFrame.ComponentProgress[compName];
 
-                if(amount == 0)
+                if (amount == 0)
                     continue;
 
                 var examineName = constructionSys.GetExamineName(info);
@@ -82,14 +82,13 @@ namespace Content.Server.Construction.Conditions
             {
                 var amount = info.Amount - machineFrame.TagProgress[tagName];
 
-                if(amount == 0)
+                if (amount == 0)
                     continue;
 
                 var examineName = constructionSys.GetExamineName(info);
                 args.PushMarkup(Loc.GetString("construction-condition-machine-frame-required-element-entry",
                                     ("amount", info.Amount),
-                                    ("elementName", examineName))
-                                + "\n");
+                                    ("elementName", examineName)));
             }
 
             return true;

@@ -1,0 +1,103 @@
+- type: cargoBounty
+  id: BountyCarp
+  reward: 10000
+  description: bounty-description-carp
+  idPrefix: CC
+  group: HunterBounty
+  condition:
+    name: bounty-item-carp
+    amount: 2
+    whitelist:
+      tags:
+      - Carp
+
+- type: cargoBounty
+  id: BountyCubanCarp
+  reward: 10000
+  description: bounty-description-cuban-carp
+  idPrefix: CC
+  group: HunterBounty
+  condition:
+    name: bounty-item-cuban-carp
+    amount: 1
+    whitelist:
+      tags:
+      - CubanCarp
+
+- type: cargoBounty
+  id: BountyTeethSpaceCarp
+  reward: 9000
+  description: bounty-description-tooth-space-carp
+  group: HunterBounty
+  sprite:
+    sprite: Mobs/Aliens/Carps/space.rsi
+    state: icon
+  condition:
+    name: bounty-item-tooth-space-carp
+    amount: 15
+    whitelist:
+      tags:
+      - ToothSpaceCarp
+
+- type: cargoBounty
+  id: BountyTeethSharkminnow
+  reward: 9000
+  description: bounty-description-tooth-sharkminnow
+  group: HunterBounty
+  sprite:
+    sprite: Mobs/Aliens/Carps/sharkminnow.rsi
+    state: icon
+  condition:
+    name: bounty-item-tooth-sharkminnow
+    amount: 3
+    whitelist:
+      tags:
+      - ToothSharkminnow
+
+- type: cargoBounty
+  id: BountyBear
+  reward: 9750
+  description: bounty-description-bear
+  group: HunterBounty
+  condition:
+    name: bounty-item-bearmeat
+    amount: 13
+    whitelist:
+      tags:
+      - BearMeat
+
+- type: cargoBounty
+  id: BountySpider
+  reward: 10000
+  description: bounty-description-spider
+  group: HunterBounty
+  condition:
+    name: bounty-item-spidermeat
+    amount: 10
+    whitelist:
+      tags:
+      - SpiderMeat
+
+- type: cargoBounty
+  id: BountySnake
+  reward: 10000
+  description: bounty-description-snake
+  group: HunterBounty
+  condition:
+    name: bounty-item-snakemeat
+    amount: 10
+    whitelist:
+      tags:
+      - SnakeMeat
+
+- type: cargoBounty
+  id: BountyXeno
+  reward: 8500
+  description: bounty-description-xeno
+  group: HunterBounty
+  condition:
+    name: bounty-item-xenomeat
+    amount: 5
+    whitelist:
+      tags:
+      - XenoMeat

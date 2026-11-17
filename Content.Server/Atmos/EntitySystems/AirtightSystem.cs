@@ -1,26 +1,29 @@
 using Content.Server.Atmos.Components;
 using Content.Server.Explosion.EntitySystems;
+using Content.Server.Power.EntitySystems;
 using Content.Shared.Atmos;
+using Content.Shared.Power;
 using JetBrains.Annotations;
 using Robust.Shared.Map.Components;
 
 namespace Content.Server.Atmos.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class AirtightSystem : EntitySystem
+    public sealed partial class AirtightSystem : EntitySystem
     {
         [Dependency] private readonly SharedTransformSystem _transform = default!;
         [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
         [Dependency] private readonly ExplosionSystem _explosionSystem = default!;
         [Dependency] private readonly SharedMapSystem _mapSystem = default!;
+        [Dependency] private readonly PowerReceiverSystem _powerReceiverSystem = default!;
 
         public override void Initialize()
         {
             SubscribeLocalEvent<AirtightComponent, ComponentInit>(OnAirtightInit);
             SubscribeLocalEvent<AirtightComponent, ComponentShutdown>(OnAirtightShutdown);
             SubscribeLocalEvent<AirtightComponent, AnchorStateChangedEvent>(OnAirtightPositionChanged);
-            SubscribeLocalEvent<AirtightComponent, ReAnchorEvent>(OnAirtightReAnchor);
             SubscribeLocalEvent<AirtightComponent, MoveEvent>(OnAirtightMoved);
+            SubscribeLocalEvent<AirtightComponent, PowerChangedEvent>(OnPowerChanged);
         }
 
         private void OnAirtightInit(Entity<AirtightComponent> airtight, ref ComponentInit args)
@@ -38,7 +41,7 @@ namespace Content.Server.Atmos.EntitySystems
             // and check if it's still airtight.
             var xform = Transform(airtight);
             airtight.Comp.CurrentAirBlockedDirection =
-                (int) Rotate((AtmosDirection) airtight.Comp.InitialAirBlockedDirection, xform.LocalRotation);
+                (int)Rotate((AtmosDirection)airtight.Comp.InitialAirBlockedDirection, xform.LocalRotation);
             UpdatePosition(airtight, xform);
             var airtightEv = new AirtightChanged(airtight, airtight, false, default);
             RaiseLocalEvent(airtight, ref airtightEv, true);
@@ -56,6 +59,7 @@ namespace Content.Server.Atmos.EntitySystems
         private void OnAirtightPositionChanged(EntityUid uid, AirtightComponent airtight, ref AnchorStateChangedEvent args)
         {
             var xform = args.Transform;
+            var oldPosition = airtight.LastPosition;
 
             if (!TryComp(xform.GridUid, out MapGridComponent? grid))
                 return;
@@ -70,29 +74,40 @@ namespace Content.Server.Atmos.EntitySystems
 
             var airtightEv = new AirtightChanged(uid, airtight, false, (gridId.Value, tilePos));
             RaiseLocalEvent(uid, ref airtightEv, true);
-        }
 
-        private void OnAirtightReAnchor(EntityUid uid, AirtightComponent airtight, ref ReAnchorEvent args)
-        {
-            foreach (var gridId in new[] { args.OldGrid, args.Grid })
+            if (oldPosition != default && oldPosition != airtight.LastPosition)
             {
-                // Update and invalidate new position.
-                airtight.LastPosition = (gridId, args.TilePos);
-                InvalidatePosition(gridId, args.TilePos);
-
-                var airtightEv = new AirtightChanged(uid, airtight, false, (gridId, args.TilePos));
-                RaiseLocalEvent(uid, ref airtightEv, true);
+                InvalidatePosition(oldPosition.Grid, oldPosition.Tile);
+                var oldAirtightEv = new AirtightChanged(uid, airtight, false, oldPosition);
+                RaiseLocalEvent(uid, ref oldAirtightEv, true);
             }
         }
 
         private void OnAirtightMoved(Entity<AirtightComponent> ent, ref MoveEvent ev)
         {
             var (owner, airtight) = ent;
-            airtight.CurrentAirBlockedDirection = (int) Rotate((AtmosDirection)airtight.InitialAirBlockedDirection, ev.NewRotation);
+            airtight.CurrentAirBlockedDirection = (int)Rotate((AtmosDirection)airtight.InitialAirBlockedDirection, ev.NewRotation);
             var pos = airtight.LastPosition;
             UpdatePosition(ent, ev.Component);
             var airtightEv = new AirtightChanged(owner, airtight, false, pos);
             RaiseLocalEvent(owner, ref airtightEv, true);
+        }
+        private void OnPowerChanged(Entity<AirtightComponent> airtight, ref PowerChangedEvent args)
+        {
+            var xform = Transform(airtight);
+
+            if (airtight.Comp.RequiresPower == false)
+                return;
+
+            if (!_powerReceiverSystem.IsPowered(airtight) && airtight.Comp.RequiresPower == true)
+            {
+                SetAirblocked(airtight, false, xform);
+            }
+            if (_powerReceiverSystem.IsPowered(airtight) && airtight.Comp.RequiresPower == true)
+            {
+                SetAirblocked(airtight, true, xform);
+            }
+
         }
 
         public void SetAirblocked(Entity<AirtightComponent> airtight, bool airblocked, TransformComponent? xform = null)
@@ -126,7 +141,6 @@ namespace Content.Server.Atmos.EntitySystems
 
         public void InvalidatePosition(Entity<MapGridComponent?> grid, Vector2i pos)
         {
-            var query = GetEntityQuery<AirtightComponent>();
             _explosionSystem.UpdateAirtightMap(grid, pos, grid);
             _atmosphereSystem.InvalidateTile(grid.Owner, pos);
         }
@@ -141,7 +155,7 @@ namespace Content.Server.Atmos.EntitySystems
             // TODO ATMOS MULTIZ: When we make multiZ atmos, special case this.
             for (var i = 0; i < Atmospherics.Directions; i++)
             {
-                var direction = (AtmosDirection) (1 << i);
+                var direction = (AtmosDirection)(1 << i);
                 if (!myDirection.IsFlagSet(direction))
                     continue;
                 var angle = direction.ToAngle();

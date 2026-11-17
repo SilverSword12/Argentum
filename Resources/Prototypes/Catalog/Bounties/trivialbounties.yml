@@ -1,0 +1,176 @@
+- type: cargoBounty
+  id: BountyBrain
+  reward: 10000
+  description: bounty-description-brain
+  group: TrivialBounty
+  condition:
+    name: bounty-item-brain
+    amount: 2
+    whitelist:
+      components:
+      - Brain
+
+- type: cargoBounty
+  id: BountyClownCostume
+  reward: 2000
+  description: bounty-description-clown-costume
+  group: TrivialBounty
+  condition:
+    - name: bounty-item-clown-mask
+      amount: 1
+      whitelist:
+        tags:
+        - ClownMask
+    - name: bounty-item-clown-shoes
+      amount: 1
+      whitelist:
+        tags:
+        - ClownShoes
+
+- type: cargoBounty
+  id: BountyCrayon
+  reward: 1500
+  description: bounty-description-crayon
+  group: TrivialBounty
+  condition:
+    name: bounty-item-crayon
+    amount: 12
+    whitelist:
+      tags:
+      - Crayon
+
+- type: cargoBounty
+  id: BountyFigurine
+  reward: 10000
+  description: bounty-description-figurine
+  group: TrivialBounty
+  condition:
+    name: bounty-item-figurine
+    amount: 5
+    whitelist:
+      tags:
+      - Figurine
+
+- type: cargoBounty
+  id: BountyInstrument
+  reward: 10000
+  description: bounty-description-instrument
+  group: TrivialBounty
+  condition:
+    name: bounty-item-instrument
+    amount: 10
+    whitelist:
+      components:
+      - Instrument
+
+- type: cargoBounty
+  id: BountyLung
+  reward: 1000
+  description: bounty-description-lung
+  group: TrivialBounty
+  condition:
+    name: bounty-item-lung
+    amount: 1
+    whitelist:
+      components:
+      - Lung
+
+- type: cargoBounty
+  id: BountyMouse
+  reward: 2500
+  description: bounty-description-mouse
+  idPrefix: SS13-
+  group: TrivialBounty
+  condition:
+    name: bounty-item-mouse
+    amount: 1
+    whitelist:
+      tags:
+      - Mouse
+
+- type: cargoBounty
+  id: BountyPen
+  reward: 600
+  description: bounty-description-pen
+  group: TrivialBounty
+  condition:
+    name: bounty-item-pen
+    amount: 3
+    whitelist:
+      tags:
+      - Pen
+
+- type: cargoBounty
+  id: BountyPercussion
+  reward: 1500
+  description: bounty-description-percussion
+  group: TrivialBounty
+  condition:
+    name: bounty-item-percussion
+    amount: 1
+    whitelist:
+      tags:
+      - PercussionInstrument
+
+- type: cargoBounty
+  id: BountyRadio
+  reward: 2480
+  description: bounty-description-radio
+  group: TrivialBounty
+  condition:
+    name: bounty-item-radio
+    amount: 4
+    whitelist:
+      components:
+      - Headset
+      - RadioMicrophone
+      tags:
+      - Radio
+
+- type: cargoBounty
+  id: BountyTrash
+  reward: 500
+  description: bounty-description-trash
+  group: TrivialBounty
+  condition:
+    name: bounty-item-trash
+    amount: 10
+    whitelist:
+      tags:
+      - Trash
+
+- type: cargoBounty
+  id: BountyWine
+  reward: 1500
+  description: bounty-description-wine
+  group: TrivialBounty
+  condition:
+    name: bounty-item-wine
+    amount: 2
+    whitelist:
+      tags:
+      - Wine
+
+- type: cargoBounty
+  id: BountyBeer
+  reward: 9900
+  description: bounty-description-beer
+  group: TrivialBounty
+  condition:
+    name: bounty-item-beer
+    amount: 15
+    whitelist:
+      tags:
+      - Beer
+
+- type: cargoBounty
+  id: BountyCardboardBox
+  reward: 10000
+  description: bounty-description-cardboard-box
+  group: TrivialBounty
+  condition:
+    name: bounty-item-cardboard-box
+    amount: 20
+    whitelist:
+      tags:
+      - BoxCardboard

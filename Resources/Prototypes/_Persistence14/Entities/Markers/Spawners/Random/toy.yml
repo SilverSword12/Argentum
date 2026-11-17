@@ -1,0 +1,31 @@
+# Add Persistence plushies to this list
+- type: entityTable # size ginormous  # price 5
+  id: AllPersistencePlushiesTable
+  table: !type:GroupSelector
+    children:
+    - id: PlushieMeera
+    - id: PlushieLlewellyn
+    - id: PlushieCade
+    - id: PlushieDawn
+    - id: PlushieAna
+    - id: PlushieHuna
+    - id: PlushieHelena
+    - id: PlushieMadeline
+    - id: PlushieKamryn
+    - id: PlushieIsolde
+    - id: PlushieDies
+
+- type: entity
+  parent: MarkerBase
+  id: PlushieSpawnerPersi14
+  name: Persi 14 Plushie Spawner
+  components:
+  - type: Sprite
+    layers:
+    - state: red
+    - sprite: _Persistence14/Objects/Fun/Plushies/Llewellyn.rsi
+      state: icon
+  - type: EntityTableSpawner
+    table: !type:NestedSelector
+      tableId: AllPersistencePlushiesTable
+

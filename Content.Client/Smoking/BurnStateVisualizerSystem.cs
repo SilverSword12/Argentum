@@ -1,9 +1,9 @@
-using Robust.Client.GameObjects;
 using Content.Shared.Smoking;
+using Robust.Client.GameObjects;
 
 namespace Content.Client.Smoking;
 
-public sealed class BurnStateVisualizerSystem : VisualizerSystem<BurnStateVisualsComponent>
+public sealed partial class BurnStateVisualizerSystem : VisualizerSystem<BurnStateVisualsComponent>
 {
     protected override void OnAppearanceChange(EntityUid uid, BurnStateVisualsComponent component, ref AppearanceChangeEvent args)
     {

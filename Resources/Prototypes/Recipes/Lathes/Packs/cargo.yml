@@ -6,13 +6,16 @@
   - AppraisalTool
   - Pickaxe
   - UtilityKnife
+  - CargoTelepadMachineCircuitboard
 
 - type: latheRecipePack
   id: CargoBoardsStatic
   recipes:
   - OreProcessorMachineCircuitboard
-  - SalvageMagnetMachineCircuitboard
-
+  # - SalvageMagnetMachineCircuitboard Persistence14: Removed in place of magnet POIs
+  - RecyclerMachineCircuitboard
+  - CargoBountyComputerCircuitboard
+  - SalvageJobBoardComputerCircuitboard
 ## Dynamic
 
 - type: latheRecipePack
@@ -23,10 +26,11 @@
   - MineralScannerEmpty
   - AdvancedMineralScannerEmpty
   - OreBagOfHolding
+  - WeaponGrapplingGun
 
 - type: latheRecipePack
   id: CargoBoards
   recipes:
   - OreProcessorIndustrialMachineCircuitboard
-  - CargoTelepadMachineCircuitboard
   - ShuttleGunKineticCircuitboard
+  - RadarConsoleCircuitboard

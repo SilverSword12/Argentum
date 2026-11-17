@@ -1,6 +1,6 @@
 - type: entity
   id: BaseLathe
-  parent: [ BaseMachinePowered, ConstructibleMachine ]
+  parent: [ BaseMachinePowered, ConstructibleMachine, BaseConstructibleMachineDestructible ]
   abstract: true
   name: lathe
   components:
@@ -23,15 +23,11 @@
     thresholds:
     - trigger:
         !type:DamageTrigger
-        damage: 100
+        damage: 175
       behaviors:
       - !type:PlaySoundBehavior
         sound:
           collection: MetalBreak
-      - !type:ChangeConstructionNodeBehavior
-        node: machineFrame
-      - !type:DoActsBehavior
-        acts: ["Destruction"]
   - type: WiresPanel
   - type: ActivatableUI
     key: enum.LatheUiKey.Key
@@ -46,7 +42,7 @@
     anchored: true
   - type: Pullable
   - type: StaticPrice
-    price: 800
+    price: 360
   - type: ResearchClient
   - type: TechnologyDatabase
   - type: ApcPowerReceiver
@@ -54,6 +50,16 @@
   - type: PowerState
     idlePowerDraw: 150
     workingPowerDraw: 1000
+  - type: RecipeContainer
+  - type: RecipeRelayReceiver
+  - type: AccessReader
+  - type: RecipeRelayAccessCondition
+  - type: RecipeRelayPoweredCondition
+  - type: RecipeRelaySameGridCondition
+  - type: ActivatableUIRequiresAccess
+  - type: Upgradeable
+    upgrades:
+      LatheSpeedPrecursor : 0
 
 # a lathe that can be sped up with space lube / slowed down with glue
 - type: entity
@@ -66,16 +72,20 @@
     modifiers:
       SpaceLube: 0.25
       SpaceGlue: 5
-  - type: SolutionContainerManager
+  - type: SolutionManager
     solutions:
-      lube:
-        maxVol: 250
+    - SolutionLatheLube
   - type: Spillable
     solution: lube
   - type: RefillableSolution
     solution: lube
   - type: ExaminableSolution
     solution: lube
+
+- type: entity
+  parent: [SolutionLube, SolutionLarge]
+  id: SolutionLatheLube # Its own prototype since some lathes might interface with solutions in other ways
+  categories: [ HideSpawnMenu ]
 
 - type: entity
   abstract: true
@@ -117,6 +127,7 @@
         - Sheet
         - RawMaterial
         - Ingot
+        - SheetPaper
   - type: OreSiloClient
   - type: Lathe
     idleState: icon
@@ -138,6 +149,11 @@
     - ServiceStatic
     - PowerCellsStatic
     - ElectronicsStatic
+    - CassetteTape
+    - ReligionStatic
+    - GasMasksStatic # Persi14
+    - PlasticBottlesPack #Persi14
+    - HydroponicsStatic # Persi: early pull of wizden/45463
   - type: EmagLatheRecipes
     emagStaticPacks:
     - SecurityAmmoStatic
@@ -198,6 +214,7 @@
     staticPacks:
     - ChemistryStatic
     - SurgeryStatic
+    - AnomalyGenerationBasic
     dynamicPacks:
     - AdvancedTools
     - ScienceEquipment
@@ -212,6 +229,12 @@
     - Janitor
     - Instruments
     - Equipment
+    - Hardsuits
+    - PaperworkDynamic
+    # Moffstation - Start - Modular HUDs
+    - ModularHudFrames
+    - ModularHudModules
+    # Moffstation - End
   - type: EmagLatheRecipes
     emagDynamicPacks:
     - SecurityAmmo
@@ -402,6 +425,12 @@
     - SecurityAmmo
     - SecurityWeapons
     - SecurityDisablers
+    - SecurityHardsuits
+    # Moffstation - Start - Modular HUDs
+    - ModularHudFrames
+    - SecurityModularHudFrames
+    - SecurityModularHudModules
+    # Moffstation - End
   - type: EmagLatheRecipes
     emagStaticPacks:
     - SyndicateAmmoStatic
@@ -479,7 +508,12 @@
     - EmptyMedkitsStatic
     - SurgeryStatic
     dynamicPacks:
+    - MedicalHardsuits
     - Chemistry
+    # Moffstation - Start - Modular HUDs
+    - ModularHudFrames
+    - MedicalModularHudModules
+    # Moffstation - End
   - type: Machine
     board: MedicalTechFabCircuitboard
   - type: StealTarget
@@ -487,6 +521,7 @@
   - type: OreSiloClient
   - type: LatheAnnouncing
     channels: [Medical]
+  - type: AmbientMusicMarkerMedical
 
 - type: entity
   parent: BaseLathe
@@ -518,15 +553,55 @@
     - ClothingScience
     - ClothingSecurity
     - ClothingService
+    - ClothingMilitary
+    - ClothingLabCoats
+    - ClothingCentComm
+    - ClothingAssortedHats
+    - ClothingAssortedOversuits
+    - Cloaks
+    - Mantles
     - WinterCoats
     - Ties
     - Scarves
     - Carpets
     - Bedsheets
-  - type: EmagLatheRecipes
-    emagStaticPacks:
-    - ClothingCentComm
+    - NFWallets # Frontier
+    - EngineeringHardhatsStatic # Persi14
+    - CivilianBags
+    - CommandBags
     - ClothingSyndie
+    - ContrabandBags
+    - CentralCommandBags
+    - HandyFlags
+    - Bandanas
+    - PouchesPack
+  - type: MaterialStorage
+    whitelist: *StandardMaterialWhitelist
+  - type: OreSiloClient
+
+- type: entity
+  parent: BaseLathe
+  id: PlushieLathe
+  name: plushie lathe
+  description: weh
+  components:
+  - type: Transform
+    noRot: false
+  - type: Sprite
+    sprite: Structures/Machines/uniform_printer.rsi
+    snapCardinals: false
+    layers:
+    - state: icon
+      map: ["enum.LatheVisualLayers.IsRunning"]
+  - type: Machine
+    board: PlushieLatheCircuitboard
+  - type: Lathe
+    producingSound: /Audio/Machines/uniformprinter.ogg
+    idleState: icon
+    runningState: building
+    staticPacks:
+    - Plushies
+    - LizardPlushies
   - type: MaterialStorage
     whitelist: *StandardMaterialWhitelist
   - type: OreSiloClient
@@ -584,6 +659,17 @@
   name: ore processor
   description: It produces sheets and ingots using ores.
   components:
+    - type: Fixtures
+      fixtures:
+        fix1:
+          shape:
+            !type:PhysShapeAabb
+            bounds: "-0.4,-0.4,0.4,0.4"
+          density: 200
+          mask:
+          - MachineMask
+          layer:
+          - MachineLayer
     - type: Sprite
       sprite: Structures/Machines/ore_processor.rsi
       layers:
@@ -610,24 +696,61 @@
       staticPacks:
       - OreSmelting
       - RGlassSmelting
+    - type: DumpTarget
+    - type: Tag
+      tags:
+        - OreProcessor
 
 - type: entity
-  parent: OreProcessor
+  parent: BaseLathe
   id: OreProcessorIndustrial
   name: industrial ore processor
   description: An ore processor specifically designed for mass-producing metals in industrial applications.
   components:
-  - type: Sprite
-    sprite: Structures/Machines/ore_processor_industrial.rsi
-  - type: Machine
-    board: OreProcessorIndustrialMachineCircuitboard
-  - type: Lathe
-    materialUseMultiplier: 0.75
-    timeMultiplier: 0.5
-    staticPacks:
-    - OreSmelting
-    - RGlassSmelting
-    - AdvancedSmelting
+    - type: Fixtures
+      fixtures:
+        fix1:
+          shape:
+            !type:PhysShapeAabb
+            bounds: "-0.4,-0.4,0.4,0.4"
+          density: 200
+          mask:
+          - MachineMask
+          layer:
+          - MachineLayer
+    - type: Sprite
+      sprite: Structures/Machines/ore_processor_industrial.rsi
+      layers:
+        - state: icon
+          map: ["enum.LatheVisualLayers.IsRunning"]
+        - state: unlit
+          shader: unshaded
+          map: ["enum.PowerDeviceVisualLayers.Powered"]
+        - state: inserting
+          map: ["enum.MaterialStorageVisualLayers.Inserting"]
+        - state: panel
+          map: ["enum.WiresVisualLayers.MaintenancePanel"]
+    - type: Machine
+      board: OreProcessorIndustrialMachineCircuitboard
+    - type: MaterialStorage
+      ignoreColor: true
+      whitelist:
+        tags:
+          - Ore
+    - type: Lathe
+      idleState: icon
+      runningState: building
+      defaultProductionAmount: 10
+      materialUseMultiplier: 0.75
+      timeMultiplier: 0.5
+      staticPacks:
+      - OreSmelting
+      - RGlassSmelting
+      - AdvancedSmelting
+    - type: DumpTarget
+    - type: Tag
+      tags:
+        - OreProcessor
 
 - type: entity
   parent: BaseLathe
@@ -666,8 +789,6 @@
   name: cutter machine
   description: This is a cutter. It cuts. Add variety to your station floor with eye-pleasing patterns! Don't stick your fingers in.
   components:
-  - type: Transform
-    noRot: false
   - type: Sprite
     sprite: Structures/Machines/cuttermachine.rsi
     snapCardinals: true
@@ -690,12 +811,50 @@
     - FloorSteelTilesStatic
     - FloorWhiteTilesStatic
     - FloorMaintsTilesStatic
+    - FloorIndustrialTilesStatic
     - FloorWoodTilesStatic
     - FloorConcreteTilesStatic
     - CircuitFloorsStatic
     - FloorMarbleTilesStatic
+    - FloorShuttleTilesStatic
+    - PlasticTilesStatic
+    - CarpetTilesStatic
+    - PreciousTilesStatic
     dynamicPacks:
     - FauxTiles
+  - type: MaterialStorage
+    whitelist: *StandardMaterialWhitelist
+  - type: OreSiloClient
+
+# Persistence 14
+- type: entity
+  id: SolarLegionTechFab
+  parent: BaseLatheLube
+  name: solar legion techfab
+  description: Contains a variety of recipes for proprietary Solar Legion equipment. It has an alert that pops up warning the user of improper usage.
+  components:
+  - type: Sprite
+    sprite: Structures/Machines/techfab.rsi
+    layers:
+    - state: icon
+      map: ["enum.LatheVisualLayers.IsRunning"]
+    - state: solarlegion
+    - state: unlit
+      shader: unshaded
+      map: ["enum.PowerDeviceVisualLayers.Powered"]
+    - state: inserting
+      map: ["enum.MaterialStorageVisualLayers.Inserting"]
+    - state: panel
+      map: ["enum.WiresVisualLayers.MaintenancePanel"]
+  - type: Machine
+    board: SolarLegionTechFabCircuitboard
+  - type: Lathe
+    idleState: icon
+    runningState: icon
+    unlitIdleState: unlit
+    unlitRunningState: unlit-building
+    staticPacks:
+    - SOLEquipment
   - type: MaterialStorage
     whitelist: *StandardMaterialWhitelist
   - type: OreSiloClient

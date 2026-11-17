@@ -1,5 +1,6 @@
+using Content.Server.MCTN.Components;
+using Content.Server.MCTN.Systems;
 using Content.Shared.NodeContainer;
-using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 
 namespace Content.Server.NodeContainer.Nodes
@@ -19,6 +20,13 @@ namespace Content.Server.NodeContainer.Nodes
 
             var mapSystem = entMan.System<SharedMapSystem>();
             var gridIndex = mapSystem.TileIndicesFor(gridEnt, xform.Comp.Coordinates);
+
+            if (entMan.TryGetComponent<MCTNComponent>(Owner, out var mctNode) && entMan.TrySystem<MCTNSystem>(out var mctnSys))
+            {
+                var remoteNode = mctnSys.GetRemoteConnectionFor(Owner, mctNode, this);
+                if (remoteNode != null)
+                    yield return remoteNode;
+            }
 
             foreach (var node in NodeHelpers.GetNodesInTile(nodeQuery, gridEnt, gridIndex, mapSystem))
             {

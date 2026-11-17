@@ -10,8 +10,10 @@ using Content.Shared.Buckle.Components;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Gibbing;
 using Content.Shared.Light.Components;
+using Content.Shared.Maps;
 using Content.Shared.Movement.Events;
 using Content.Shared.Salvage;
+using Content.Shared.Shuttles.Components;
 using Content.Shared.Shuttles.Systems;
 using Content.Shared.Throwing;
 using JetBrains.Annotations;
@@ -20,63 +22,55 @@ using Robust.Server.GameStates;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Configuration;
 using Robust.Shared.EntitySerialization.Systems;
-using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics;
 using Robust.Shared.Physics.Components;
 using Robust.Shared.Physics.Systems;
-using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
-using Content.Shared.Maps;
 
 namespace Content.Server.Shuttles.Systems;
 
 [UsedImplicitly]
 public sealed partial class ShuttleSystem : SharedShuttleSystem
 {
-    [Dependency] private readonly IAdminLogManager _logger = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
-    [Dependency] private readonly IGameTiming _gameTiming = default!;
-    [Dependency] private readonly IMapManager _mapManager = default!;
-    [Dependency] private readonly IPrototypeManager _protoManager = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly BiomeSystem _biomes = default!;
-    [Dependency] private readonly GibbingSystem _gibbing = default!;
-    [Dependency] private readonly BuckleSystem _buckle = default!;
-    [Dependency] private readonly DamageableSystem _damageSys = default!;
-    [Dependency] private readonly DockingSystem _dockSystem = default!;
-    [Dependency] private readonly DungeonSystem _dungeon = default!;
-    [Dependency] private readonly EntityLookupSystem _lookup = default!;
-    [Dependency] private readonly MapLoaderSystem _loader = default!;
-    [Dependency] private readonly MapSystem _mapSystem = default!;
-    [Dependency] private readonly MetaDataSystem _metadata = default!;
-    [Dependency] private readonly PvsOverrideSystem _pvs = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly SharedSalvageSystem _salvage = default!;
-    [Dependency] private readonly ShuttleConsoleSystem _console = default!;
-    [Dependency] private readonly StationSystem _station = default!;
-    [Dependency] private readonly StunSystem _stuns = default!;
-    [Dependency] private readonly ThrowingSystem _throwing = default!;
-    [Dependency] private readonly ThrusterSystem _thruster = default!;
-    [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
-    [Dependency] private readonly TurfSystem _turf = default!;
+    [Dependency] private IAdminLogManager _logger = default!;
+    [Dependency] private IConfigurationManager _cfg = default!;
+    [Dependency] private IGameTiming _gameTiming = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private BiomeSystem _biomes = default!;
+    [Dependency] private GibbingSystem _gibbing = default!;
+    [Dependency] private BuckleSystem _buckle = default!;
+    [Dependency] private DamageableSystem _damageSys = default!;
+    [Dependency] private DockingSystem _dockSystem = default!;
+    [Dependency] private DungeonSystem _dungeon = default!;
+    [Dependency] private EntityLookupSystem _lookup = default!;
+    [Dependency] private MapLoaderSystem _loader = default!;
+    [Dependency] private MapSystem _mapSystem = default!;
+    [Dependency] private MetaDataSystem _metadata = default!;
+    [Dependency] private PvsOverrideSystem _pvs = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
+    [Dependency] private SharedSalvageSystem _salvage = default!;
+    [Dependency] private ShuttleConsoleSystem _console = default!;
+    [Dependency] private StationSystem _station = default!;
+    [Dependency] private StunSystem _stuns = default!;
+    [Dependency] private ThrowingSystem _throwing = default!;
+    [Dependency] private ThrusterSystem _thruster = default!;
+    [Dependency] private UserInterfaceSystem _uiSystem = default!;
+    [Dependency] private TurfSystem _turf = default!;
 
-    private EntityQuery<BuckleComponent> _buckleQuery;
-    private EntityQuery<MapGridComponent> _gridQuery;
-    private EntityQuery<PhysicsComponent> _physicsQuery;
-    private EntityQuery<TransformComponent> _xformQuery;
+
+    [Dependency] private EntityQuery<BuckleComponent> _buckleQuery = default!;
+    [Dependency] private EntityQuery<MapGridComponent> _gridQuery = default!;
+    [Dependency] private EntityQuery<PhysicsComponent> _physicsQuery = default!;
+    [Dependency] private EntityQuery<TransformComponent> _xformQuery = default!;
+
 
     public override void Initialize()
     {
         base.Initialize();
-
-        _buckleQuery = GetEntityQuery<BuckleComponent>();
-        _gridQuery = GetEntityQuery<MapGridComponent>();
-        _physicsQuery = GetEntityQuery<PhysicsComponent>();
-        _xformQuery = GetEntityQuery<TransformComponent>();
 
         InitializeFTL();
         InitializeGridFills();
@@ -130,6 +124,42 @@ public sealed partial class ShuttleSystem : SharedShuttleSystem
         }
 
         component.DampingModifier = component.BodyModifier;
+
+        UpdateDamping(uid, component);
+    }
+
+    public void SetDampingMode(EntityUid uid, ShuttleDampingMode mode, ShuttleComponent? component = null)
+    {
+        if (!Resolve(uid, ref component))
+            return;
+
+        component.DampingMode = mode;
+        UpdateDamping(uid, component);
+    }
+
+    private void UpdateDamping(EntityUid uid, ShuttleComponent component)
+    {
+        float modifier = component.BodyModifier;
+        if (!component.InFTL)
+        {
+            switch (component.DampingMode)
+            {
+                case ShuttleDampingMode.Cruise:
+                    modifier = 0f;
+                    break;
+                case ShuttleDampingMode.Anchor:
+                    modifier = 5f; // Significantly higher damping
+                    break;
+                case ShuttleDampingMode.Normal:
+                    modifier = component.BodyModifier; // 0.25f
+                    break;
+            }
+        }
+        else // this was set to 0 during FTL, keeping that behavior
+        {
+            modifier = 0f;
+        }
+        component.DampingModifier = modifier;
     }
 
     public void Toggle(EntityUid uid, ShuttleComponent component)
@@ -185,11 +215,15 @@ public sealed partial class ShuttleSystem : SharedShuttleSystem
 
     private void OnFTLStarted(Entity<ShuttleComponent> ent, ref FTLStartedEvent args)
     {
-        ent.Comp.DampingModifier = 0f;
+        // ent.Comp.DampingModifier = 0f;
+        ent.Comp.InFTL = true;
+        UpdateDamping(ent, ent.Comp);
     }
 
     private void OnFTLCompleted(Entity<ShuttleComponent> ent, ref FTLCompletedEvent args)
     {
-        ent.Comp.DampingModifier = ent.Comp.BodyModifier;
+        // ent.Comp.DampingModifier = ent.Comp.BodyModifier;
+        ent.Comp.InFTL = false;
+        UpdateDamping(ent, ent.Comp);
     }
 }

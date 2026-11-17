@@ -4,11 +4,13 @@
   friction: 1.5
   heatCapacity: 10000
   isSubfloor: true
+  deconstructTools: [ Axing ] # tile prying!!
   footstepSounds:
     collection: FootstepPlating
   baseTurf: Lattice
   baseWhitelist:
     - TrainLattice
+    - ReinforcedLattice
 
 - type: tile
   id: Plating
@@ -52,10 +54,6 @@
   name: tiles-plating
   sprite: /Textures/Tiles/plating_damaged.png
   variants: 3
-  placementVariants:
-  - 1.0
-  - 1.0
-  - 1.0
 
 - type: tile
   id: PlatingAsteroid
@@ -82,6 +80,7 @@
   sprite: /Textures/Tiles/Asteroid/ironsand_plating.png
   baseTurf: Lattice
   isSubfloor: true
+  deconstructTools: [ Axing ] # tile prying!!
   footstepSounds:
     collection: FootstepPlating
   friction: 1.5

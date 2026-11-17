@@ -1,23 +1,16 @@
-using Content.Server.Administration.Logs;
 using Content.Server.Singularity.Components;
-using Content.Server.Tesla.Components;
-using Content.Shared.Database;
-using Content.Shared.Singularity.Components;
-using Content.Shared.Mind.Components;
-using Content.Shared.Tag;
-using Robust.Shared.Physics.Events;
-using Content.Server.Lightning.Components;
-using Robust.Server.Audio;
 using Content.Server.Singularity.Events;
+using Content.Server.Tesla.Components;
+using Robust.Server.Audio;
 
 namespace Content.Server.Tesla.EntitySystems;
 
 /// <summary>
 /// A component that tracks an entity's saturation level from absorbing other creatures by touch, and spawns new entities when the saturation limit is reached.
 /// </summary>
-public sealed class TeslaEnergyBallSystem : EntitySystem
+public sealed partial class TeslaEnergyBallSystem : EntitySystem
 {
-    [Dependency] private readonly AudioSystem _audio = default!;
+    [Dependency] private AudioSystem _audio = default!;
 
     public override void Initialize()
     {
@@ -32,7 +25,8 @@ public sealed class TeslaEnergyBallSystem : EntitySystem
         if (TryComp<SinguloFoodComponent>(args.Entity, out var singuloFood))
         {
             AdjustEnergy(tesla, tesla.Comp, singuloFood.Energy);
-        } else
+        }
+        else
         {
             AdjustEnergy(tesla, tesla.Comp, tesla.Comp.ConsumeStuffEnergy);
         }

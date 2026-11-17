@@ -23,6 +23,14 @@
       whitelist:
         components:
           - Item
+          - Door
         tags:
+          - StorageCounter
+          - AirAlarm
           - Structure
+          - AirSensor
+          - BaseMech
     - type: PhysicalComposition
+      materialComposition:
+        Plastic: 50
+        Steel: 100

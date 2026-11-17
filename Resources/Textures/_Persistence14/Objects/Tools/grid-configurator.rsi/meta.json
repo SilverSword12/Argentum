@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "Sprite made for PS14 (https://github.com/michaelchessall/SS14-Persistence) by JoulesMango (Github)",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "icon"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "screen",
+      "delays": [
+        [
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          1
+        ]
+      ]
+    }
+  ]
+}

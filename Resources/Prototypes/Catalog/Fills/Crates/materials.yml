@@ -2,51 +2,50 @@
   parent: CrateGenericSteel
   id: CrateMaterialGlass
   name: glass sheet crate
-  description: 90 sheets of glass, packed with care.
+  description: 100 sheets of glass, packed with care.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage:
         id: SheetGlass
-        amount: 3
+        amount: 2
 
 - type: entity
   parent: CrateGenericSteel
   id: CrateMaterialSteel
   name: steel sheet crate
-  description: 90 sheets of steel.
+  description: 100 sheets of steel.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage:
         id: SheetSteel
-        amount: 3
+        amount: 2
 
 - type: entity
   parent: CrateGenericSteel
-  id: CrateMaterialTextiles
-  name: textiles crate
-  description: 60 pieces of cloth and 30 pieces of durathread.
+  id: CrateMaterialCloth
+  name: cloth crate
+  description: 90 pieces of cloth.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage: !type:AllSelector
         children:
         - id: MaterialCloth
-          amount: 2
-        - id: MaterialDurathread
+          amount: 3
 
 - type: entity
   parent: CrateGenericSteel
   id: CrateMaterialPlastic
   name: plastic sheet crate
-  description: 90 sheets of plastic.
+  description: 100 sheets of plastic.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage:
         id: SheetPlastic
-        amount: 3
+        amount: 2
 
 - type: entity
   parent: CrateGenericSteel
@@ -63,19 +62,19 @@
   parent: CrateGenericSteel
   id: CrateMaterialBrass
   name: brass crate
-  description: 90 sheets of brass.
+  description: 100 sheets of brass.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage:
         id: SheetBrass
-        amount: 3
+        amount: 2
 
 - type: entity
   parent: CrateGenericSteel
   id: CrateMaterialPlasteel
   name: plasteel crate
-  description: 30 sheets of plasteel.
+  description: 50 sheets of plasteel.
   components:
   - type: EntityTableContainerFill
     containers:
@@ -86,7 +85,7 @@
   parent: CratePlasma
   id: CrateMaterialPlasma
   name: solid plasma crate
-  description: 30 sheets of plasma.
+  description: 50 sheets of plasma.
   components:
   - type: EntityTableContainerFill
     containers:
@@ -131,13 +130,68 @@
   parent: CrateGenericSteel
   id: CrateMaterialPaper
   name: paper crate
-  description: 90 sheets of paper.
+  description: 150 sheets of paper.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage:
         id: SheetPaper
         amount: 3
+
+- type: entity
+  parent: CrateGenericSteel
+  id: CrateMaterialCopper
+  name: copper crate
+  description: A crate of copper bars.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      entity_storage:
+        id: IngotCopper
+
+- type: entity
+  parent: CrateGenericSteel
+  id: CrateMaterialTin
+  name: tin crate
+  description: A crate of tin bars.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      entity_storage:
+        id: IngotTin
+
+- type: entity
+  parent: CrateGenericSteel
+  id: CrateMaterialAluminium
+  name: aluminum crate
+  description: A crate of aluminum sheets.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      entity_storage:
+        id: SheetAluminium
+
+- type: entity
+  parent: CrateGenericSteel
+  id: CrateMaterialTitanium
+  name: titanium crate
+  description: A crate of titanium sheets.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      entity_storage:
+        id: SheetTitanium
+
+- type: entity
+  parent: CrateGenericSteel
+  id: CrateMaterialPhoron
+  name: phoron crate
+  description: A crate of phoron.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      entity_storage:
+        id: MaterialPhoron
 
 - type: entityTable
   id: RandomMaterialCrateTable
@@ -205,7 +259,7 @@
   parent: CrateGenericSteel
   id: CrateMaterialBasicResource
   name: basic sheet crate
-  description: 30 sheets of steel, glass, and plastic.
+  description: 50 sheets of steel, glass, and plastic.
   components:
   - type: EntityTableContainerFill
     containers:

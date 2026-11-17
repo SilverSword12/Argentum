@@ -1,21 +1,17 @@
-using System.Linq;
-using System.Numerics;
 using Content.Shared.Anomaly;
 using Content.Shared.Anomaly.Components;
 using Content.Shared.Anomaly.Effects;
 using Content.Shared.Anomaly.Effects.Components;
 using Content.Shared.Maps;
 using Robust.Shared.Map;
-using Robust.Shared.Map.Components;
-using Robust.Shared.Random;
 
 namespace Content.Server.Anomaly.Effects;
 
-public sealed class TileAnomalySystem : SharedTileAnomalySystem
+public sealed partial class TileAnomalySystem : SharedTileAnomalySystem
 {
-    [Dependency] private readonly SharedAnomalySystem _anomaly = default!;
-    [Dependency] private readonly ITileDefinitionManager _tiledef = default!;
-    [Dependency] private readonly TileSystem _tile = default!;
+    [Dependency] private SharedAnomalySystem _anomaly = default!;
+    [Dependency] private ITileDefinitionManager _tiledef = default!;
+    [Dependency] private TileSystem _tile = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -90,7 +86,7 @@ public sealed class TileAnomalySystem : SharedTileAnomalySystem
 
         foreach (var tileref in tiles)
         {
-            var tile = (ContentTileDefinition) _tiledef[entry.Floor];
+            var tile = (ContentTileDefinition)_tiledef[entry.Floor];
             _tile.ReplaceTile(tileref, tile);
         }
     }

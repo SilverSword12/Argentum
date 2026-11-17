@@ -1,15 +1,14 @@
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.NPC.Components;
 using Robust.Shared.Random;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators.Test;
 
 public sealed partial class PickPathfindPointOperator : HTNOperator
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IEntityManager _entManager = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     public override async Task<(bool Valid, Dictionary<string, object>? Effects)> Plan(NPCBlackboard blackboard,
         CancellationToken cancelToken)

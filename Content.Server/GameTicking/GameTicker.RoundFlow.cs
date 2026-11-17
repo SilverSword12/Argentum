@@ -1,15 +1,18 @@
-using System.Linq;
-using System.Numerics;
+using Content.Server._Persistence14.GameTicking;
 using Content.Server.Announcements;
 using Content.Server.Discord;
 using Content.Server.GameTicking.Events;
 using Content.Server.Maps;
 using Content.Server.Roles;
+using Content.Server.Solar.Components;
+using Content.Shared._NF.Bank.Components;
 using Content.Shared.CCVar;
+using Content.Shared.CrewMetaRecords;
 using Content.Shared.Database;
 using Content.Shared.GameTicking;
 using Content.Shared.Maps;
 using Content.Shared.Mind;
+using Content.Shared.Movement.Components;
 using Content.Shared.Players;
 using Content.Shared.Preferences;
 using Content.Shared.Roles.Components;
@@ -20,18 +23,22 @@ using Robust.Shared.Audio;
 using Robust.Shared.EntitySerialization;
 using Robust.Shared.EntitySerialization.Systems;
 using Robust.Shared.Map;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
 using Robust.Shared.Utility;
+using System.IO;
+using System.Linq;
+using System.Numerics;
 
 namespace Content.Server.GameTicking
 {
     public sealed partial class GameTicker
     {
-        [Dependency] private readonly DiscordWebhook _discord = default!;
-        [Dependency] private readonly RoleSystem _role = default!;
-        [Dependency] private readonly ITaskManager _taskManager = default!;
+        [Dependency] private DiscordWebhook _discord = default!;
+        [Dependency] private RoleSystem _role = default!;
+        [Dependency] private ITaskManager _taskManager = default!;
 
         private static readonly Counter RoundNumberMetric = Metrics.CreateCounter(
             "ss14_round_number",
@@ -55,6 +62,8 @@ namespace Content.Server.GameTicking
         private RoundEndMessageEvent.RoundEndPlayerInfo[]? _replayRoundPlayerInfo;
 
         private string? _replayRoundText;
+
+        private TimeSpan _timeToNextSave = TimeSpan.Zero;
 
         [ViewVariables]
         public GameRunLevel RunLevel
@@ -88,10 +97,78 @@ namespace Content.Server.GameTicking
         /// <remarks>
         ///     Must be called before the runlevel is set to InRound.
         /// </remarks>
+        ///
+        private void SaveMaps()
+        {
+            _map.SetPaused(DefaultMap, true);
+            bool finalSaveFound = false;
+            var initial = new ResPath("current");
+            ResPath? path = initial;
+            int indof = 0;
+            if (_resourceManager.UserData.Exists(initial.ToRootedPath()))
+            {
+                while (!finalSaveFound)
+                {
+                    indof++;
+                    if (path == null) break;
+                    var next = new ResPath($"current{indof}");
+                    if (_resourceManager.UserData.Exists(next.ToRootedPath()))
+                    {
+                        path = next;
+                    }
+                    else
+                    {
+                        finalSaveFound = true;
+                        path = new ResPath($"current{indof}");
+                    }
+                }
+            }
+            var start = _gameTiming.CurTime;
+            bool save_stat = _loader.TrySaveMap(DefaultMap, path!.Value);
+            var end = _gameTiming.CurTime;
+            var finaltime = start - end;
+            _adminLogger.Add(LogType.EventRan, LogImpact.Extreme, $"MAP SAVE STATUS: {save_stat} TIME TAKEN: {finaltime.TotalSeconds}");
+            _map.SetPaused(DefaultMap, false);
+        }
+
         private void LoadMaps()
         {
             if (_map.MapExists(DefaultMap))
                 return;
+            bool finalSaveFound = false;
+            var initial = new ResPath("current");
+            ResPath? path = initial;
+            int indof = 0;
+            if (_resourceManager.UserData.Exists(initial.ToRootedPath()))
+            {
+                while (!finalSaveFound)
+                {
+                    indof++;
+                    if (path == null) break;
+                    var next = new ResPath($"current{indof}");
+                    if (_resourceManager.UserData.Exists(next.ToRootedPath()))
+                    {
+                        path = next;
+                    }
+                    else
+                    {
+                        finalSaveFound = true;
+                    }
+                }
+                var start = _gameTiming.CurTime;
+                bool save_stat = _loader.TryLoadMap(path!.Value, out var entity, out var grids, new DeserializationOptions() { PauseMaps = true });
+                if (entity.HasValue)
+                {
+                    DefaultMap = entity.Value.Comp.MapId;
+                }
+
+                var end = _gameTiming.CurTime;
+                var finaltime = start - end;
+                _adminLogger.Add(LogType.EventRan, LogImpact.Extreme, $"MAP LOAD STATUS: {save_stat} TIME TAKEN: {finaltime.TotalSeconds}");
+                if (save_stat) return;
+
+            }
+
 
             AddGamePresetRules();
 
@@ -119,7 +196,7 @@ namespace Content.Server.GameTicking
             }
 
             if (CurrentPreset?.MapPool != null &&
-                _prototypeManager.TryIndex<GameMapPoolPrototype>(CurrentPreset.MapPool, out var pool) &&
+                ProtoMan.TryIndex<GameMapPoolPrototype>(CurrentPreset.MapPool, out var pool) &&
                 !pool.Maps.Contains(mainStationMap.ID))
             {
                 var msg = Loc.GetString("game-ticker-start-round-invalid-map",
@@ -136,16 +213,26 @@ namespace Content.Server.GameTicking
             {
                 _map.CreateMap(out var mapId, runMapInit: false);
                 DefaultMap = mapId;
+                var ent = _map.GetMap(mapId);
+                EnsureComp<MoneyAccountsComponent>(ent);
+                EnsureComp<CrewMetaRecordsComponent>(ent);
+                EnsureComp<MapBoundsComponent>(ent);
+                EnsureComp<SolarLocationComponent>(ent);
                 return;
             }
 
             for (var i = 0; i < maps.Count; i++)
             {
                 LoadGameMap(maps[i], out var mapId);
-                DebugTools.Assert(!_map.IsInitialized(mapId));
+                //    DebugTools.Assert(!_map.IsInitialized(mapId));
 
                 if (i == 0)
                     DefaultMap = mapId;
+                var ent = _map.GetMap(mapId);
+                EnsureComp<MoneyAccountsComponent>(ent);
+                EnsureComp<CrewMetaRecordsComponent>(ent);
+                EnsureComp<MapBoundsComponent>(ent);
+                EnsureComp<SolarLocationComponent>(ent);
             }
         }
 
@@ -387,10 +474,10 @@ namespace Content.Server.GameTicking
 #endif
 
                 readyPlayers.Add(session);
-                HumanoidCharacterProfile profile;
+                HumanoidCharacterProfile? profile;
                 if (_prefsManager.TryGetCachedPreferences(userId, out var preferences))
                 {
-                    profile = (HumanoidCharacterProfile)preferences.SelectedCharacter;
+                    profile = preferences.SelectedCharacter as HumanoidCharacterProfile;
                 }
                 else
                 {
@@ -398,7 +485,7 @@ namespace Content.Server.GameTicking
                         new HashSet<string>(_cfg.GetCVar(CCVars.ICNewAccountSpeciesBlacklist).Split(","));
                     profile = HumanoidCharacterProfile.Random(speciesToBlacklist);
                 }
-                readyPlayerProfiles.Add(userId, profile);
+                readyPlayerProfiles.Add(userId, profile!);
             }
 
             DebugTools.AssertEqual(readyPlayers.Count, ReadyPlayerCount());
@@ -424,9 +511,17 @@ namespace Content.Server.GameTicking
                 _startingRound = false;
                 return;
             }
-
-            // MapInitialize *before* spawning players, our codebase is too shit to do it afterwards...
-            _map.InitializeMap(DefaultMap);
+            var skipinit = false;
+            if (_ent.TryGetComponent(_map.GetMap(DefaultMap), out MapComponent? mc))
+            {
+                if (mc.MapInitialized) skipinit = true;
+            }
+            if (!skipinit)
+            {
+                // MapInitialize *before* spawning players, our codebase is too shit to do it afterwards...
+                _map.InitializeMap(DefaultMap);
+            }
+            _map.SetPaused(DefaultMap, false);
 
             SpawnPlayers(readyPlayers, readyPlayerProfiles, force);
 
@@ -440,6 +535,10 @@ namespace Content.Server.GameTicking
             AnnounceRound();
             UpdateInfoText();
             SendRoundStartedDiscordMessage();
+
+            // New for Persistence14
+            var ev = new PostInitEvent();
+            RaiseLocalEvent(ref ev);
 
 #if EXCEPTION_TOLERANCE
             }
@@ -666,22 +765,22 @@ namespace Content.Server.GameTicking
             IncrementRoundNumber();
             SendRoundStartingDiscordMessage();
 
-            if (!LobbyEnabled)
-            {
-                StartRound();
-            }
-            else
-            {
-                if (_playerManager.PlayerCount == 0)
-                    _roundStartCountdownHasNotStartedYetDueToNoPlayers = true;
-                else
-                    _roundStartTime = _gameTiming.CurTime + LobbyDuration;
+            //if (true)//!LobbyEnabled)
+            //{
+            StartRound();
+            //}
+            //else
+            //{
+            //    if (_playerManager.PlayerCount == 0)
+            //        _roundStartCountdownHasNotStartedYetDueToNoPlayers = true;
+            //    else
+            //        _roundStartTime = _gameTiming.CurTime + LobbyDuration;
 
-                SendStatusToAll();
-                UpdateInfoText();
+            //    SendStatusToAll();
+            //    UpdateInfoText();
 
-                ReqWindowAttentionAll();
-            }
+            //    ReqWindowAttentionAll();
+            //}
         }
 
         private async void SendRoundStartingDiscordMessage()
@@ -724,8 +823,6 @@ namespace Content.Server.GameTicking
 
             EntityManager.FlushEntities();
 
-            _mapManager.Restart();
-
             _banManager.Restart();
 
             _gameMapManager.ClearSelectedMap();
@@ -744,6 +841,7 @@ namespace Content.Server.GameTicking
             }
         }
 
+        private int _warnings = 3;
         public bool DelayStart(TimeSpan time)
         {
             if (_runLevel != GameRunLevel.PreRoundLobby)
@@ -759,12 +857,47 @@ namespace Content.Server.GameTicking
 
             return true;
         }
-
         private void UpdateRoundFlow(float frameTime)
         {
-            if (RunLevel == GameRunLevel.InRound)
+
+            if (_cfg.GetCVar(CCVars.AutoSaveEnabled) && RunLevel == GameRunLevel.InRound)
             {
                 RoundLengthMetric.Inc(frameTime);
+
+                _timeToNextSave += TimeSpan.FromSeconds(frameTime);
+                if (_warnings == 3)
+                {
+                    if (_timeToNextSave > TimeSpan.FromMinutes(_cfg.GetCVar(CCVars.AutoSaveInterval) - 5))
+                    {
+                        _warnings--;
+                        SendServerMessage("The game will automatically save in 5 minutes.");
+                    }
+                }
+                else if (_warnings == 2)
+                {
+                    if (_timeToNextSave > TimeSpan.FromMinutes(_cfg.GetCVar(CCVars.AutoSaveInterval) - 1))
+                    {
+                        _warnings--;
+                        SendServerMessage("The game will automatically save in 1 minute.");
+                    }
+                }
+                else if (_warnings == 1)
+                {
+                    if (_timeToNextSave > TimeSpan.FromMinutes(_cfg.GetCVar(CCVars.AutoSaveInterval)) - TimeSpan.FromSeconds(3))
+                    {
+                        _warnings--;
+                        SendServerMessage("The game is saving..");
+                    }
+                }
+                if (_timeToNextSave > TimeSpan.FromMinutes(_cfg.GetCVar(CCVars.AutoSaveInterval)))
+                {
+                    _timeToNextSave = TimeSpan.Zero;
+                    _warnings = 3;
+                    SaveMaps();
+                    SendServerMessage("Game Saved.");
+                }
+
+
             }
 
             if (_roundStartTime == TimeSpan.Zero ||
@@ -791,7 +924,7 @@ namespace Content.Server.GameTicking
         {
             if (CurrentPreset == null) return;
 
-            var options = _prototypeManager.EnumeratePrototypes<RoundAnnouncementPrototype>().ToList();
+            var options = ProtoMan.EnumeratePrototypes<RoundAnnouncementPrototype>().ToList();
 
             if (options.Count == 0)
                 return;
@@ -850,7 +983,6 @@ namespace Content.Server.GameTicking
     ///     Contains a list of game map prototypes to load; modify it if you want to load different maps,
     ///     for example as part of a game rule.
     /// </summary>
-    [PublicAPI]
     public sealed class LoadingMapsEvent : EntityEventArgs
     {
         public List<GameMapPrototype> Maps;

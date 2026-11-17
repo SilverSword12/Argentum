@@ -1,22 +1,19 @@
-using Content.Shared.Actions;
 using Content.Shared.Alert;
 using Content.Shared.Atmos.Components;
-using Content.Shared.Clothing.EntitySystems;
 using Content.Shared.Gravity;
 using Content.Shared.Inventory;
-using Content.Shared.Item;
 using Content.Shared.Item.ItemToggle;
 using Content.Shared.Item.ItemToggle.Components;
 using Robust.Shared.Containers;
 
 namespace Content.Shared.Clothing;
 
-public sealed class SharedMagbootsSystem : EntitySystem
+public sealed partial class SharedMagbootsSystem : EntitySystem
 {
-    [Dependency] private readonly AlertsSystem _alerts = default!;
-    [Dependency] private readonly ItemToggleSystem _toggle = default!;
-    [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly SharedGravitySystem _gravity = default!;
+    [Dependency] private AlertsSystem _alerts = default!;
+    [Dependency] private ItemToggleSystem _toggle = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private SharedGravitySystem _gravity = default!;
 
     public override void Initialize()
     {

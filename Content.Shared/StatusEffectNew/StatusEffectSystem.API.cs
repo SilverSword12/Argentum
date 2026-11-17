@@ -1,9 +1,6 @@
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Content.Shared.StatusEffectNew.Components;
 using Robust.Shared.Prototypes;
-using YamlDotNet.Core.Tokens;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Shared.StatusEffectNew;
 
@@ -306,7 +303,7 @@ public sealed partial class StatusEffectsSystem
     /// <returns> True if duration was edited successfully, false otherwise.</returns>
     public bool TryRemoveTime(EntityUid uid, EntProtoId effectProto, TimeSpan? time)
     {
-        return time == null ? TryRemoveStatusEffect(uid, effectProto) : TryAddTime(uid, effectProto, - time.Value);
+        return time == null ? TryRemoveStatusEffect(uid, effectProto) : TryAddTime(uid, effectProto, -time.Value);
     }
 
     /// <summary>
@@ -406,5 +403,57 @@ public sealed partial class StatusEffectsSystem
         }
 
         return endTime is not null;
+    }
+
+    /// <summary>
+    /// Enumerates through and returns all status effects on an entity
+    /// </summary>
+    /// <param name="container">Status effect container we're enumerating through</param>
+    /// <returns>All status effects in this container</returns>
+    public IEnumerable<Entity<StatusEffectComponent>> EnumerateStatusEffects(
+        Entity<StatusEffectContainerComponent?> container)
+    {
+        if (!_containerQuery.Resolve(container, ref container.Comp, false) || container.Comp.ActiveStatusEffects == null)
+            yield break;
+
+        foreach (var effect in container.Comp.ActiveStatusEffects.ContainedEntities)
+        {
+            if (_effectQuery.TryComp(effect, out var status))
+                yield return (effect, status);
+        }
+    }
+
+    /// <summary>
+    /// Enumerates through all status effects on an entity. Returning those with a {T} status effect.
+    /// </summary>
+    /// <param name="container">Status effect container we're enumerating through</param>
+    /// <typeparam name="T">Component we're looking for on each status effect</typeparam>
+    /// <returns>All status effects with {T} component in this container</returns>
+    public IEnumerable<Entity<StatusEffectComponent, T>> EnumerateStatusEffects<T>(
+        Entity<StatusEffectContainerComponent?> container) where T : Component
+    {
+        if (!_containerQuery.Resolve(container, ref container.Comp, false) || container.Comp.ActiveStatusEffects == null)
+            yield break;
+
+        foreach (var effect in container.Comp.ActiveStatusEffects.ContainedEntities)
+        {
+            if (_effectQuery.TryComp(effect, out var status) && TryComp<T>(effect, out var comp))
+                yield return (effect, status,  comp);
+        }
+    }
+
+    /// <inhereitdoc cref="EnumerateStatusEffects{T}(Entity{StatusEffectContainerComponent})"/>
+    public IEnumerable<Entity<StatusEffectComponent, T>> EnumerateStatusEffects<T>(
+        Entity<StatusEffectContainerComponent?> container,
+        EntityQuery<T> query) where T : Component
+    {
+        if (!_containerQuery.Resolve(container, ref container.Comp, false) || container.Comp.ActiveStatusEffects == null)
+            yield break;
+
+        foreach (var effect in container.Comp.ActiveStatusEffects.ContainedEntities)
+        {
+            if (_effectQuery.TryComp(effect, out var status) && query.TryComp(effect, out var comp))
+                yield return (effect, status,  comp);
+        }
     }
 }

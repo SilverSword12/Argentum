@@ -6,9 +6,6 @@
     mode: SnapgridCenter
   components:
   - type: AtmosDevice
-  - type: Tag
-    tags:
-      - Unstackable
   - type: SubFloorHide
     blockInteractions: false
     blockAmbience: false
@@ -41,7 +38,6 @@
     priority: 1
   - type: ApcPowerReceiver
     powerLoad: 200
-  - type: Rotatable
   - type: Transform
     noRot: false
   - type: SubFloorHide
@@ -105,7 +101,6 @@
       priority: 1
     - type: ApcPowerReceiver
       powerLoad: 200
-    - type: Rotatable
     - type: Transform
       noRot: false
     - type: SubFloorHide
@@ -173,7 +168,6 @@
   placement:
     mode: AlignAtmosPipeLayers
   components:
-  - type: Rotatable
   - type: Transform
     noRot: false
   - type: SubFloorHide
@@ -458,6 +452,7 @@
         - sprite: Structures/Piping/Atmospherics/pipe.rsi
           state: pipeBinaryConnectors
           map: [ "enum.PipeVisualLayers.Pipe" ]
+        - state: vent_direction
         - state: vent_off
           map: [ "enabled", "enum.SubfloorLayers.FirstLayer" ]
     - type: AtmosPipeLayers
@@ -473,18 +468,10 @@
             Lockout: { state: vent_lockout }
     - type: PipeColorVisuals
     - type: GasVentPump
+      pressureLockoutOverride: true
       inlet: inlet
       outlet: outlet
-      canLink: true
-    - type: DeviceNetwork
-      deviceNetId: Wireless
-      receiveFrequencyId: BasicDevice
-    - type: WirelessNetworkConnection
-      range: 200
-    - type: DeviceLinkSink
-      ports:
-        - Pressurize
-        - Depressurize
+      canLink: false
     - type: Construction
       graph: GasBinary
       node: dualportventpump
@@ -507,10 +494,10 @@
       - AirVent
 
 - type: entity
-  parent: [ BaseMachine, ConstructibleMachine ]
+  parent: [ BaseMachine, ConstructibleMachine, BaseConstructibleMachineDestructible ]
   id: GasRecycler
   name: gas recycler
-  description: Recycles carbon dioxide and nitrous oxide. Heater and compressor not included.
+  description: Recycles waste gases into useful gases. Can hold a beaker to collect reagents skimmed from the gas stream. Requires high temperature and pressure to operate.
   placement:
     mode: SnapgridCenter
   components:
@@ -540,8 +527,18 @@
           True: { state: running }
           False: { state: unlit }
   - type: PipeColorVisuals
-  - type: Rotatable
   - type: GasRecycler
+  - type: ItemSlots
+    slots:
+      beaker_slot:
+        name: Beaker
+        ejectOnInteract: true
+        whitelist:
+          components:
+          - FitsInDispenser
+  - type: ContainerContainer
+    containers:
+      beaker_slot: !type:ContainerSlot
   - type: PipeRestrictOverlap
   - type: NodeContainer
     nodes:
@@ -565,15 +562,11 @@
     thresholds:
     - trigger:
         !type:DamageTrigger
-        damage: 100
+        damage: 175
       behaviors:
       - !type:PlaySoundBehavior
         sound:
           collection: MetalGlassBreak
-      - !type:ChangeConstructionNodeBehavior
-        node: machineFrame
-      - !type:DoActsBehavior
-        acts: ["Destruction"]
   - type: Machine
     board: GasRecyclerMachineCircuitboard
   - type: AtmosMonitoringConsoleDevice
@@ -593,7 +586,6 @@
   placement:
     mode: SnapgridCenter
   components:
-  - type: Rotatable
   - type: Transform
     noRot: false
   - type: Sprite
@@ -661,3 +653,76 @@
     - type: Construction
       graph: GasBinary
       node: bendradiator
+
+# Funkystation - heat pump
+- type: entity
+  parent: GasBinaryBase
+  id: HeatPump
+  name: heat pump
+  description: A pump that moves heat from one side to the other.
+  placement:
+    mode: AlignAtmosPipeLayers
+  components:
+    - type: ExtensionCableReceiver
+    - type: LightningTarget
+      priority: 1
+    - type: ApcPowerReceiver
+      powerLoad: 200
+    - type: Rotatable
+    - type: Transform
+      noRot: false
+    - type: SubFloorHide
+      visibleLayers:
+      - enum.SubfloorLayers.FirstLayer
+    - type: Sprite
+      sprite: Structures/Piping/Atmospherics/pump.rsi
+      layers:
+        - sprite: Structures/Piping/Atmospherics/pipe.rsi
+          state: pipeStraight
+          map: [ "enum.PipeVisualLayers.Pipe" ]
+        - state: pumpHeat
+          map: [ "enum.SubfloorLayers.FirstLayer", "enabled" ]
+    - type: AtmosPipeLayers
+      alternativePrototypes:
+        Primary: HeatPump
+        Secondary: HeatPumpAlt1
+        Tertiary: HeatPumpAlt2
+    - type: Appearance
+    - type: PipeColorVisuals
+    - type: HeatPump
+    - type: NodeContainer
+      nodes:
+        inlet:
+          !type:PipeNode
+          nodeGroupID: Pipe
+          pipeDirection: North
+          volume: 100
+        outlet:
+          !type:PipeNode
+          nodeGroupID: Pipe
+          pipeDirection: South
+          volume: 100
+    - type: UserInterface
+      interfaces:
+        enum.GasHeatPumpUiKey.Key:
+          type: GasHeatPumpBoundUserInterface
+    - type: Construction
+      graph: GasBinary
+      node: heatpump
+    - type: AmbientSound
+      enabled: false
+      volume: -9
+      range: 5
+      sound:
+        path: /Audio/Ambience/Objects/gas_hiss.ogg
+    - type: AtmosMonitoringConsoleDevice
+      navMapBlip: Thermoregulator
+    - type: GuideHelp
+      guides:
+      - ManualValve
+    - type: GenericVisualizer
+      visuals:
+        enum.HeatPumpVisuals.Enabled:
+          enabled:
+            True: { state: pumpHeatOn }
+            False: { state: pumpHeat }

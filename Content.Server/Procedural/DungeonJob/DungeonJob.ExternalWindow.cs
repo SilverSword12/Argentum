@@ -1,12 +1,10 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Content.Shared.Maps;
 using Content.Shared.Procedural;
 using Content.Shared.Procedural.PostGeneration;
-using Content.Shared.Storage;
 using Robust.Shared.Map;
-using Robust.Shared.Map.Components;
 using Robust.Shared.Random;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Content.Server.Procedural.DungeonJob;
 
@@ -24,7 +22,7 @@ public sealed partial class DungeonJob
     /// <summary>
     /// <see cref="ExternalWindowDunGen"/>
     /// </summary>
-    private async Task PostGen(ExternalWindowDunGen gen, Dungeon dungeon, HashSet<Vector2i> reservedTiles, Random random)
+    private async Task PostGen(ExternalWindowDunGen gen, Dungeon dungeon, HashSet<Vector2i> reservedTiles, IRobustRandom random)
     {
         // Iterate every tile with N chance to spawn windows on that wall per cardinal dir.
         var chance = 0.25 / 3f;
@@ -58,7 +56,7 @@ public sealed partial class DungeonJob
             // Check we're not on a corner
             for (var i = 0; i < 2; i++)
             {
-                var dir = (Direction) (i * 2);
+                var dir = (Direction)(i * 2);
                 var dirVec = dir.ToIntVec();
                 var isValid = true;
 
@@ -76,9 +74,9 @@ public sealed partial class DungeonJob
                     }
 
                     // Also check perpendicular that it is free
-                    foreach (var k in new [] {2, 6})
+                    foreach (var k in new[] { 2, 6 })
                     {
-                        var perp = (Direction) ((i * 2 + k) % 8);
+                        var perp = (Direction)((i * 2 + k) % 8);
                         var perpVec = perp.ToIntVec();
                         var perpTile = tile + perpVec;
 
@@ -105,7 +103,7 @@ public sealed partial class DungeonJob
                     if (reservedTiles.Contains(neighbor))
                         continue;
 
-                    tiles.Add((neighbor, _tile.GetVariantTile((ContentTileDefinition) tileDef, random)));
+                    tiles.Add((neighbor, _tile.GetVariantTile((ContentTileDefinition)tileDef, random)));
                     index++;
                     takenTiles.Add(neighbor);
                 }

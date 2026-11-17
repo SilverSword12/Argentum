@@ -1,15 +1,15 @@
 using Content.Shared.Administration.Logs;
 using Content.Shared.Database;
 using Content.Shared.Doors.Components;
-using Robust.Shared.Serialization;
 using Content.Shared.Electrocution;
+using Robust.Shared.Serialization;
 
 namespace Content.Shared.Silicons.StationAi;
 
 // Handles airlock radial
 public abstract partial class SharedStationAiSystem
 {
-    [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
+    [Dependency] private ISharedAdminLogManager _adminLogger = default!;
 
     private void InitializeAirlock()
     {

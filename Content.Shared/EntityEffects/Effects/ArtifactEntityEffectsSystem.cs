@@ -1,4 +1,4 @@
-﻿using Content.Shared.Popups;
+using Content.Shared.Popups;
 using Content.Shared.Xenoarchaeology.Artifact;
 using Content.Shared.Xenoarchaeology.Artifact.Components;
 using Robust.Shared.Prototypes;
@@ -11,7 +11,7 @@ namespace Content.Shared.EntityEffects.Effects;
 /// <inheritdoc cref="EntityEffectSystem{T,TEffect}"/>
 public sealed partial class ArtifactDurabilityRestoreEntityEffectsSystem : EntityEffectSystem<XenoArtifactComponent, ArtifactDurabilityRestore>
 {
-    [Dependency] private readonly SharedXenoArtifactSystem _xenoArtifact = default!;
+    [Dependency] private SharedXenoArtifactSystem _xenoArtifact = default!;
 
     protected override void Effect(Entity<XenoArtifactComponent> entity, ref EntityEffectEvent<ArtifactDurabilityRestore> args)
     {
@@ -30,24 +30,26 @@ public sealed partial class ArtifactDurabilityRestoreEntityEffectsSystem : Entit
 /// <inheritdoc cref="EntityEffectSystem{T,TEffect}"/>
 public sealed partial class ArtifactUnlockEntityEffectSystem : EntityEffectSystem<XenoArtifactComponent, ArtifactUnlock>
 {
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly SharedXenoArtifactSystem _xenoArtifact = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private SharedXenoArtifactSystem _xenoArtifact = default!;
 
     protected override void Effect(Entity<XenoArtifactComponent> entity, ref EntityEffectEvent<ArtifactUnlock> args)
     {
+        // Scale is the units of artifexium applied in this reaction.
+        var units = args.Scale;
+
         if (EnsureComp<XenoArtifactUnlockingComponent>(entity, out var unlocking))
         {
-            if (unlocking.ArtifexiumApplied)
-                return;
-
+            // Window already open: add to it and let the normal timer run out.
             _popup.PopupEntity(Loc.GetString("artifact-activation-artifexium"), entity, PopupType.Medium);
         }
         else
         {
-            _xenoArtifact.TriggerXenoArtifact(entity, null, force: true);
+            // Artifexium opened the window: resolve instantly.
+            _xenoArtifact.SetInstantUnlock((entity, unlocking));
         }
 
-        _xenoArtifact.SetArtifexiumApplied((entity, unlocking), true);
+        _xenoArtifact.AddArtifexiumScale((entity, unlocking), units);
     }
 }
 

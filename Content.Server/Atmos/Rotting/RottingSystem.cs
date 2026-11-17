@@ -1,7 +1,6 @@
 using Content.Server.Atmos.EntitySystems;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Rotting;
-using Content.Shared.Body.Events;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Gibbing;
 using Content.Shared.Temperature.Components;
@@ -11,12 +10,12 @@ using Robust.Shared.Timing;
 
 namespace Content.Server.Atmos.Rotting;
 
-public sealed class RottingSystem : SharedRottingSystem
+public sealed partial class RottingSystem : SharedRottingSystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly AtmosphereSystem _atmosphere = default!;
-    [Dependency] private readonly ContainerSystem _container = default!;
-    [Dependency] private readonly DamageableSystem _damageable = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private AtmosphereSystem _atmosphere = default!;
+    [Dependency] private ContainerSystem _container = default!;
+    [Dependency] private DamageableSystem _damageable = default!;
 
     public override void Initialize()
     {
@@ -25,6 +24,7 @@ public sealed class RottingSystem : SharedRottingSystem
         SubscribeLocalEvent<RottingComponent, GibbedBeforeDeletionEvent>(OnGibbed);
 
         SubscribeLocalEvent<TemperatureComponent, IsRottingEvent>(OnTempIsRotting);
+
     }
 
     private void OnGibbed(EntityUid uid, RottingComponent component, GibbedBeforeDeletionEvent args)
@@ -44,7 +44,7 @@ public sealed class RottingSystem : SharedRottingSystem
     {
         if (args.Handled)
             return;
-        args.Handled = component.CurrentTemperature < Atmospherics.T0C + 0.85f;
+        args.Handled = component.Temperature < Atmospherics.T0C + 0.85f;
     }
 
     /// <summary>
@@ -107,6 +107,11 @@ public sealed class RottingSystem : SharedRottingSystem
             if (!IsRotProgressing(uid, perishable))
                 continue;
             rotting.TotalRotTime += rotting.RotUpdateRate * GetRotRate(uid);
+            if (rotting.TotalRotTime >= rotting.MaximumTotalRotTime)
+            {
+                rotting.TotalRotTime = rotting.MaximumTotalRotTime;
+                continue; // Persistence: Stop processing this entity so we don't infinitely generate ammonia
+            }
 
             if (rotting.DealDamage)
             {
@@ -127,11 +132,11 @@ public sealed class RottingSystem : SharedRottingSystem
 
             if (!TryComp<PhysicsComponent>(uid, out var physics))
                 continue;
+
             // We need a way to get the mass of the mob alone without armor etc in the future
             // or just remove the mass mechanics altogether because they aren't good.
             var molRate = perishable.MolsPerSecondPerUnitMass * (float)rotting.RotUpdateRate.TotalSeconds;
-            var tileMix = _atmosphere.GetTileMixture(uid, excite: true);
-            tileMix?.AdjustMoles(Gas.Ammonia, molRate * physics.FixturesMass);
+            _atmosphere.AdjustTileMixture(uid, Gas.Ammonia, molRate * physics.FixturesMass, excite: true);
         }
     }
 }

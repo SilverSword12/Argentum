@@ -1,33 +1,25 @@
+# Persistence: This file is no longer used by plant chemical mutations. Check Prototypes/_Persistence14/Hydroponics/RandomChemicals if that's what you are looking for.
 - type: weightedRandomFillSolution
-  id: RandomPickBotanyReagent
+  id: RandomPickBotanyGeneralReagent
   fills:
   - quantity: 5
     weight: 0.5
     reagents:
-    - Omnizine
-    - Impedrezene
-    - Fresium
+    - Impedrezene # drunk, hallucinate
     - HeartbreakerToxin
     - Honk
     - BuzzochloricBees
   - quantity: 5
     weight: 1
     reagents:
-    - Cognizine
     - Toxin
-    - Leporazine
-    - Epinephrine
     - CarpoToxin
     - SulfuricAcid
     - Licoxide
     - Napalm
     - ChlorineTrifluoride
-    - Radium
-    - Gold
-    - Uranium
     - Phosphorus
     - AtomicBomb
-    - Neurotoxin
     - ChangelingSting
     - CogChamp
     - JuiceThatMakesYouWeh
@@ -37,42 +29,25 @@
   - quantity: 5
     weight: 2
     reagents:
-    - Desoxyephedrine
     - ChloralHydrate
     - Ipecac
-    - Hyronalin
     - Pax
-    - Cryoxadone
-    - Ethylredoxrazine
-    - Dylovene
     - Histamine
     - Blood
-    - WeldingFuel
     - Mercury
-    - Silver
     - Phenol
-    - Ultravasculine
     - Carbon
     - THC
     - Nicotine
-    - DoctorsDelight
     - IceCream
     - Cola
-    - Diphenhydramine
-    - Iron
     - Bleach
-    - Mannitol
   - quantity: 10
     weight: 3
     reagents:
-    - Bicaridine
-    - Dermaline
-    - Ephedrine
     - NorepinephricAcid
-    - Tricordrazine
     - Saline
-    - PulpedBananaPeel
-    - Cryptobiolin
+    - Cryptobiolin # woozy
     - EZNutrient
     - Ammonia
     - RobustHarvest
@@ -83,7 +58,6 @@
     - Ash
     - SodiumCarbonate
     - SpaceDrugs
-    - SpaceGlue
     - JuiceBerryPoison
     - Pilk
     - Posca
@@ -95,7 +69,6 @@
     - Vinegar
     - Potassium
     - Fluorine
-    - Aluminium
     - Wine
     - Coffee
     - Beer
@@ -103,8 +76,6 @@
     weight: 3.5
     reagents:
     - Vitamin
-    - Kelotane
-    - Inaprovaline
     - Oil
     - Slime
     - Fiber
@@ -114,13 +85,13 @@
     - SodaWater
     - Ice
     - JuiceCarrot
-    - JuicePotato
     - Protein
     - Flour
     - Soysauce
     - TableSalt
     - Chlorine
     - Mercury
+    - Lithium
 
 - type: weightedRandomFillSolution
   id: EvilRandomFillSolution
@@ -131,10 +102,10 @@
     - Nocturine
     - MuteToxin
     - Lead
-  - quantity: 0.1
-    weight: 5 # 99.9% chance of appearing at least once with 60u of vestine with an average of 6.5 occurances.
-    reagents:
-    - Vestine
+  # - quantity: 0.1
+  #   weight: 5 # 99.9% chance of appearing at least once with 60u of vestine with an average of 6.5 occurances.
+  #   reagents:
+  #   - Vestine
   - quantity: 1.0 # High quantity but on average only 1 per chemical kit
     weight: 1
     reagents:

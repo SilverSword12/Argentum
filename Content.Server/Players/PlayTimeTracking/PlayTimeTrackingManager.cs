@@ -1,7 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.Database;
 using Content.Shared.CCVar;
 using Content.Shared.Players.PlayTimeTracking;
@@ -13,6 +9,10 @@ using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.Players.PlayTimeTracking;
 
@@ -54,15 +54,15 @@ public delegate void CalcPlayTimeTrackersCallback(ICommonSession player, HashSet
 /// Operations like refreshing and sending play time info to clients are deferred until the next frame (note: not tick).
 /// </para>
 /// </remarks>
-public sealed class PlayTimeTrackingManager : ISharedPlaytimeManager, IPostInjectInit
+public sealed partial class PlayTimeTrackingManager : ISharedPlaytimeManager, IPostInjectInit
 {
-    [Dependency] private readonly IServerDbManager _db = default!;
-    [Dependency] private readonly IServerNetManager _net = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly ITaskManager _task = default!;
-    [Dependency] private readonly IRuntimeLog _runtimeLog = default!;
-    [Dependency] private readonly UserDbDataManager _userDb = default!;
+    [Dependency] private IServerDbManager _db = default!;
+    [Dependency] private IServerNetManager _net = default!;
+    [Dependency] private IConfigurationManager _cfg = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private ITaskManager _task = default!;
+    [Dependency] private IRuntimeLog _runtimeLog = default!;
+    [Dependency] private UserDbDataManager _userDb = default!;
 
     private ISawmill _sawmill = default!;
 
@@ -422,6 +422,7 @@ public sealed class PlayTimeTrackingManager : ISharedPlaytimeManager, IPostInjec
 
     private PlayTimeData? DirtyPlayer(ICommonSession player)
     {
+        if (player == null) return null;
         if (!_playTimeData.TryGetValue(player, out var data) || !data.Initialized)
             return null;
 

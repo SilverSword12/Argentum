@@ -1,6 +1,5 @@
 using Content.Server.NPC.Components;
 using Content.Shared.CombatMode;
-using Content.Shared.Damage;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Mobs.Components;
 using Content.Shared.NPC.Components;
@@ -13,10 +12,10 @@ namespace Content.Server.NPC.Systems;
 /// <summary>
 ///     Handles NPC which become aggressive after being attacked.
 /// </summary>
-public sealed class NPCRetaliationSystem : EntitySystem
+public sealed partial class NPCRetaliationSystem : EntitySystem
 {
-    [Dependency] private readonly NpcFactionSystem _npcFaction = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private NpcFactionSystem _npcFaction = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     /// <inheritdoc />
     public override void Initialize()
@@ -30,7 +29,7 @@ public sealed class NPCRetaliationSystem : EntitySystem
         if (!args.DamageIncreased)
             return;
 
-        if (args.Origin is not {} origin)
+        if (args.Origin is not { } origin)
             return;
 
         TryRetaliate(ent, origin);
@@ -52,7 +51,7 @@ public sealed class NPCRetaliationSystem : EntitySystem
             return false;
 
         _npcFaction.AggroEntity(ent.Owner, target);
-        if (ent.Comp.AttackMemoryLength is {} memoryLength)
+        if (ent.Comp.AttackMemoryLength is { } memoryLength)
             ent.Comp.AttackMemories[target] = _timing.CurTime + memoryLength;
 
         return true;

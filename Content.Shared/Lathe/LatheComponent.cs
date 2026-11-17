@@ -1,4 +1,3 @@
-using Content.Shared.Construction.Prototypes;
 using Content.Shared.Lathe.Prototypes;
 using Content.Shared.Research.Prototypes;
 using Robust.Shared.Audio;
@@ -92,7 +91,7 @@ namespace Content.Shared.Lathe
 
         public bool GetUnavailable;
 
-        public HashSet<ProtoId<LatheRecipePrototype>> Recipes = new();
+        public Dictionary<ProtoId<LatheRecipePrototype>, int> Recipes = new();
 
         public LatheGetRecipesEvent(Entity<LatheComponent> lathe, bool forced)
         {
@@ -100,7 +99,7 @@ namespace Content.Shared.Lathe
             GetUnavailable = forced;
         }
     }
-
+    [DataDefinition]
     [Serializable]
     public sealed partial class LatheRecipeBatch
     {
@@ -121,4 +120,11 @@ namespace Content.Shared.Lathe
     /// </summary>
     [ByRefEvent]
     public readonly record struct LatheStartPrintingEvent(LatheRecipePrototype Recipe);
+
+    /// <summary>
+    /// Event raised on a lathe right after it spawns a produced item, carrying the spawned entity so other
+    /// systems can redirect it (e.g. hand it to a flatpacker).
+    /// </summary>
+    [ByRefEvent]
+    public readonly record struct LatheItemProducedEvent(LatheRecipePrototype Recipe, EntityUid Result);
 }

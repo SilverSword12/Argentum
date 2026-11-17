@@ -2,15 +2,18 @@ using Content.Shared.Access;
 using Content.Shared.Access.Components;
 using Content.Shared.Access.Systems;
 using Content.Shared.Containers.ItemSlots;
+using Content.Shared.Doors.Electronics;
 using Robust.Client.UserInterface;
+using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Prototypes;
 using static Content.Shared.Access.Components.AccessOverriderComponent;
+using static Robust.Client.UserInterface.Controls.BaseButton;
 
 namespace Content.Client.Access.UI
 {
-    public sealed class AccessOverriderBoundUserInterface : BoundUserInterface
+    public sealed partial class AccessOverriderBoundUserInterface : BoundUserInterface
     {
-        [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IPrototypeManager _prototypeManager = default!;
         private readonly SharedAccessOverriderSystem _accessOverriderSystem = default!;
 
         private AccessOverriderWindow? _window;
@@ -27,9 +30,11 @@ namespace Content.Client.Access.UI
             _window = this.CreateWindow<AccessOverriderWindow>();
             RefreshAccess();
             _window.Title = EntMan.GetComponent<MetaDataComponent>(Owner).EntityName;
-            _window.OnSubmit += SubmitData;
-
             _window.PrivilegedIdButton.OnPressed += _ => SendMessage(new ItemSlotButtonPressedEvent(PrivilegedIdCardSlotId));
+            _window.OnAccessToggle += AccessToggle;
+            _window.OnPersonalAccessToggle += PersonalAccessToggle;
+            _window.PersonalSaveButton.OnPressed += PersonalAccessAdd;
+            _window.ChangeMode.OnPressed += ChangeMode;
         }
 
         public override void OnProtoReload(PrototypesReloadedEventArgs args)
@@ -41,7 +46,7 @@ namespace Content.Client.Access.UI
             RefreshAccess();
 
             if (State != null)
-                _window?.UpdateState(_prototypeManager, (AccessOverriderBoundUserInterfaceState) State);
+                _window?.UpdateState(_prototypeManager, (AccessOverriderBoundUserInterfaceState)State);
         }
 
         private void RefreshAccess()
@@ -65,13 +70,38 @@ namespace Content.Client.Access.UI
         protected override void UpdateState(BoundUserInterfaceState state)
         {
             base.UpdateState(state);
-            var castState = (AccessOverriderBoundUserInterfaceState) state;
+            var castState = (AccessOverriderBoundUserInterfaceState)state;
             _window?.UpdateState(_prototypeManager, castState);
         }
 
         public void SubmitData(List<ProtoId<AccessLevelPrototype>> newAccessList)
         {
             SendMessage(new WriteToTargetAccessReaderIdMessage(newAccessList));
+        }
+        public void AccessToggle(string access)
+        {
+            SendMessage(new AccessReaderAccessToggledMessage(access));
+        }
+        public void PersonalAccessToggle(string access)
+        {
+            SendMessage(new AccessReaderPersonalAccessToggledMessage(access));
+        }
+
+        public void PersonalAccessAdd(ButtonEventArgs args)
+        {
+            if (_window == null) return;
+            Button button = (Button)args.Button;
+            var name = _window.PersonalLineEdit.Text;
+            if (name != null && name != "")
+            {
+                SendMessage(new AccessReaderPersonalAddMessage(name));
+                _window.PersonalLineEdit.Text = "";
+            }
+
+        }
+        public void ChangeMode(ButtonEventArgs args)
+        {
+            SendMessage(new AccessReaderChangeModeMessage());
         }
     }
 }

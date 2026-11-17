@@ -11,14 +11,14 @@ using Robust.Shared.Physics.Systems;
 
 namespace Content.Shared.Standing;
 
-public sealed class StandingStateSystem : EntitySystem
+public sealed partial class StandingStateSystem : EntitySystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
 
     // If StandingCollisionLayer value is ever changed to more than one layer, the logic needs to be edited.
-    public const int StandingCollisionLayer = (int) CollisionGroup.MidImpassable;
+    public const int StandingCollisionLayer = (int)CollisionGroup.MidImpassable;
 
     public override void Initialize()
     {
@@ -28,6 +28,17 @@ public sealed class StandingStateSystem : EntitySystem
         SubscribeLocalEvent<StandingStateComponent, RefreshFrictionModifiersEvent>(OnRefreshFrictionModifiers);
         SubscribeLocalEvent<StandingStateComponent, TileFrictionEvent>(OnTileFriction);
         SubscribeLocalEvent<StandingStateComponent, EndClimbEvent>(OnEndClimb);
+        SubscribeLocalEvent<StandingStateComponent, ComponentStartup>(OnCompStart);
+    }
+
+
+    private void OnCompStart(Entity<StandingStateComponent> ent, ref ComponentStartup args)
+    {
+        if (!ent.Comp.Standing)
+        {
+            ent.Comp.Standing = true;
+            Down(ent, false, false, true);
+        }
     }
 
     private void OnMobTargetCollide(Entity<StandingStateComponent> ent, ref AttemptMobTargetCollideEvent args)

@@ -58,8 +58,6 @@
   id: LotteryCashEntityTable
   table: !type:GroupSelector
     children:
-    - id: SpaceCash1000000
-      weight: 0.01
     - id: SpaceCash10000
       weight: 0.1
     - id: SpaceCash5000
@@ -111,6 +109,8 @@
       weight: 0.01
     - id: WeaponLauncherPirateCannon
       weight: 0.1
+    - id: Throngler
+      weight: 0.0001
     - id: WeaponPistolCHIMP
       weight: 0.1
     - id: WeaponSniperMosin
@@ -249,3 +249,30 @@
       weight: 0.8
     - id: GrenadeFoamDart
       weight: 0.1
+
+- type: entity
+  id: BusinessStartingKit
+  parent: CrateBaseSecure
+  name: faction starter crate
+  description: Contains the goods relevant to creating a faction.
+  components:
+  - type: Icon
+    sprite: Structures/Storage/Crates/command.rsi
+  - type: Sprite
+    sprite: Structures/Storage/Crates/command.rsi
+  - type: EntityTableContainerFill
+    containers:
+      entity_storage: !type:AllSelector
+        children:
+          - id: StationTagger
+          - id: StationGenesisDevice
+          - id: GridConfigurator
+          - id: ComputerStationModificationFlatpack
+          - id: Multitool
+          - id: Wrench
+          - id: CargoBountyComputerFlatpack
+          - id: BookFactionHandbook
+          - id: ComputerGridControlFlatpack
+          - id: ComputerInvoicePrinterFlatpack
+          - id: HolopadLongRangeFlatpack
+          - id: DrinkChampagneBottleFull

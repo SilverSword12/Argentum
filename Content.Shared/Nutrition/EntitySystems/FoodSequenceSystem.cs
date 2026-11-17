@@ -1,5 +1,3 @@
-using System.Numerics;
-using System.Text;
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Interaction;
 using Content.Shared.Mobs.Systems;
@@ -8,22 +6,24 @@ using Content.Shared.Nutrition.Prototypes;
 using Content.Shared.Popups;
 using Content.Shared.Storage.Components;
 using Content.Shared.Tag;
+using Content.Shared._Persistence14.Nutrition;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using System.Numerics;
+using System.Text;
 
 namespace Content.Shared.Nutrition.EntitySystems;
 
-public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
+public sealed partial class FoodSequenceSystem : SharedFoodSequenceSystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly MetaDataSystem _metaData = default!;
-    [Dependency] private readonly MobStateSystem _mobState = default!;
-    [Dependency] private readonly IngestionSystem _ingestion = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly SharedSolutionContainerSystem _solutionContainer = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly TagSystem _tag = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private MetaDataSystem _metaData = default!;
+    [Dependency] private MobStateSystem _mobState = default!;
+    [Dependency] private IngestionSystem _ingestion = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private SharedSolutionContainerSystem _solutionContainer = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
+    [Dependency] private TagSystem _tag = default!;
 
     public override void Initialize()
     {
@@ -45,7 +45,7 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
         if (!TryComp<FoodSequenceStartPointComponent>(args.Start, out var start))
             return;
 
-        if (!_proto.Resolve(args.Proto, out var elementProto))
+        if (!ProtoMan.Resolve(args.Proto, out var elementProto))
             return;
 
         if (!ent.Comp.OnlyFinal || elementProto.Final || start.FoodLayers.Count == start.MaxLayers)
@@ -57,7 +57,7 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
     private bool TryMetamorph(Entity<FoodSequenceStartPointComponent> start)
     {
         List<MetamorphRecipePrototype> availableRecipes = new();
-        foreach (var recipe in _proto.EnumeratePrototypes<MetamorphRecipePrototype>())
+        foreach (var recipe in ProtoMan.EnumeratePrototypes<MetamorphRecipePrototype>())
         {
             if (recipe.Key != start.Comp.Key)
                 continue;
@@ -65,7 +65,7 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
             bool allowed = true;
             foreach (var rule in recipe.Rules)
             {
-                if (!rule.Check(_proto, EntityManager, start, start.Comp.FoodLayers))
+                if (!rule.Check(ProtoMan, EntityManager, start, start.Comp.FoodLayers))
                 {
                     allowed = false;
                     break;
@@ -105,27 +105,27 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
         MergeTags(start, result);
     }
 
-    private bool TryAddFoodElement(Entity<FoodSequenceStartPointComponent> start, Entity<FoodSequenceElementComponent, EdibleComponent?> element, EntityUid? user = null)
+    private bool TryAddFoodElement(Entity<FoodSequenceStartPointComponent> start, Entity<FoodSequenceElementComponent, EdibleComponent?, InedibleFoodSequenceElementComponent?> element, EntityUid? user = null) // Persistence 14: InedibleFoodSequenceElementComponent added
     {
-        // we can't add a live mouse to a burger.
-        if (!Resolve(element, ref element.Comp2, false))
-            return false;
-
-        if (element.Comp2.RequireDead && _mobState.IsAlive(element))
-            return false;
+        // we can't add a live mouse to a burger. Modified in persistence 14 to not return false if there's no EdibleComponent
+        if (Resolve(element, ref element.Comp2, false))
+        {
+            if (element.Comp2.RequireDead && _mobState.IsAlive(element))
+                return false;
+        }
 
         //looking for a suitable FoodSequence prototype
         if (!element.Comp1.Entries.TryGetValue(start.Comp.Key, out var elementProto))
             return false;
 
-        if (!_proto.Resolve(elementProto, out var elementIndexed))
+        if (!ProtoMan.Resolve(elementProto, out var elementIndexed))
             return false;
 
         //if we run out of space, we can still put in one last, final finishing element.
         if (start.Comp.FoodLayers.Count >= start.Comp.MaxLayers && !elementIndexed.Final || start.Comp.Finished)
         {
             if (user is not null)
-                _popup.PopupClient(Loc.GetString("food-sequence-no-space"), start, user.Value);
+                _popup.PopupEntity(Loc.GetString("food-sequence-no-space"), start, user.Value);
             return false;
         }
 
@@ -154,6 +154,7 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
 
         UpdateFoodName(start);
         MergeFoodSolutions(start.Owner, element.Owner);
+        MergeInedibleFoodSolutions(start.Owner, element.Owner); // Persistence
         MergeFlavorProfiles(start, element);
         MergeTrash(start.Owner, element.Owner);
         MergeTags(start, element);
@@ -185,7 +186,7 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
         var nameCounter = 1;
         foreach (var proto in existedContentNames)
         {
-            if (!_proto.Resolve(proto, out var protoIndexed))
+            if (!ProtoMan.Resolve(proto, out var protoIndexed))
                 continue;
 
             if (protoIndexed.Name is null)
@@ -222,6 +223,24 @@ public sealed class FoodSequenceSystem : SharedFoodSequenceSystem
 
         startSolution.MaxVolume += elementSolution.MaxVolume;
         _solutionContainer.TryAddSolution(startSolutionEntity.Value, elementSolution);
+    }
+
+    private void MergeInedibleFoodSolutions(Entity<EdibleComponent?> start, Entity<InedibleFoodSequenceElementComponent?> element) // Persistence 14
+    {
+        if (!Resolve(start, ref start.Comp, false))
+            return;
+
+        if (!Resolve(element, ref element.Comp, false))
+            return;
+
+        if (!_solutionContainer.TryGetSolution(start.Owner, start.Comp.Solution, out var startSolutionEntity, out var startSolution))
+            return;
+
+        startSolution.MaxVolume += element.Comp.Volume;
+        foreach (var reagentQuantity in element.Comp.Contents)
+        {
+            startSolution.AddReagent(reagentQuantity);
+        }
     }
 
     private void MergeFlavorProfiles(EntityUid start, EntityUid element)

@@ -1,14 +1,13 @@
 using Content.Shared.ActionBlocker;
 using Content.Shared.Movement.Events;
-using Content.Shared.Shuttles.BUIStates;
 using Content.Shared.Shuttles.Components;
 using Robust.Shared.Serialization;
 
 namespace Content.Shared.Shuttles.Systems
 {
-    public abstract class SharedShuttleConsoleSystem : EntitySystem
+    public abstract partial class SharedShuttleConsoleSystem : EntitySystem
     {
-        [Dependency] protected readonly ActionBlockerSystem ActionBlockerSystem = default!;
+        [Dependency] protected ActionBlockerSystem ActionBlockerSystem = default!;
 
         public override void Initialize()
         {

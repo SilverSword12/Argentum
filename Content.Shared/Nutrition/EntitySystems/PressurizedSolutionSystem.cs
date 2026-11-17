@@ -1,40 +1,39 @@
-using Content.Shared.Chemistry.Reagent;
 using Content.Shared.Chemistry.EntitySystems;
+using Content.Shared.Chemistry.Reagent;
+using Content.Shared.Fluids;
 using Content.Shared.Hands.EntitySystems;
-using Content.Shared.Nutrition.Components;
-using Content.Shared.Throwing;
 using Content.Shared.IdentityManagement;
+using Content.Shared.Nutrition.Components;
+using Content.Shared.Popups;
+using Content.Shared.Throwing;
 using Robust.Shared.Audio.Systems;
+using Robust.Shared.Network;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
-using Robust.Shared.Prototypes;
-using Robust.Shared.Network;
-using Content.Shared.Fluids;
-using Content.Shared.Popups;
+
 
 namespace Content.Shared.Nutrition.EntitySystems;
 
 public sealed partial class PressurizedSolutionSystem : EntitySystem
 {
-    [Dependency] private readonly SharedSolutionContainerSystem _solutionContainer = default!;
-    [Dependency] private readonly OpenableSystem _openable = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedHandsSystem _hands = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly SharedPuddleSystem _puddle = default!;
-    [Dependency] private readonly INetManager _net = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private SharedSolutionContainerSystem _solutionContainer = default!;
+    [Dependency] private OpenableSystem _openable = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private SharedPuddleSystem _puddle = default!;
+    [Dependency] private INetManager _net = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IRobustRandom _random = default!;
     public override void Initialize()
     {
         base.Initialize();
 
-        SubscribeLocalEvent<PressurizedSolutionComponent, MapInitEvent>(OnMapInit);
         SubscribeLocalEvent<PressurizedSolutionComponent, ShakeEvent>(OnShake);
         SubscribeLocalEvent<PressurizedSolutionComponent, OpenableOpenedEvent>(OnOpened);
         SubscribeLocalEvent<PressurizedSolutionComponent, LandEvent>(OnLand);
-        SubscribeLocalEvent<PressurizedSolutionComponent, SolutionContainerChangedEvent>(OnSolutionUpdate);
+        SubscribeLocalEvent<PressurizedSolutionComponent, SolutionChangedEvent>(OnSolutionUpdate);
     }
 
     /// <summary>
@@ -63,10 +62,10 @@ public sealed partial class PressurizedSolutionSystem : EntitySystem
         // Check each reagent in the solution
         foreach (var reagent in solution.Contents)
         {
-            if (_prototypeManager.TryIndex(reagent.Reagent.Prototype, out ReagentPrototype? reagentProto) && reagentProto != null)
+            if (ProtoMan.TryIndex(reagent.Reagent.Prototype, out ReagentPrototype? reagentProto) && reagentProto != null)
             {
                 // What portion of the solution is this reagent?
-                var proportion = (float) (reagent.Quantity / solution.Volume);
+                var proportion = (float)(reagent.Quantity / solution.Volume);
                 totalFizzability += reagentProto.Fizziness * proportion;
             }
         }
@@ -180,7 +179,7 @@ public sealed partial class PressurizedSolutionSystem : EntitySystem
 
         // Spray the solution onto the ground and anyone nearby
         var coordinates = Transform(entity).Coordinates;
-        _puddle.TrySplashSpillAt(entity.Owner, coordinates, out _, out _, sound: false);
+        _puddle.TrySplashSpillAt(entity.Owner, coordinates, solution, out _, sound: false);
 
         var drinkName = Identity.Entity(entity, EntityManager);
 
@@ -190,7 +189,7 @@ public sealed partial class PressurizedSolutionSystem : EntitySystem
 
             var selfMessage = Loc.GetString(entity.Comp.SprayHolderMessageSelf, ("victim", victimName), ("drink", drinkName));
             var othersMessage = Loc.GetString(entity.Comp.SprayHolderMessageOthers, ("victim", victimName), ("drink", drinkName));
-            _popup.PopupPredicted(selfMessage, othersMessage, target.Value, target.Value);
+            _popup.PopupEntity(selfMessage, othersMessage, target.Value, target.Value);
         }
         else
         {
@@ -221,7 +220,7 @@ public sealed partial class PressurizedSolutionSystem : EntitySystem
             return 0;
 
         var currentDuration = entity.Comp.FizzySettleTime - _timing.CurTime;
-        return Easings.InOutCubic((float) Math.Min(currentDuration / entity.Comp.FizzinessMaxDuration, 1));
+        return Easings.InOutCubic((float)Math.Min(currentDuration / entity.Comp.FizzinessMaxDuration, 1));
     }
 
     /// <summary>
@@ -242,10 +241,6 @@ public sealed partial class PressurizedSolutionSystem : EntitySystem
     #endregion
 
     #region Event Handlers
-    private void OnMapInit(Entity<PressurizedSolutionComponent> entity, ref MapInitEvent args)
-    {
-        RollSprayThreshold(entity);
-    }
 
     private void OnOpened(Entity<PressurizedSolutionComponent> entity, ref OpenableOpenedEvent args)
     {
@@ -265,13 +260,13 @@ public sealed partial class PressurizedSolutionSystem : EntitySystem
         SprayOrAddFizziness(entity, entity.Comp.SprayChanceModOnLand, entity.Comp.FizzinessAddedOnLand);
     }
 
-    private void OnSolutionUpdate(Entity<PressurizedSolutionComponent> entity, ref SolutionContainerChangedEvent args)
+    private void OnSolutionUpdate(Entity<PressurizedSolutionComponent> entity, ref SolutionChangedEvent args)
     {
         // The changes are already networked as part of the same game state.
         if (_timing.ApplyingState)
             return;
 
-        if (args.SolutionId != entity.Comp.Solution)
+        if (args.Solution.Comp.Id != entity.Comp.Solution)
             return;
 
         // If the solution is no longer capable of being fizzy, clear any built up fizziness

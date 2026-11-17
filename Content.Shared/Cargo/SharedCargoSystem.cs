@@ -1,5 +1,6 @@
 using Content.Shared.Cargo.Components;
 using Content.Shared.Cargo.Prototypes;
+using Content.Shared.HijackBeacon;
 using JetBrains.Annotations;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
@@ -8,21 +9,39 @@ using Robust.Shared.Utility;
 
 namespace Content.Shared.Cargo;
 
-public abstract class SharedCargoSystem : EntitySystem
+public abstract partial class SharedCargoSystem : EntitySystem
 {
-    [Dependency] protected readonly IGameTiming Timing = default!;
+    [Dependency] protected IGameTiming Timing = default!;
 
     public override void Initialize()
     {
         base.Initialize();
 
         SubscribeLocalEvent<StationBankAccountComponent, MapInitEvent>(OnMapInit);
+        SubscribeLocalEvent<HijackBeaconSuccessEvent>(OnHijackSuccess);
     }
 
     private void OnMapInit(Entity<StationBankAccountComponent> ent, ref MapInitEvent args)
     {
         ent.Comp.NextIncomeTime = Timing.CurTime + ent.Comp.IncomeDelay;
         Dirty(ent);
+    }
+
+    private void OnHijackSuccess(ref HijackBeaconSuccessEvent args)
+    {
+        var stationQuery = EntityQueryEnumerator<StationBankAccountComponent>();
+        while (stationQuery.MoveNext(out var uid, out var comp))
+        {
+            foreach (var (account, cash) in comp.Accounts)
+            {
+                comp.Accounts[account] = cash - args.Fine;
+                args.Total += args.Fine;
+            }
+
+            var ev = new BankBalanceUpdatedEvent(uid, comp.Accounts);
+            RaiseLocalEvent(uid, ref ev, true);
+            Dirty(uid, comp);
+        }
     }
 
     /// <summary>
@@ -43,18 +62,22 @@ public abstract class SharedCargoSystem : EntitySystem
     /// </summary>
     public Dictionary<ProtoId<CargoAccountPrototype>, double> CreateAccountDistribution(Entity<StationBankAccountComponent> stationBank)
     {
-        var distribution = new Dictionary<ProtoId<CargoAccountPrototype>, double>
+        return new Dictionary<ProtoId<CargoAccountPrototype>, double>
         {
-            { stationBank.Comp.PrimaryAccount, stationBank.Comp.PrimaryCut }
+            { stationBank.Comp.PrimaryAccount, 1.0 }
         };
-        var remaining = 1.0 - stationBank.Comp.PrimaryCut;
+        //var distribution = new Dictionary<ProtoId<CargoAccountPrototype>, double>
+        //{
+        //    { stationBank.Comp.PrimaryAccount, stationBank.Comp.PrimaryCut }
+        //};
+        //var remaining = 1.0 - stationBank.Comp.PrimaryCut;
 
-        foreach (var (account, percentage) in stationBank.Comp.RevenueDistribution)
-        {
-            var existing = distribution.GetOrNew(account);
-            distribution[account] = existing + remaining * percentage;
-        }
-        return distribution;
+        //foreach (var (account, percentage) in stationBank.Comp.RevenueDistribution)
+        //{
+        //    var existing = distribution.GetOrNew(account);
+        //    distribution[account] = existing + remaining * percentage;
+        //}
+        //return distribution;
     }
 
     /// <summary>
@@ -166,7 +189,7 @@ public abstract class SharedCargoSystem : EntitySystem
         UpdateBankAccount(
             ent,
             balanceAdded,
-            new Dictionary<ProtoId<CargoAccountPrototype>, double> { {account, 1} },
+            new Dictionary<ProtoId<CargoAccountPrototype>, double> { { account, 1 } },
             dirty: dirty);
     }
 
@@ -189,7 +212,7 @@ public abstract class SharedCargoSystem : EntitySystem
 
         foreach (var (account, percent) in accountDistribution)
         {
-            var accountBalancedAdded = (int) Math.Round(percent * balanceAdded);
+            var accountBalancedAdded = (int)Math.Round(percent * balanceAdded);
             ent.Comp.Accounts[account] += accountBalancedAdded;
         }
 

@@ -25,8 +25,14 @@ signal-port-description-close = Closes a device.
 signal-port-name-doorbolt = Door bolt
 signal-port-description-doorbolt = Bolts door when HIGH.
 
+signal-port-name-direct-drive = Direct drive
+signal-port-description-direct-drive = Switches the door to be directly driven by signals, and remains bolted otherwise. HIGH opens the door, LOW closes it.
+
 signal-port-name-trigger-receiver = Trigger
 signal-port-description-trigger-receiver = Triggers some mechanism on the device.
+
+signal-port-name-timer = Timer
+signal-port-description-timer = Starts the timer countdown of the device.
 
 signal-port-name-order-sender = Order sender
 signal-port-description-order-sender = Cargo console order sender
@@ -89,3 +95,22 @@ signal-port-description-logic-enable = Only loads the input signal into the memo
 
 signal-port-name-logic-random-input = Input Signal
 signal-port-description-logic-random-input = Receives any signal to trigger a random output.
+
+signal-port-name-target-receiver = Target receiver
+signal-port-description-target-receiver = Receives target information from a target finder.
+
+signal-port-name-target-source = Target Finder
+signal-port-description-target-source = Sends target information to a target receiver.
+
+# _Persistence14 content
+signal-port-description-plushie-sound = Plays one of the plushie's sounds.
+signal-port-name-plushie-sound-1 = Sound 1
+signal-port-name-plushie-sound-2 = Sound 2
+signal-port-name-plushie-sound-3 = Sound 3
+signal-port-name-plushie-sound-4 = Sound 4
+signal-port-name-plushie-sound-5 = Sound 5
+signal-port-name-plushie-sound-6 = Sound 6
+signal-port-name-plushie-sound-7 = Sound 7
+signal-port-name-plushie-sound-8 = Sound 8
+signal-port-name-plushie-sound-9 = Sound 9
+signal-port-name-plushie-sound-10 = Sound 10

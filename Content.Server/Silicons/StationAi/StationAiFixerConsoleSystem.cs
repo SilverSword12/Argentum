@@ -1,20 +1,20 @@
-using Content.Shared.Silicons.StationAi;
 using Content.Server.EUI;
 using Content.Server.Ghost;
 using Content.Server.Mind;
-using Robust.Shared.Audio.Systems;
-using Robust.Server.Player;
 using Content.Shared.Popups;
+using Content.Shared.Silicons.StationAi;
+using Robust.Server.Player;
+using Robust.Shared.Audio.Systems;
 
 namespace Content.Server.Silicons.StationAi;
 
 public sealed partial class StationAiFixerConsoleSystem : SharedStationAiFixerConsoleSystem
 {
-    [Dependency] private readonly EuiManager _eui = default!;
-    [Dependency] private readonly IPlayerManager _player = default!;
-    [Dependency] private readonly MindSystem _mind = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
+    [Dependency] private EuiManager _eui = default!;
+    [Dependency] private IPlayerManager _player = default!;
+    [Dependency] private MindSystem _mind = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
 
     protected override void FinalizeAction(Entity<StationAiFixerConsoleComponent> ent)
     {

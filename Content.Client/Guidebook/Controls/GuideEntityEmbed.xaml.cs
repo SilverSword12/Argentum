@@ -1,7 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
-using System.Numerics;
 using Content.Client.ContextMenu.UI;
 using Content.Client.Examine;
 using Content.Client.Guidebook.Richtext;
@@ -16,6 +12,10 @@ using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Input;
 using Robust.Shared.Map;
 using Robust.Shared.Utility;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
+using System.Numerics;
 
 namespace Content.Client.Guidebook.Controls;
 
@@ -26,10 +26,10 @@ namespace Content.Client.Guidebook.Controls;
 [GenerateTypedNameReferences]
 public sealed partial class GuideEntityEmbed : BoxContainer, IDocumentTag
 {
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly IEntitySystemManager _systemManager = default!;
-    [Dependency] private readonly ILogManager _logManager = default!;
-    [Dependency] private readonly IUserInterfaceManager _ui = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private IEntitySystemManager _systemManager = default!;
+    [Dependency] private ILogManager _logManager = default!;
+    [Dependency] private IUserInterfaceManager _ui = default!;
 
     private readonly TagSystem _tagSystem;
     private readonly ExamineSystem _examineSystem;

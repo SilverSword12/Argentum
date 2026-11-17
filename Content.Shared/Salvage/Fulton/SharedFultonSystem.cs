@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Shared.DoAfter;
 using Content.Shared.Examine;
 using Content.Shared.Foldable;
@@ -7,13 +6,15 @@ using Content.Shared.Popups;
 using Content.Shared.Stacks;
 using Content.Shared.Verbs;
 using Content.Shared.Whitelist;
-using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 using Robust.Shared.Timing;
+using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
+using Content.Shared._Persistence14.PersistentIdentifier;
 
 namespace Content.Shared.Salvage.Fulton;
 
@@ -22,16 +23,17 @@ namespace Content.Shared.Salvage.Fulton;
 /// </summary>
 public abstract partial class SharedFultonSystem : EntitySystem
 {
-    [Dependency] protected readonly IGameTiming Timing = default!;
-    [Dependency] private   readonly MetaDataSystem _metadata = default!;
-    [Dependency] protected readonly SharedAudioSystem Audio = default!;
-    [Dependency] private   readonly SharedDoAfterSystem _doAfter = default!;
-    [Dependency] private   readonly FoldableSystem _foldable = default!;
-    [Dependency] protected readonly SharedContainerSystem Container = default!;
-    [Dependency] private   readonly SharedPopupSystem _popup = default!;
-    [Dependency] private   readonly SharedStackSystem _stack = default!;
-    [Dependency] protected readonly SharedTransformSystem TransformSystem = default!;
-    [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
+    [Dependency] protected IGameTiming Timing = default!;
+    [Dependency] private MetaDataSystem _metadata = default!;
+    [Dependency] protected SharedAudioSystem Audio = default!;
+    [Dependency] private SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private FoldableSystem _foldable = default!;
+    [Dependency] protected SharedContainerSystem Container = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private SharedStackSystem _stack = default!;
+    [Dependency] protected SharedTransformSystem TransformSystem = default!;
+    [Dependency] private EntityWhitelistSystem _whitelistSystem = default!;
+    [Dependency] private PersistentIdentifierSystem _pid = default!;
 
     public static readonly EntProtoId EffectProto = "FultonEffect";
     protected static readonly Vector2 EffectOffset = Vector2.Zero;
@@ -49,6 +51,7 @@ public abstract partial class SharedFultonSystem : EntitySystem
         SubscribeLocalEvent<FultonComponent, AfterInteractEvent>(OnFultonInteract);
 
         SubscribeLocalEvent<FultonComponent, StackSplitEvent>(OnFultonSplit);
+        SubscribeLocalEvent<FultonBeaconComponent, FoldedEvent>(OnBeaconFolded);
     }
 
     private void OnFultonContainerInserted(EntityUid uid, FultonedComponent component, EntGotInsertedIntoContainerMessage args)
@@ -98,7 +101,7 @@ public abstract partial class SharedFultonSystem : EntitySystem
         }
 
         var fultoned = AddComp<FultonedComponent>(args.Target.Value);
-        fultoned.Beacon = fulton.Beacon;
+        fultoned.BeaconKey = fulton.BeaconKey;
         fultoned.NextFulton = Timing.CurTime + fulton.FultonDuration;
         fultoned.FultonDuration = fulton.FultonDuration;
         fultoned.Removeable = fulton.Removeable;
@@ -112,38 +115,43 @@ public abstract partial class SharedFultonSystem : EntitySystem
         if (args.Target == null || args.Handled || !args.CanReach)
             return;
 
+        // Interact with Beacon
         if (TryComp<FultonBeaconComponent>(args.Target, out var beacon))
         {
             if (!_foldable.IsFolded(args.Target.Value))
             {
-                component.Beacon = args.Target.Value;
+                component.BeaconKey = _pid.EnsureId(args.Target.Value);
                 Audio.PlayPredicted(beacon.LinkSound, uid, args.User);
-                _popup.PopupClient(Loc.GetString("fulton-linked"), uid, args.User);
+                _popup.PopupEntity(Loc.GetString("fulton-linked"), uid, args.User);
             }
             else
             {
-                component.Beacon = EntityUid.Invalid;
-                _popup.PopupClient(Loc.GetString("fulton-folded"), uid, args.User);
+                component.BeaconKey = null;
+                _popup.PopupEntity(Loc.GetString("fulton-folded"), uid, args.User);
             }
 
             return;
         }
 
-        if (Deleted(component.Beacon))
+        // If the beacon doesn't exist anymore, 
+        if (!TryGetBeacon(component.BeaconKey, out var beaconUid))
         {
-            _popup.PopupClient(Loc.GetString("fulton-not-found"), uid, args.User);
+            _popup.PopupEntity(Loc.GetString("fulton-not-found"), uid, args.User);
+            component.BeaconKey = null; // Unlink the beacon since it no longer exists.
             return;
         }
 
+        // Invalid fulton target
         if (!CanApplyFulton(args.Target.Value, component))
         {
-            _popup.PopupClient(Loc.GetString("fulton-invalid"), uid, uid);
+            _popup.PopupEntity(Loc.GetString("fulton-invalid"), uid, uid);
             return;
         }
 
+        // Already fultoned
         if (HasComp<FultonedComponent>(args.Target))
         {
-            _popup.PopupClient(Loc.GetString("fulton-fultoned"), uid, uid);
+            _popup.PopupEntity(Loc.GetString("fulton-fultoned"), uid, uid);
             return;
         }
 
@@ -160,10 +168,18 @@ public abstract partial class SharedFultonSystem : EntitySystem
             });
     }
 
+    private void OnBeaconFolded(EntityUid uid, FultonBeaconComponent component, FoldedEvent args)
+    {
+        if (args.User == null) // Only reset if a player folded the beacon. Prevents roundstart from resetting beacon link.
+            return;
+        EnsureComp<PersistentIdentifierComponent>(uid, out var idComp);
+        _pid.ResetId((uid, idComp), PersistentIdChangeBehaviour.Sever);
+    }
+
     private void OnFultonSplit(EntityUid uid, FultonComponent component, ref StackSplitEvent args)
     {
         var newFulton = EnsureComp<FultonComponent>(args.NewId);
-        newFulton.Beacon = component.Beacon;
+        newFulton.BeaconKey = component.BeaconKey;
         Dirty(args.NewId, newFulton);
     }
 
@@ -211,5 +227,26 @@ public abstract partial class SharedFultonSystem : EntitySystem
     {
         public NetEntity Entity;
         public NetCoordinates Coordinates;
+    }
+
+    protected virtual bool TryGetBeacon(string? key, [NotNullWhen(true)] out EntityUid? beacon)
+    {
+        beacon = null;
+
+        if (key == null)
+            return false;
+
+        var query = EntityQueryEnumerator<FultonBeaconComponent>();
+
+        while (query.MoveNext(out var uid, out var beaconComp))
+        {
+            if (_pid.EnsureId(uid) == key)
+            {
+                beacon = uid;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

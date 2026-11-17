@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Server.Chat.Systems;
 using Content.Server.GameTicking.Rules;
 using Content.Server.Station.Systems;
@@ -11,15 +10,16 @@ using Robust.Shared.Physics.Components;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
+using System.Numerics;
 
 namespace Content.Server.StationEvents.Events;
 
-public sealed class MeteorSwarmSystem : GameRuleSystem<MeteorSwarmComponent>
+public sealed partial class MeteorSwarmSystem : GameRuleSystem<MeteorSwarmComponent>
 {
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] private readonly AudioSystem _audio = default!;
-    [Dependency] private readonly ChatSystem _chat = default!;
-    [Dependency] private readonly StationSystem _station = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private AudioSystem _audio = default!;
+    [Dependency] private ChatSystem _chat = default!;
+    [Dependency] private StationSystem _station = default!;
 
     protected override void Added(EntityUid uid, MeteorSwarmComponent component, GameRuleComponent gameRule, GameRuleAddedEvent args)
     {
@@ -59,14 +59,23 @@ public sealed class MeteorSwarmSystem : GameRuleSystem<MeteorSwarmComponent>
 
         var center = playableArea.Center;
 
+        IRobustRandom random;
+        if (component.NonDirectional)
+        {
+            random = RobustRandom;
+        }
+        else
+        {
+            random = new RobustRandom();
+            random.SetSeed(uid.Id);
+        }
+
         var meteorsToSpawn = component.MeteorsPerWave.Next(RobustRandom);
         for (var i = 0; i < meteorsToSpawn; i++)
         {
             var spawnProto = RobustRandom.Pick(component.Meteors);
 
-            var angle = component.NonDirectional
-                ? RobustRandom.NextAngle()
-                : new Random(uid.Id).NextAngle();
+            var angle = random.NextAngle();
 
             var offset = angle.RotateVec(new Vector2((maximumDistance - minimumDistance) * RobustRandom.NextFloat() + minimumDistance, 0));
 
@@ -75,7 +84,7 @@ public sealed class MeteorSwarmSystem : GameRuleSystem<MeteorSwarmComponent>
             var subOffsetAngle = RobustRandom.Prob(0.5f)
                 ? angle + Math.PI / 2
                 : angle - Math.PI / 2;
-            var subOffset = subOffsetAngle.RotateVec(new Vector2( (playableArea.TopRight - playableArea.Center).Length() / 3 * RobustRandom.NextFloat(), 0));
+            var subOffset = subOffsetAngle.RotateVec(new Vector2((playableArea.TopRight - playableArea.Center).Length() / 3 * RobustRandom.NextFloat(), 0));
 
             var spawnPosition = new MapCoordinates(center + offset + subOffset, mapId);
             var meteor = Spawn(spawnProto, spawnPosition);

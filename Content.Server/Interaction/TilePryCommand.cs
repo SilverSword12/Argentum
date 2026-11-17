@@ -1,19 +1,18 @@
-using System.Numerics;
 using Content.Server.Administration;
 using Content.Shared.Administration;
 using Content.Shared.Maps;
 using Robust.Shared.Console;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
-using Robust.Shared.Prototypes;
+using System.Numerics;
 
 namespace Content.Server.Interaction;
 
 [AdminCommand(AdminFlags.Debug)]
-public sealed class TilePryCommand : LocalizedEntityCommands
+public sealed partial class TilePryCommand : LocalizedEntityCommands
 {
-    [Dependency] private readonly ITileDefinitionManager _tileDefinitionManager = default!;
-    [Dependency] private readonly SharedMapSystem _mapSystem = default!;
+    [Dependency] private ITileDefinitionManager _tileDefinitionManager = default!;
+    [Dependency] private SharedMapSystem _mapSystem = default!;
 
     private readonly string _platingId = "Plating";
 

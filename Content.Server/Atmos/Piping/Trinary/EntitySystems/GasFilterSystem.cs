@@ -1,11 +1,11 @@
+using System.Linq;
 using Content.Server.Administration.Logs;
 using Content.Server.Atmos.EntitySystems;
-using Content.Server.Atmos.Piping.Components;
 using Content.Server.Atmos.Piping.Trinary.Components;
-using Content.Server.NodeContainer;
 using Content.Server.NodeContainer.EntitySystems;
 using Content.Server.NodeContainer.Nodes;
 using Content.Shared.Atmos;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Piping;
 using Content.Shared.Atmos.Piping.Components;
 using Content.Shared.Atmos.Piping.Trinary.Components;
@@ -20,15 +20,15 @@ using Robust.Shared.Player;
 namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class GasFilterSystem : EntitySystem
+    public sealed partial class GasFilterSystem : EntitySystem
     {
         [Dependency] private UserInterfaceSystem _userInterfaceSystem = default!;
         [Dependency] private IAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-        [Dependency] private readonly SharedAmbientSoundSystem _ambientSoundSystem = default!;
-        [Dependency] private readonly SharedAppearanceSystem _appearanceSystem = default!;
-        [Dependency] private readonly SharedPopupSystem _popupSystem = default!;
-        [Dependency] private readonly NodeContainerSystem _nodeContainer = default!;
+        [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+        [Dependency] private SharedAmbientSoundSystem _ambientSoundSystem = default!;
+        [Dependency] private SharedAppearanceSystem _appearanceSystem = default!;
+        [Dependency] private SharedPopupSystem _popupSystem = default!;
+        [Dependency] private NodeContainerSystem _nodeContainer = default!;
 
         public override void Initialize()
         {
@@ -37,17 +37,22 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             SubscribeLocalEvent<GasFilterComponent, ComponentInit>(OnInit);
             SubscribeLocalEvent<GasFilterComponent, AtmosDeviceUpdateEvent>(OnFilterUpdated);
             SubscribeLocalEvent<GasFilterComponent, AtmosDeviceDisabledEvent>(OnFilterLeaveAtmosphere);
+            SubscribeLocalEvent<GasFilterComponent, AtmosDeviceEnabledEvent>(OnFilterJoinAtmosphere);
             SubscribeLocalEvent<GasFilterComponent, ActivateInWorldEvent>(OnFilterActivate);
             SubscribeLocalEvent<GasFilterComponent, GasAnalyzerScanEvent>(OnFilterAnalyzed);
             // Bound UI subscriptions
             SubscribeLocalEvent<GasFilterComponent, GasFilterChangeRateMessage>(OnTransferRateChangeMessage);
-            SubscribeLocalEvent<GasFilterComponent, GasFilterSelectGasMessage>(OnSelectGasMessage);
             SubscribeLocalEvent<GasFilterComponent, GasFilterToggleStatusMessage>(OnToggleStatusMessage);
+            SubscribeLocalEvent<GasFilterComponent, GasFilterToggleGasMessage>(OnToggleGasMessage); // Moffstation - filter multiple gases
 
         }
 
         private void OnInit(EntityUid uid, GasFilterComponent filter, ComponentInit args)
         {
+            // Moffstation - Begin (filter multiple gases)
+            if (filter.FilteredGas is { } filteredGas)
+                filter.FilteredGases.Add(filteredGas);
+            // Moffstation - End
             UpdateAppearance(uid, filter);
         }
 
@@ -55,7 +60,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
         {
             if (!filter.Enabled
                 || !_nodeContainer.TryGetNodes(uid, filter.InletName, filter.FilterName, filter.OutletName, out PipeNode? inletNode, out PipeNode? filterNode, out PipeNode? outletNode)
-                || (outletNode.Air.Pressure >= Atmospherics.MaxOutputPressure && filterNode.Air.Pressure >= Atmospherics.MaxOutputPressure)) // No need to transfer if targets are full.
+                || outletNode.Air.Pressure >= Atmospherics.MaxOutputPressure && filterNode.Air.Pressure >= Atmospherics.MaxOutputPressure) // No need to transfer if targets are full.
             {
                 _ambientSoundSystem.SetAmbience(uid, false);
                 return;
@@ -72,33 +77,18 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
 
             var removed = inletNode.Air.RemoveVolume(transferVol);
 
-            if (filter.FilteredGas.HasValue)
-            {
-                // Make sure we don't pump over the pressure limit.
-                var limitMolesFilter =
-                    AtmosphereSystem.MolesToMaxPressure(removed, filterNode.Air, Atmospherics.MaxOutputPressure);
+            // Moffstation - Begin (filter multiple gases)
+            var passingGasses = Enum.GetValues<Gas>().Except(filter.FilteredGases).ToHashSet();
 
-                var availableMoles = removed.GetMoles(filter.FilteredGas.Value);
-                var filteredMoles = Math.Max(Math.Min(limitMolesFilter, availableMoles), 0);
-                var filteredGasMixture = new GasMixture { Temperature = removed.Temperature };
+            var success = false;
+            if (filterNode.Air.Pressure < Atmospherics.MaxOutputPressure)
+                success |= TryTransfer(removed, filter.FilteredGases, filterNode.Air);
+            if (outletNode.Air.Pressure < Atmospherics.MaxOutputPressure)
+                success |= TryTransfer(removed, passingGasses, outletNode.Air);
 
-                filteredGasMixture.SetMoles(filter.FilteredGas.Value, filteredMoles);
-                removed.AdjustMoles(filter.FilteredGas.Value, -filteredMoles);
-
-                _atmosphereSystem.Merge(filterNode.Air, filteredGasMixture);
-
-                _ambientSoundSystem.SetAmbience(uid, filteredMoles > 0f);
-            }
-
-            // Fraction of `removed` that can be sent to outlet without exceeding max pressure.
-            var limitRatioOutlet =
-                AtmosphereSystem.FractionToMaxPressure(removed, outletNode.Air, Atmospherics.MaxOutputPressure);
-
-            // This might end up negative, but such cases are handled correctly by the `RemoveRatio` method
-            var passthrough = removed.RemoveRatio(limitRatioOutlet);
-
-            _atmosphereSystem.Merge(outletNode.Air, passthrough);
+            _ambientSoundSystem.SetAmbience(uid, success);
             _atmosphereSystem.Merge(inletNode.Air, removed);
+            // Moffstation - End
         }
 
         private void OnFilterLeaveAtmosphere(EntityUid uid, GasFilterComponent filter, ref AtmosDeviceDisabledEvent args)
@@ -111,7 +101,16 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             DirtyUI(uid, filter);
             _userInterfaceSystem.CloseUi(uid, GasFilterUiKey.Key);
         }
+        private void OnFilterJoinAtmosphere(EntityUid uid, GasFilterComponent filter, ref AtmosDeviceEnabledEvent args)
+        {
+            filter.Enabled = filter.DesiredEnabled;
 
+            UpdateAppearance(uid, filter);
+            _ambientSoundSystem.SetAmbience(uid, false);
+
+            DirtyUI(uid, filter);
+            _userInterfaceSystem.CloseUi(uid, GasFilterUiKey.Key);
+        }
         private void OnFilterActivate(EntityUid uid, GasFilterComponent filter, ActivateInWorldEvent args)
         {
             if (args.Handled || !args.Complex)
@@ -139,7 +138,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
                 return;
 
             _userInterfaceSystem.SetUiState(uid, GasFilterUiKey.Key,
-                new GasFilterBoundUserInterfaceState(MetaData(uid).EntityName, filter.TransferRate, filter.Enabled, filter.FilteredGas));
+                new GasFilterBoundUserInterfaceState(MetaData(uid).EntityName, filter.TransferRate, filter.Enabled, filter.FilteredGases)); // Moffstation - filter multiple gases
         }
 
         private void UpdateAppearance(EntityUid uid, GasFilterComponent? filter = null)
@@ -153,6 +152,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
         private void OnToggleStatusMessage(EntityUid uid, GasFilterComponent filter, GasFilterToggleStatusMessage args)
         {
             filter.Enabled = args.Enabled;
+            filter.DesiredEnabled = args.Enabled;
             _adminLogger.Add(LogType.AtmosPowerChanged, LogImpact.Medium,
                 $"{ToPrettyString(args.Actor):player} set the power on {ToPrettyString(uid):device} to {args.Enabled}");
             DirtyUI(uid, filter);
@@ -168,30 +168,32 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
 
         }
 
-        private void OnSelectGasMessage(EntityUid uid, GasFilterComponent filter, GasFilterSelectGasMessage args)
+        // Moffstation - Begin (filter multiple gases)
+        private void OnToggleGasMessage(Entity<GasFilterComponent> ent, ref GasFilterToggleGasMessage args)
         {
-            if (args.Gas.HasValue)
+            if (!Enum.IsDefined(args.Gas))
             {
-                if (Enum.IsDefined(typeof(Gas), args.Gas))
-                {
-                    filter.FilteredGas = args.Gas;
-                    _adminLogger.Add(LogType.AtmosFilterChanged, LogImpact.Medium,
-                        $"{ToPrettyString(args.Actor):player} set the filter on {ToPrettyString(uid):device} to {args.Gas.ToString()}");
-                    DirtyUI(uid, filter);
-                }
-                else
-                {
-                    Log.Warning($"{ToPrettyString(uid)} received GasFilterSelectGasMessage with an invalid ID: {args.Gas}");
-                }
+                Log.Warning($"{ToPrettyString(ent.Owner)} received GasFilterSelectGasMessage with an invalid ID: {args.Gas}");
+                return;
+            }
+
+            if (args.Filtered)
+            {
+                ent.Comp.FilteredGases.Add(args.Gas);
             }
             else
             {
-                filter.FilteredGas = null;
-                _adminLogger.Add(LogType.AtmosFilterChanged, LogImpact.Medium,
-                    $"{ToPrettyString(args.Actor):player} set the filter on {ToPrettyString(uid):device} to none");
-                DirtyUI(uid, filter);
+                ent.Comp.FilteredGases.Remove(args.Gas);
             }
+
+            var proto = _atmosphereSystem.GetGas((int)args.Gas);
+            _adminLogger.Add(
+                LogType.AtmosFilterChanged,
+                LogImpact.Medium,
+                $"{ToPrettyString(args.Actor):player} set the filter of {Loc.GetString(proto.Name)} on {ToPrettyString(ent.Owner):device} to {args.Filtered.ToString()}");
+            DirtyUI(ent.Owner, ent.Comp);
         }
+        // Moffstation - End
 
         /// <summary>
         /// Returns the gas mixture for the gas analyzer
@@ -225,5 +227,32 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
 
             args.DeviceFlipped = inlet != null && filterNode != null && inlet.CurrentPipeDirection.ToDirection() == filterNode.CurrentPipeDirection.ToDirection().GetClockwise90Degrees();
         }
+
+
+        // Moffstation - Begin (filter multiple gases)
+        private bool TryTransfer(GasMixture source, HashSet<Gas> gasses, GasMixture target)
+        {
+            var limitMoles = AtmosphereSystem.MolesToMaxPressure(source, target, Atmospherics.MaxOutputPressure);
+            if (limitMoles <= Atmospherics.GasMinMoles) return false;
+
+            var availableMoles = gasses.Aggregate(0f, (x, gas) => x + source.GetMoles(gas));
+
+            var transferredMoles = Math.Clamp(availableMoles, 0f, limitMoles);
+
+            if (transferredMoles < Atmospherics.GasMinMoles)
+                return false;
+
+            var transferredMixture = new GasMixture { Temperature = source.Temperature };
+            foreach (var gas in gasses)
+            {
+                var value = (source.GetMoles(gas) / availableMoles) * transferredMoles;
+                transferredMixture.SetMoles(gas, value);
+                source.AdjustMoles(gas, -value);
+            }
+
+            _atmosphereSystem.Merge(target, transferredMixture);
+            return true;
+        }
+        // Moffstation - End
     }
 }

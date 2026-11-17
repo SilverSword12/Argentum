@@ -1,23 +1,22 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Content.Server.Store.Systems;
 using Content.Shared.FixedPoint;
 using Content.Shared.Store;
 using Content.Shared.StoreDiscount.Components;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Content.Server.StoreDiscount.Systems;
 
 /// <summary>
 /// Discount system that is part of <see cref="StoreSystem"/>.
 /// </summary>
-public sealed class StoreDiscountSystem : EntitySystem
+public sealed partial class StoreDiscountSystem : EntitySystem
 {
     private static readonly ProtoId<StoreCategoryPrototype> DiscountedStoreCategoryPrototypeKey = "DiscountedItems";
 
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     /// <inheritdoc />
     public override void Initialize()
@@ -80,7 +79,7 @@ public sealed class StoreDiscountSystem : EntitySystem
         // each category, and after that - roll exact items in categories
         // and their cost
 
-        var prototypes = _prototypeManager.EnumeratePrototypes<DiscountCategoryPrototype>();
+        var prototypes = ProtoMan.EnumeratePrototypes<DiscountCategoryPrototype>();
         var categoriesWithCumulativeWeight = new CategoriesWithCumulativeWeightMap(prototypes);
         var uniqueListingItemCountByCategory = PickCategoriesToRoll(totalAvailableDiscounts, categoriesWithCumulativeWeight);
 
@@ -301,7 +300,7 @@ public sealed class StoreDiscountSystem : EntitySystem
         public CategoriesWithCumulativeWeightMap(IEnumerable<DiscountCategoryPrototype> prototypes)
         {
             var asArray = prototypes.ToArray();
-            _weights = new (asArray.Length);
+            _weights = new(asArray.Length);
             _categories = new(asArray.Length);
 
             var currentIndex = 0;
@@ -346,7 +345,7 @@ public sealed class StoreDiscountSystem : EntitySystem
 
             for (var i = indexToRemove + 1; i < _categories.Count; i++)
             {
-                _weights[i]-= discountCategory.Weight;
+                _weights[i] -= discountCategory.Weight;
             }
 
             _totalWeight -= discountCategory.Weight;

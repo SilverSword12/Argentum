@@ -1,9 +1,9 @@
 using Content.Server.Administration;
 using Content.Server.Administration.Logs;
-using Content.Shared.Administration;
-using Content.Shared.Database;
-using Content.Shared.CCVar;
 using Content.Server.Chat.Managers;
+using Content.Shared.Administration;
+using Content.Shared.CCVar;
+using Content.Shared.Database;
 using Robust.Shared.Configuration;
 using Robust.Shared.Console;
 
@@ -13,11 +13,11 @@ namespace Content.Server.Motd;
 /// A console command usable by any user which prints or sets the Message of the Day.
 /// </summary>
 [AdminCommand(AdminFlags.Moderator)]
-public sealed class SetMotdCommand : LocalizedCommands
+public sealed partial class SetMotdCommand : LocalizedCommands
 {
-    [Dependency] private readonly IAdminLogManager _adminLogManager = default!;
-    [Dependency] private readonly IChatManager _chatManager = default!;
-    [Dependency] private readonly IConfigurationManager _configurationManager = default!;
+    [Dependency] private IAdminLogManager _adminLogManager = default!;
+    [Dependency] private IChatManager _chatManager = default!;
+    [Dependency] private IConfigurationManager _configurationManager = default!;
 
     public override string Command => "set-motd";
 

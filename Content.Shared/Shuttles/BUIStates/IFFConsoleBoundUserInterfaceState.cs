@@ -8,6 +8,11 @@ public sealed class IFFConsoleBoundUserInterfaceState : BoundUserInterfaceState
 {
     public IFFFlags AllowedFlags;
     public IFFFlags Flags;
+    public Color SignatureColor;
+    public bool ColorEditable;
+    public IFFDesignation Designation;
+    public bool DesignationEditable;
+    public bool ShowFactionTag;
 }
 
 [Serializable, NetSerializable]

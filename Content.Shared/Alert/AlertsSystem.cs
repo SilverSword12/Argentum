@@ -6,19 +6,16 @@ using Robust.Shared.Timing;
 
 namespace Content.Shared.Alert;
 
-public abstract class AlertsSystem : EntitySystem
+public abstract partial class AlertsSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
-    private EntityQuery<AlertsComponent> _alertsQuery;
+    [Dependency] private EntityQuery<AlertsComponent> _alertsQuery = default!;
     private FrozenDictionary<ProtoId<AlertPrototype>, AlertPrototype> _typeToAlert = default!;
 
     public override void Initialize()
     {
         base.Initialize();
-
-        _alertsQuery = GetEntityQuery<AlertsComponent>();
 
         SubscribeLocalEvent<AlertsComponent, ComponentStartup>(HandleComponentStartup);
         SubscribeLocalEvent<AlertsComponent, ComponentShutdown>(HandleComponentShutdown);
@@ -140,9 +137,9 @@ public abstract class AlertsSystem : EntitySystem
         short? severity = null,
         (TimeSpan, TimeSpan)? cooldown = null,
         bool autoRemove = false,
-        bool showCooldown = true )
+        bool showCooldown = true)
     {
-        ShowAlert(entity, new AlertState { Type = alertType, Severity = severity, Cooldown = cooldown, AutoRemove = autoRemove, ShowCooldown = showCooldown});
+        ShowAlert(entity, new AlertState { Type = alertType, Severity = severity, Cooldown = cooldown, AutoRemove = autoRemove, ShowCooldown = showCooldown });
     }
 
     public void ShowAlert(Entity<AlertsComponent?> entity, AlertState state)
@@ -179,7 +176,7 @@ public abstract class AlertsSystem : EntitySystem
             EnsureComp<AlertAutoRemoveComponent>(entity, out var autoComp);
 
             if (autoComp.AlertKeys.Add(alert.AlertKey))
-                Dirty (entity, autoComp);
+                Dirty(entity, autoComp);
         }
 
         AfterShowAlert((entity, entity.Comp));
@@ -233,7 +230,7 @@ public abstract class AlertsSystem : EntitySystem
     /// </summary>
     public void ClearAlertCategory(Entity<AlertsComponent?> entity, ProtoId<AlertCategoryPrototype> category)
     {
-        if(!_alertsQuery.Resolve(entity, ref entity.Comp, false))
+        if (!_alertsQuery.Resolve(entity, ref entity.Comp, false))
             return;
 
         var key = AlertKey.ForCategory(category);
@@ -328,7 +325,7 @@ public abstract class AlertsSystem : EntitySystem
     protected virtual void LoadPrototypes()
     {
         var dict = new Dictionary<ProtoId<AlertPrototype>, AlertPrototype>();
-        foreach (var alert in _prototypeManager.EnumeratePrototypes<AlertPrototype>())
+        foreach (var alert in ProtoMan.EnumeratePrototypes<AlertPrototype>())
         {
             if (!dict.TryAdd(alert.ID, alert))
                 Log.Error($"Found alert with duplicate alertType {alert.ID} - all alerts must have a unique alertType, this one will be skipped");
@@ -384,7 +381,7 @@ public abstract class AlertsSystem : EntitySystem
         clickEvent.User = user;
         clickEvent.AlertId = alert.ID;
 
-        RaiseLocalEvent(user, (object) clickEvent, true);
+        RaiseLocalEvent(user, (object)clickEvent, true);
         return clickEvent.Handled;
     }
 

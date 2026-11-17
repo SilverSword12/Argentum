@@ -19,7 +19,7 @@
   materials:
     Steel: 250
     Plastic: 50
-
+  unlockUses: 2
 - type: latheRecipe
   id: SyringeCryostasis
   result: SyringeCryostasis
@@ -27,7 +27,7 @@
   materials:
     Steel: 200
     Plastic: 50
-
+  unlockUses: 2
 - type: latheRecipe
   id: Dropper
   result: Dropper
@@ -52,6 +52,18 @@
     Steel: 500
     Plastic: 500
     Plasma: 150
+    Phoron: 100
+    Silver: 50
+
+- type: latheRecipe
+  id: BluespaceJug
+  result: BluespaceJug
+  completetime: 2
+  materials:
+    Steel: 500
+    Plastic: 500
+    Plasma: 150
+    Phoron: 100
     Silver: 50
 
 - type: latheRecipe
@@ -63,6 +75,7 @@
     Plastic: 150
     Glass: 250
     Plasma: 100
+    Phoron: 100
     Silver: 50
 
 - type: latheRecipe
@@ -105,12 +118,15 @@
   materials:
     Glass: 50
     Wood: 20
+    
 
-- type: latheRecipe
-  id: ClothingEyesGlassesChemical
-  result: ClothingEyesGlassesChemical
-  completetime: 2
-  materials:
-    Steel: 200
-    Plastic: 300
-    Glass: 500
+# Moffstation - Begin - Replaced by modular HUDs
+#- type: latheRecipe
+#  id: ClothingEyesGlassesChemical
+#  result: ClothingEyesGlassesChemical
+#  completetime: 2
+#  materials:
+#    Steel: 200
+#    Plastic: 300
+#    Glass: 500
+# Moffstation - End

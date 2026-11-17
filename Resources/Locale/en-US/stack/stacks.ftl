@@ -8,13 +8,25 @@ stack-silver = silver
 stack-gold = gold
 stack-reinforced-glass = reinforced glass
 stack-plasma-glass = plasma glass
+stack-phoron = phoron
 stack-uranium = uranium
 stack-uranium-glass = uranium glass
 stack-clockwork-glass = clockwork glass
 stack-reinforced-plasma-glass = reinforced plasma glass
+stack-phoron-glass = phoron glass
+stack-reinforced-phoron-glass = reinforced phoron glass
 stack-reinforced-uranium-glass = reinforced uranium glass
 stack-gunpowder = gunpowder
 stack-cardboard = cardboard
+stack-titanium = titanium
+stack-aluminium = aluminum
+stack-copper-ore = copper ore
+stack-tin-ore = tin ore
+stack-aluminum-ore = aluminum ore
+stack-titanium-ore = titanium ore
+stack-copper = copper
+stack-tin = tin
+stack-bronze = bronze
 
 stack-bones = {$amount ->
     [1] bone
@@ -39,6 +51,10 @@ stack-hv-cable = {$amount ->
 stack-explosive-cord = {$amount ->
     [1] explosive cord
     *[other] explosive cords
+}
+stack-warning-cone = {$amount ->
+    [1] warning cone
+    *[other] warning cones
 }
 stack-wood-plank = {$amount ->
     [1] wood plank
@@ -80,9 +96,13 @@ stack-artifact-fragment = artifact {$amount ->
     [1] fragment
     *[other] fragments
 }
-stack-xenoborg-circuit = dvanced xenoborg {$amount ->
-    [1] circuitboard
-    *[other] circuitboards
+stack-conveyor-belt = {$amount ->
+    [1] conveyor belt
+    *[other] conveyor belts
+}
+stack-xenoborg-crystal = xenoborg {$amount ->
+    [1] crystal
+    *[other] crystals
 }
 
 # best materials
@@ -172,6 +192,9 @@ stack-white-steel-slats-tile-continuous = white steel continuous slat tile
 stack-steel-dark-checker-tile = steel dark checker tile
 stack-steel-light-checker-tile = steel light checker tile
 stack-steel-tile = steel tile
+stack-plastic-tile = plastic tile
+stack-plastic-dark-tile = dark plastic tile
+stack-plastic-white-tile = white plastic tile
 stack-wood-floor = wood floor
 stack-techmaint-floor = techmaint floor
 stack-techmaint-floor-dark = dark techmaint floor
@@ -264,5 +287,27 @@ stack-white-marble-floor = white marble floor
 stack-dark-marble-floor = dark marble floor
 stack-plasma-marble-floor = plasmarble floor
 stack-uranium-marble-floor = uranium marble floor
+
+# salvage treasure coins
+stack-iron-coin = iron {$amount ->
+    [1] coin
+    *[other] coins
+}
+stack-silver-coin = silver {$amount ->
+    [1] coin
+    *[other] coins
+}
+stack-gold-coin = gold {$amount ->
+    [1] coin
+    *[other] coins
+}
+stack-adamantine-coin = adamantine {$amount ->
+    [1] coin
+    *[other] coins
+}
+stack-diamond-coin = diamond {$amount ->
+    [1] coin
+    *[other] coins
+}
 stack-astro-ironsand-floor = astro-ironsand floor
 stack-astro-ironsand-floor-borderless = borderless astro-ironsand floor

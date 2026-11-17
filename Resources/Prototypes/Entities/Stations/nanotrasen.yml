@@ -15,12 +15,10 @@
     - BaseStationJobsSpawning
     - BaseStationRecords
     - BaseStationArrivals
-    - BaseStationGateway
     - BaseStationShuttles
     - BaseStationCentcomm
     - BaseStationEvacuation
     - BaseStationAlertLevels
-    - BaseStationMagnet
     - BaseStationExpeditions
     - BaseStationSalvageJobs
     - BaseStationSiliconLawCrewsimov
@@ -30,6 +28,26 @@
   categories: [ HideSpawnMenu ]
   components:
     - type: Transform
+
+- type: entity
+  id: StandardPersistStation
+  parent:
+  - BaseStation
+  - BaseStationNews
+  - BaseStationCargo
+  - BaseStationJobsSpawning
+  - BaseStationRecords
+  - BaseStationShuttles
+  - BaseStationAlertLevels
+  - BaseStationExpeditions
+  - BaseStationSalvageJobs
+  - BaseStationSiliconLawCrewsimov
+  - BaseStationAllEventsEligible
+  - BaseStationNanotrasen
+  - BaseStationDeliveries
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
 
 - type: entity
   id: NanotrasenCentralCommand

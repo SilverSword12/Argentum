@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Content.Client.Administration.UI.CustomControls;
 using Content.Shared.Administration.Logs;
@@ -62,6 +62,8 @@ public sealed partial class AdminLogsControl : Control
     public HashSet<Guid> SelectedPlayers { get; } = new();
 
     public HashSet<LogImpact> SelectedImpacts { get; } = new();
+
+    private bool firstTimeOpened = true;
 
     public void SetCurrentRound(int round)
     {
@@ -184,6 +186,22 @@ public sealed partial class AdminLogsControl : Control
         UpdateLogs();
     }
 
+    public void SelectPlayers(List<Guid> players)
+    {
+        SelectedPlayers.Clear();
+        SelectedPlayers.UnionWith(players);
+
+        foreach (var control in PlayersContainer.Children)
+        {
+            if (control is not AdminLogPlayerButton player)
+                continue;
+
+            player.Pressed = SelectedPlayers.Contains(player.Id);
+        }
+
+        UpdateLogs();
+    }
+
     public void SetTypesSelection(HashSet<LogType> selectedTypes, bool invert = false)
     {
         SelectedTypes.Clear();
@@ -300,7 +318,7 @@ public sealed partial class AdminLogsControl : Control
 
     private void TypeButtonPressed(ButtonEventArgs args)
     {
-        var button = (AdminLogTypeButton) args.Button;
+        var button = (AdminLogTypeButton)args.Button;
         if (button.Pressed)
         {
             SelectedTypes.Add(button.Type);
@@ -315,7 +333,7 @@ public sealed partial class AdminLogsControl : Control
 
     private void PlayerButtonPressed(ButtonEventArgs args)
     {
-        var button = (AdminLogPlayerButton) args.Button;
+        var button = (AdminLogPlayerButton)args.Button;
         if (button.Pressed)
         {
             SelectedPlayers.Add(button.Id);
@@ -330,7 +348,7 @@ public sealed partial class AdminLogsControl : Control
 
     private void ImpactButtonPressed(ButtonEventArgs args)
     {
-        var button = (AdminLogImpactButton) args.Button;
+        var button = (AdminLogImpactButton)args.Button;
         if (button.Pressed)
         {
             SelectedImpacts.Add(button.Impact);
@@ -420,15 +438,13 @@ public sealed partial class AdminLogsControl : Control
     public void SetPlayers(Dictionary<Guid, string> players)
     {
         var buttons = new SortedSet<AdminLogPlayerButton>(_adminLogPlayerButtonComparer);
-        var allSelected = true;
+        // we retrieve everything if we open this window for the first time and the selected player list is empty
+        var allSelected = firstTimeOpened && SelectedPlayers.Count == 0;
 
         foreach (var control in PlayersContainer.Children.ToArray())
         {
             if (control is not AdminLogPlayerButton player)
                 continue;
-
-            if (!SelectedPlayers.Contains(player.Id))
-                allSelected = false;
 
             if (!players.Remove(player.Id))
                 continue;
@@ -457,6 +473,8 @@ public sealed partial class AdminLogsControl : Control
         foreach (var player in buttons)
         {
             PlayersContainer.AddChild(player);
+
+            player.Pressed = SelectedPlayers.Contains(player.Id);
         }
 
         UpdateLogs();

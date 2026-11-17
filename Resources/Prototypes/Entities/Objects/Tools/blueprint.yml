@@ -17,10 +17,13 @@
       state: storage
   - type: Blueprint
   - type: StaticPrice
-    price: 1000
+    price: 200
   - type: Tag
     tags:
     - BlueprintAutolathe
+  - type: PhysicalComposition
+    materialComposition:
+      Paper: 100
 
 - type: entity
   parent: BaseBlueprint

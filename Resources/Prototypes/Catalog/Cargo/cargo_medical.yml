@@ -14,17 +14,7 @@
     sprite: Objects/Specific/Chemistry/beaker.rsi
     state: beaker
   product: CrateChemistrySupplies
-  cost: 750
-  category: cargoproduct-category-name-medical
-  group: market
-
-- type: cargoProduct
-  id: MedicalChemistryVials
-  icon:
-    sprite: Objects/Specific/Chemistry/vial.rsi
-    state: vial
-  product: CrateChemistryVials
-  cost: 1100
+  cost: 1750
   category: cargoproduct-category-name-medical
   group: market
 
@@ -119,31 +109,51 @@
   group: market
 
 - type: cargoProduct
-  id: ChemistryP
+  id: ChemistryMetals
   icon:
     sprite: Structures/Storage/Crates/chemcrate_secure.rsi
     state: icon
-  product: CrateChemistryP
+  product: CrateChemistryMetals
   cost: 850
   category: cargoproduct-category-name-medical
   group: market
 
 - type: cargoProduct
-  id: ChemistryS
+  id: ChemistryNonMetals
   icon:
     sprite: Structures/Storage/Crates/chemcrate_secure.rsi
     state: icon
-  product: CrateChemistryS
-  cost: 750
+  product: CrateChemistryNonMetals
+  cost: 850
   category: cargoproduct-category-name-medical
   group: market
 
 - type: cargoProduct
-  id: CrateChemistryD
+  id: ParamedicLocker
   icon:
-    sprite: Structures/Storage/Crates/chemcrate_secure.rsi
+    sprite: Clothing/Head/Soft/paramedicsoft.rsi
     state: icon
-  product: CrateChemistryD
-  cost: 750
+  product: LockerParamedicFilled
+  cost: 4000
   category: cargoproduct-category-name-medical
   group: market
+
+- type: cargoProduct
+  id: CMOLocker
+  icon:
+    sprite: Clothing/Head/Hardsuits/medical.rsi
+    state: icon
+  product: LockerChiefMedicalOfficerFilledHardsuit
+  cost: 12500
+  category: cargoproduct-category-name-medical
+  group: market2
+
+- type: cargoProduct
+  id: MedicalTechFabCircuitboard
+  icon:
+    sprite: Objects/Misc/module.rsi
+    state: cpu_medical
+  product: MedicalTechFabCircuitboard
+  cost: 7500
+  category: cargoproduct-category-name-medical
+  group: market2

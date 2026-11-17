@@ -1,4 +1,3 @@
-using Content.Server.Atmos.Components;
 using Content.Server.Atmos.EntitySystems;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Movement.Components;
@@ -8,10 +7,10 @@ using Robust.Shared.Timing;
 
 namespace Content.Server.Movement.Systems;
 
-public sealed class JetpackSystem : SharedJetpackSystem
+public sealed partial class JetpackSystem : SharedJetpackSystem
 {
-    [Dependency] private readonly GasTankSystem _gasTank = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private GasTankSystem _gasTank = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     protected override bool CanEnable(EntityUid uid, JetpackComponent component)
     {
@@ -40,7 +39,7 @@ public sealed class JetpackSystem : SharedJetpackSystem
                 continue;
 
             var usedEnoughAir =
-                MathHelper.CloseTo(usedAir.TotalMoles, comp.MoleUsage, comp.MoleUsage/100);
+                MathHelper.CloseTo(usedAir.TotalMoles, comp.MoleUsage, comp.MoleUsage / 100);
 
             if (!usedEnoughAir)
             {

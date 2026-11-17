@@ -1,9 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
 using Content.Shared.Administration;
 using Content.Shared.Chat;
 using Content.Shared.Players.RateLimiting;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Server.Chat.Managers
 {
@@ -49,5 +49,7 @@ namespace Content.Server.Chat.Managers
         /// <param name="player">The player sending a chat message.</param>
         /// <returns>False if the player has violated rate limits and should be blocked from sending further messages.</returns>
         RateLimitStatus HandleRateLimit(ICommonSession player);
+
+        string PrependFollowButtonIfAppropriate(string wrappedMessage, EntityUid source, INetChannel recipient);
     }
 }

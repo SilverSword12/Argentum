@@ -1,7 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using Content.Client.UserInterface.Controls;
 using JetBrains.Annotations;
 using Robust.Client.UserInterface;
+using Robust.Client.UserInterface.Controls;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Client.Guidebook.Richtext;
 

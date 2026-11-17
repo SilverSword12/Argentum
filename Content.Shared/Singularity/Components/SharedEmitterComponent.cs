@@ -1,9 +1,8 @@
-﻿using System.Threading;
 using Content.Shared.DeviceLinking;
-using Content.Shared.Radio;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
+using System.Threading;
 
 namespace Content.Shared.Singularity.Components;
 
@@ -12,10 +11,9 @@ public sealed partial class EmitterComponent : Component
 {
     public CancellationTokenSource? TimerCancel;
 
-    // whether the power switch is in "on"
-    [ViewVariables] public bool IsOn;
     // Whether the power switch is on AND the machine has enough power (so is actively firing)
-    [ViewVariables] public bool IsPowered;
+    [AutoNetworkedField]
+    public bool IsPowered;
 
     /// <summary>
     /// counts the number of consecutive shots fired.
@@ -31,12 +29,6 @@ public sealed partial class EmitterComponent : Component
 
     [DataField]
     public List<EntProtoId> SelectableTypes = new();
-
-    /// <summary>
-    /// The current amount of power being used.
-    /// </summary>
-    [DataField]
-    public int PowerUseActive = 600;
 
     /// <summary>
     /// The amount of shots that are fired in a single "burst"
@@ -97,12 +89,6 @@ public sealed partial class EmitterComponent : Component
     /// </summary>
     [DataField]
     public Dictionary<ProtoId<SinkPortPrototype>, EntProtoId> SetTypePorts = new();
-
-    [DataField]
-    public ProtoId<RadioChannelPrototype> RadioChannel = "Engineering";
-
-    [DataField]
-    public bool AlertRadio = false; // is this emitter critical to the station to the point a radio channel should be alerted if anything happens to it (i.e. emitters near singularity/tesla containment)
 }
 
 [NetSerializable, Serializable]

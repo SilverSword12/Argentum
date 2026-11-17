@@ -1,4 +1,3 @@
-﻿using System.Linq;
 using Content.Server.Administration;
 using Content.Server.GameTicking.Presets;
 using Content.Shared.Administration;
@@ -7,9 +6,9 @@ using Robust.Shared.Console;
 namespace Content.Server.GameTicking.Commands
 {
     [AdminCommand(AdminFlags.Round)]
-    public sealed class SetGamePresetCommand : IConsoleCommand
+    public sealed partial class SetGamePresetCommand : IConsoleCommand
     {
-        [Dependency] private readonly IEntityManager _entity = default!;
+        [Dependency] private IEntityManager _entity = default!;
 
         public string Command => "setgamepreset";
         public string Description => Loc.GetString("set-game-preset-command-description", ("command", Command));

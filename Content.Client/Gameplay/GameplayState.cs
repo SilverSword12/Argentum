@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Client.Changelog;
 using Content.Client.Hands;
 using Content.Client.UserInterface.Controls;
@@ -13,18 +12,19 @@ using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.CustomControls;
 using Robust.Shared.Configuration;
 using Robust.Shared.Timing;
+using System.Numerics;
 
 namespace Content.Client.Gameplay
 {
     [Virtual]
-    public class GameplayState : GameplayStateBase, IMainViewportState
+    public partial class GameplayState : GameplayStateBase, IMainViewportState
     {
-        [Dependency] private readonly IEyeManager _eyeManager = default!;
-        [Dependency] private readonly IOverlayManager _overlayManager = default!;
-        [Dependency] private readonly IGameTiming _gameTiming = default!;
-        [Dependency] private readonly IUserInterfaceManager _uiManager = default!;
-        [Dependency] private readonly ChangelogManager _changelog = default!;
-        [Dependency] private readonly IConfigurationManager _configurationManager = default!;
+        [Dependency] private IEyeManager _eyeManager = default!;
+        [Dependency] private IOverlayManager _overlayManager = default!;
+        [Dependency] private IGameTiming _gameTiming = default!;
+        [Dependency] private IUserInterfaceManager _uiManager = default!;
+        [Dependency] private ChangelogManager _changelog = default!;
+        [Dependency] private IConfigurationManager _configurationManager = default!;
 
         private FpsCounter _fpsCounter = default!;
         private Label _version = default!;

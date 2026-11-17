@@ -1,12 +1,10 @@
-using Content.Server.Power.Components;
 using Content.Server.Power.EntitySystems;
 using Content.Shared.Audio;
-using Content.Shared.Mobs;
 using Content.Shared.Power;
 
 namespace Content.Server.Audio;
 
-public sealed class AmbientSoundSystem : SharedAmbientSoundSystem
+public sealed partial class AmbientSoundSystem : SharedAmbientSoundSystem
 {
     public override void Initialize()
     {

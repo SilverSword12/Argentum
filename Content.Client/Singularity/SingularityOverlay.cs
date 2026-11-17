@@ -1,18 +1,21 @@
+using System.Numerics;
+using Content.Shared.CCVar;
 using Content.Shared.Singularity.Components;
 using Robust.Client.Graphics;
 using Robust.Client.UserInterface.CustomControls;
+using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Prototypes;
-using System.Numerics;
 
 namespace Content.Client.Singularity
 {
-    public sealed class SingularityOverlay : Overlay, IEntityEventSubscriber
+    public sealed partial class SingularityOverlay : Overlay, IEntityEventSubscriber
     {
         private static readonly ProtoId<ShaderPrototype> Shader = "Singularity";
 
-        [Dependency] private readonly IEntityManager _entMan = default!;
-        [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IEntityManager _entMan = default!;
+        [Dependency] private IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IConfigurationManager _configManager = default!;
         private SharedTransformSystem? _xformSystem = null;
 
         /// <summary>
@@ -28,6 +31,8 @@ namespace Content.Client.Singularity
 
         private readonly ShaderInstance _shader;
 
+        private bool _reducedMotion;
+
         public SingularityOverlay()
         {
             IoCManager.InjectDependencies(this);
@@ -35,15 +40,20 @@ namespace Content.Client.Singularity
             _shader.SetParameter("maxDistance", MaxDistance * EyeManager.PixelsPerMeter);
             _entMan.EventBus.SubscribeEvent<PixelToMapEvent>(EventSource.Local, this, OnProjectFromScreenToMap);
             ZIndex = 101; // Should be drawn after the placement overlay so admins placing items near the singularity can tell where they're going.
+
+            _configManager.OnValueChanged(CCVars.DisableSinguloWarp, (b) => { _reducedMotion = b; }, invokeImmediately: true);
         }
 
         private readonly Vector2[] _positions = new Vector2[MaxCount];
         private readonly float[] _intensities = new float[MaxCount];
         private readonly float[] _falloffPowers = new float[MaxCount];
+        private readonly float[] _distortionDirections = new float[MaxCount];
         private int _count = 0;
 
         protected override bool BeforeDraw(in OverlayDrawArgs args)
         {
+            if (_reducedMotion)
+                return false;
             if (args.Viewport.Eye == null)
                 return false;
             if (_xformSystem is null && !_entMan.TrySystem(out _xformSystem))
@@ -70,6 +80,7 @@ namespace Content.Client.Singularity
                 _positions[_count] = tempCoords;
                 _intensities[_count] = distortion.Intensity;
                 _falloffPowers[_count] = distortion.FalloffPower;
+                _distortionDirections[_count] = distortion.InvertDistortion ? -1f : 1f;
                 _count++;
 
                 if (_count == MaxCount)
@@ -89,6 +100,7 @@ namespace Content.Client.Singularity
             _shader?.SetParameter("position", _positions);
             _shader?.SetParameter("intensity", _intensities);
             _shader?.SetParameter("falloffPower", _falloffPowers);
+            _shader?.SetParameter("distortionDirection", _distortionDirections);
             _shader?.SetParameter("SCREEN_TEXTURE", ScreenTexture);
 
             var worldHandle = args.WorldHandle;
@@ -102,6 +114,8 @@ namespace Content.Client.Singularity
         /// </summary>
         private void OnProjectFromScreenToMap(ref PixelToMapEvent args)
         {   // Mostly copypasta from the singularity shader.
+            if (_reducedMotion)
+                return;
             if (args.Viewport.Eye == null)
                 return;
             var maxDistance = MaxDistance * EyeManager.PixelsPerMeter;
@@ -135,7 +149,7 @@ namespace Content.Client.Singularity
                 if (deformation > 0.8)
                     deformation = MathF.Pow(deformation, 0.3f);
 
-                finalCoords -= delta * deformation;
+                finalCoords -= delta * deformation * _distortionDirections[i];
             }
 
             finalCoords.X -= MathF.Floor(finalCoords.X / (args.Viewport.Size.X * 2)) * args.Viewport.Size.X * 2; // Manually handle the wrapping reflection behaviour used by the viewport texture.

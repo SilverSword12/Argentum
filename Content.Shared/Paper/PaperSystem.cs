@@ -1,37 +1,41 @@
-using System.Linq;
 using Content.Shared.Administration.Logs;
-using Content.Shared.UserInterface;
 using Content.Shared.Database;
 using Content.Shared.Examine;
+using Content.Shared.IdentityManagement;
 using Content.Shared.Interaction;
-using Content.Shared.Random.Helpers;
+using Content.Shared.Mind.Components;
 using Content.Shared.Popups;
+using Content.Shared.Random.Helpers;
+using Content.Shared.Roles.Jobs;
 using Content.Shared.Tag;
-using Robust.Shared.Player;
+using Content.Shared.UserInterface;
 using Robust.Shared.Audio.Systems;
-using static Content.Shared.Paper.PaperComponent;
+using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using System.Linq;
+using Content.Shared.Persistence.Paper;
+using static Content.Shared.Paper.PaperComponent;
 
 namespace Content.Shared.Paper;
 
-public sealed class PaperSystem : EntitySystem
+public sealed partial class PaperSystem : EntitySystem
 {
-    [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
-    [Dependency] private readonly IPrototypeManager _protoMan = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly SharedInteractionSystem _interaction = default!;
-    [Dependency] private readonly SharedPopupSystem _popupSystem = default!;
-    [Dependency] private readonly TagSystem _tagSystem = default!;
-    [Dependency] private readonly SharedUserInterfaceSystem _uiSystem = default!;
-    [Dependency] private readonly MetaDataSystem _metaSystem = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
+    [Dependency] private ISharedAdminLogManager _adminLogger = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedInteractionSystem _interaction = default!;
+    [Dependency] private SharedPopupSystem _popupSystem = default!;
+    [Dependency] private TagSystem _tagSystem = default!;
+    [Dependency] private SharedUserInterfaceSystem _uiSystem = default!;
+    [Dependency] private MetaDataSystem _metaSystem = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+
+    [Dependency] private EntityQuery<PaperComponent> _paperQuery = default!;
 
     private static readonly ProtoId<TagPrototype> WriteIgnoreStampsTag = "WriteIgnoreStamps";
     private static readonly ProtoId<TagPrototype> WriteTag = "Write";
 
-    private EntityQuery<PaperComponent> _paperQuery;
 
     public override void Initialize()
     {
@@ -47,8 +51,6 @@ public sealed class PaperSystem : EntitySystem
         SubscribeLocalEvent<RandomPaperContentComponent, MapInitEvent>(OnRandomPaperContentMapInit);
 
         SubscribeLocalEvent<ActivateOnPaperOpenedComponent, PaperWriteEvent>(OnPaperWrite);
-
-        _paperQuery = GetEntityQuery<PaperComponent>();
     }
 
     private void OnMapInit(Entity<PaperComponent> entity, ref MapInitEvent args)
@@ -122,7 +124,7 @@ public sealed class PaperSystem : EntitySystem
                 if (entity.Comp.EditingDisabled)
                 {
                     var paperEditingDisabledMessage = Loc.GetString("paper-tamper-proof-modified-message");
-                    _popupSystem.PopupClient(paperEditingDisabledMessage, entity, args.User);
+                    _popupSystem.PopupEntity(paperEditingDisabledMessage, entity, args.User);
 
                     args.Handled = true;
                     return;
@@ -135,7 +137,7 @@ public sealed class PaperSystem : EntitySystem
                     if (ev.FailReason is not null)
                     {
                         var fileWriteMessage = Loc.GetString(ev.FailReason);
-                        _popupSystem.PopupClient(fileWriteMessage, entity.Owner, args.User);
+                        _popupSystem.PopupEntity(fileWriteMessage, entity.Owner, args.User);
                     }
 
                     args.Handled = true;
@@ -161,12 +163,10 @@ public sealed class PaperSystem : EntitySystem
                     ("user", args.User),
                     ("target", args.Target),
                     ("stamp", args.Used));
-
-            _popupSystem.PopupEntity(stampPaperOtherMessage, args.User, Filter.PvsExcept(args.User, entityManager: EntityManager), true);
             var stampPaperSelfMessage = Loc.GetString("paper-component-action-stamp-paper-self",
                     ("target", args.Target),
                     ("stamp", args.Used));
-            _popupSystem.PopupClient(stampPaperSelfMessage, args.User, args.User);
+            _popupSystem.PopupEntity(stampPaperSelfMessage, stampPaperOtherMessage, args.User, args.User);
 
             _audio.PlayPredicted(stampComp.Sound, entity, args.User);
 
@@ -221,7 +221,7 @@ public sealed class PaperSystem : EntitySystem
             RemCompDeferred(ent, ent.Comp);
             return;
         }
-        var dataset = _protoMan.Index(ent.Comp.Dataset);
+        var dataset = ProtoMan.Index(ent.Comp.Dataset);
         // Intentionally not using the Pick overload that directly takes a LocalizedDataset,
         // because we want to get multiple attributes from the same pick.
         var pick = _random.Pick(dataset.Values);
@@ -250,6 +250,11 @@ public sealed class PaperSystem : EntitySystem
         if (!entity.Comp.StampedBy.Contains(stampInfo))
         {
             entity.Comp.StampedBy.Add(stampInfo);
+
+            var cleanedContent = PaperTagUtility.CleanUnfilledTags(entity.Comp.Content);
+            if (cleanedContent != entity.Comp.Content)
+                SetContent(entity, cleanedContent);
+
             Dirty(entity);
             if (entity.Comp.StampState == null && TryComp<AppearanceComponent>(entity, out var appearance))
             {
@@ -308,6 +313,43 @@ public sealed class PaperSystem : EntitySystem
     {
         _uiSystem.SetUiState(entity.Owner, PaperUiKey.Key, new PaperBoundUserInterfaceState(entity.Comp.Content, entity.Comp.StampedBy, entity.Comp.Mode));
     }
+
+    private void OnSignatureRequest(Entity<PaperComponent> entity, ref PaperSignatureRequestMessage args)
+    {
+        var signature = GetPlayerSignature(args.Actor);
+        var newText = PaperTagUtility.ReplaceNthTag(entity.Comp.Content, "[signature]", args.SignatureIndex, signature);
+        SetContent(entity, newText);
+
+        entity.Comp.EditingDisabled = true;
+        Dirty(entity);
+
+        _adminLogger.Add(LogType.Chat, LogImpact.Low,
+            $"{ToPrettyString(args.Actor):player} signed {ToPrettyString(entity):entity} with signature: {signature}");
+    }
+
+    private string GetPlayerSignature(EntityUid player)
+    {
+        var role = string.Empty;
+        var name = Identity.Name(player, EntityManager);
+
+        if (string.IsNullOrEmpty(name))
+            name = MetaData(player).EntityName;
+
+        if (TryComp<MindContainerComponent>(player, out var mindContainer) && mindContainer.Mind != null)
+        {
+            var jobSystem = EntityManager.System<SharedJobSystem>();
+            if (jobSystem.MindTryGetJobName(mindContainer.Mind.Value, out var jobName))
+                role = jobName;
+        }
+
+        string? signature;
+        if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(role))
+            signature = $"{name}, {role}";
+        else
+            signature = name;
+
+        return signature;
+    }
 }
 
 /// <summary>
@@ -322,3 +364,10 @@ public record struct PaperWriteEvent(EntityUid User, EntityUid Paper);
 /// <param name="paper">The paper that the writing will take place on.</param>
 [ByRefEvent]
 public record struct PaperWriteAttemptEvent(EntityUid Paper, string? FailReason = null, bool Cancelled = false);
+
+/// <summary>
+/// Event fired when a player signs a piece of paper.
+/// </summary>
+/// <param name="Signer">The entity that signed the paper.</param>
+[ByRefEvent]
+public record struct PaperSignedEvent(EntityUid Signer);

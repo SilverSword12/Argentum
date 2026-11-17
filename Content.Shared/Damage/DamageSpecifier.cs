@@ -1,12 +1,11 @@
-using System.Linq;
-using System.Text.Json.Serialization;
 using Content.Shared.Damage.Components;
 using Content.Shared.Damage.Prototypes;
 using Content.Shared.FixedPoint;
 using Robust.Shared.Prototypes;
-using Robust.Shared.Utility;
 using Robust.Shared.Serialization;
-using Robust.Shared.Serialization.TypeSerializers.Implementations.Generic;
+using Robust.Shared.Utility;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Content.Shared.Damage
 {
@@ -144,7 +143,7 @@ namespace Content.Shared.Damage
 
                 float newValue = value.Float();
 
-                if (modifierSet.FlatReduction.TryGetValue(key, out var reduction))
+                if (modifierSet.FlatReductions.TryGetValue(key, out var reduction))
                     newValue = Math.Max(0f, newValue - reduction); // flat reductions can't heal you
 
                 if (modifierSet.Coefficients.TryGetValue(key, out var coefficient))

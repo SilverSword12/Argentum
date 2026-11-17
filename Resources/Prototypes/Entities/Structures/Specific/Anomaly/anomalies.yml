@@ -37,9 +37,9 @@
     sprite: Structures/Specific/anomaly.rsi
   - type: InteractionOutline
   - type: Clickable
-  - type: Damageable
   - type: Appearance
   - type: AnimationPlayer
+  - type: Damageable
   - type: GuideHelp
     guides:
     - AnomalousResearch
@@ -845,21 +845,22 @@
           radius: 0.2
   - type: InteractionOutline
   - type: Damageable
-    damageContainer: Biological
     damageModifierSet: Diona
+  - type: Injurable
+    damageContainer: Biological
   - type: Destructible
     thresholds:
-      - trigger:
-          !type:DamageTrigger
-          damage: 1
-        behaviors:
-          - !type:DoActsBehavior
-            acts: [ "Destruction" ]
-          - !type:SpawnEntitiesBehavior
-            spawn:
-              EffectAnomalyFloraBulb:
-                min: 1
-                max: 1
+    - trigger:
+        !type:DamageTrigger
+        damage: 1
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          EffectAnomalyFloraBulb:
+            min: 1
+            max: 1
   - type: PointLight
     radius: 2.0
     energy: 4.5
@@ -909,10 +910,10 @@
         maxRange: 2
       spawns:
       - ReagentSlimeSpawner
-  - type: SolutionContainerManager
-    solutions:
-      anomaly:
-        maxVol: 1500
+  - type: Solution
+    id: anomaly
+    solution:
+      maxVol: 1550 # Doesn't really matter since it's an anom anyways
   - type: PuddleCreateAnomaly
     solution: anomaly
   - type: InjectionAnomaly
@@ -1153,7 +1154,6 @@
       - PresentRandomUnsafe
       - PresentRandom
       - PresentRandomCoal
-      - PresentRandomCash
       - ClothingHeadHatSantahat
       - FoodCakeChristmasSlice
     - settings:
@@ -1167,3 +1167,32 @@
     projectilePrototype: DrinkLemonLimeCranberryCan
     minProjectiles: 1
     maxProjectiles: 3
+
+- type: entity
+  id: AnomalyPolymorph
+  parent: BaseAnomaly
+  suffix: Polymorph
+  components:
+  - type: Anomaly
+    corePrototype: AnomalyCorePolymorph
+    coreInertPrototype: AnomalyCorePolymorphInert
+    supercriticalSoundAtAnimationStart:
+      collection: RadiationPulse
+  - type: Sprite
+    sprite: Structures/Specific/Anomalies/polymorph_anom.rsi
+    layers:
+    - state: anom
+      map: ["enum.AnomalyVisualLayers.Base"]
+    - state: anom-pulse
+      map: ["enum.AnomalyVisualLayers.Animated"]
+      visible: false
+  - type: PointLight
+    radius: 2.0
+    energy: 5.0
+    color: "#c060ff"
+    castShadows: false
+  - type: PolymorphAnomaly
+    polymorphTable: DefaultPolymorphAnomalyTable
+    range: 5
+    supercriticalRange: 7
+    supercriticalPermanentChance: 0.2

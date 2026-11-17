@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Shared.FixedPoint;
 using Content.Shared.Points;
 using JetBrains.Annotations;
@@ -6,14 +5,15 @@ using Robust.Server.GameStates;
 using Robust.Server.Player;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Server.Points;
 
 /// <inheritdoc/>
-public sealed class PointSystem : SharedPointSystem
+public sealed partial class PointSystem : SharedPointSystem
 {
-    [Dependency] private readonly IPlayerManager _player = default!;
-    [Dependency] private readonly PvsOverrideSystem _pvsOverride = default!;
+    [Dependency] private IPlayerManager _player = default!;
+    [Dependency] private PvsOverrideSystem _pvsOverride = default!;
 
     /// <inheritdoc/>
     public override void Initialize()

@@ -1,8 +1,8 @@
+using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Content.IntegrationTests;
 using Content.IntegrationTests.Pair;
-using Content.Server.Atmos;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Reactions;
 using Content.Shared.Atmos;
@@ -51,7 +51,7 @@ public class GasReactionBenchmark
     {
         ProgramShared.PathOffset = "../../../../";
         PoolManager.Startup();
-        _pair = await PoolManager.GetServerClient();
+        _pair = await PoolManager.GetServerClient(testContext: new ExternalTestContext("Benchmark", StreamWriter.Null));
         var server = _pair.Server;
 
         // Create test map and grid

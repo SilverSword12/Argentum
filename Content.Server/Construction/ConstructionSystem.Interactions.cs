@@ -11,7 +11,6 @@ using Content.Shared.Interaction;
 using Content.Shared.Interaction.Components;
 using Content.Shared.Prying.Systems;
 using Content.Shared.Radio.EntitySystems;
-using Content.Shared.Stacks;
 using Content.Shared.Temperature;
 using Content.Shared.Temperature.Components;
 using Content.Shared.Tools.Systems;
@@ -26,9 +25,9 @@ namespace Content.Server.Construction
 {
     public sealed partial class ConstructionSystem
     {
-        [Dependency] private readonly IAdminLogManager _adminLogger = default!;
+        [Dependency] private IAdminLogManager _adminLogger = default!;
 #if EXCEPTION_TOLERANCE
-        [Dependency] private readonly IRuntimeLog _runtimeLog = default!;
+        [Dependency] private IRuntimeLog _runtimeLog = default!;
 #endif
 
         private readonly Queue<EntityUid> _constructionUpdateQueue = new();
@@ -40,9 +39,9 @@ namespace Content.Server.Construction
 
             // Event handling. Add your subscriptions here! Just make sure they're all handled by EnqueueEvent.
             SubscribeLocalEvent<ConstructionComponent, InteractUsingEvent>(EnqueueEvent,
-                new []{typeof(AnchorableSystem), typeof(PryingSystem), typeof(WeldableSystem)},
-                new []{typeof(EncryptionKeySystem)});
-            SubscribeLocalEvent<ConstructionComponent, OnTemperatureChangeEvent>(EnqueueEvent);
+                new[] { typeof(AnchorableSystem), typeof(PryingSystem), typeof(WeldableSystem) },
+                new[] { typeof(EncryptionKeySystem) });
+            SubscribeLocalEvent<ConstructionComponent, TemperatureChangedEvent>(EnqueueRefEvent);
             SubscribeLocalEvent<ConstructionComponent, PartAssemblyPartInsertedEvent>(EnqueueEvent);
         }
 
@@ -59,13 +58,13 @@ namespace Content.Server.Construction
                 return HandleResult.False;
 
             // If the state machine is in an invalid state (not on a valid node) we can't do anything, ever.
-            if (GetCurrentNode(uid, construction) is not {} node)
+            if (GetCurrentNode(uid, construction) is not { } node)
             {
                 return HandleResult.False;
             }
 
             // If we're currently in an edge, we'll let the edge handle or validate the interaction.
-            if (GetCurrentEdge(uid, construction) is {} edge)
+            if (GetCurrentEdge(uid, construction) is { } edge)
             {
                 var result = HandleEdge(uid, ev, edge, validation, construction);
 
@@ -160,6 +159,9 @@ namespace Content.Server.Construction
             if (handle is not HandleResult.True)
                 return handle;
 
+            if (validation) // idk why this isnt checked properly but grilling meat in a griller will bypass validation and straight to handling.
+                return HandleResult.Validated;
+
             // Handle step should never handle the interaction during validation.
             DebugTools.Assert(!validation);
 
@@ -205,6 +207,9 @@ namespace Content.Server.Construction
             var handle = HandleInteraction(uid, ev, step, validation, out user, construction);
             if (handle is not HandleResult.True)
                 return handle;
+
+            if (validation) // idk why this isnt checked properly but grilling meat in a griller will bypass validation and straight to handling.
+                return HandleResult.Validated;
 
             DebugTools.Assert(!validation);
 
@@ -274,11 +279,11 @@ namespace Content.Server.Construction
 
                     // Since many things inherit this step, we delegate the "is this entity valid?" logic to them.
                     // While this is very OOP and I find it icky, I must admit that it simplifies the code here a lot.
-                    if(!insertStep.EntityValid(insert, EntityManager, Factory))
+                    if (!insertStep.EntityValid(insert, EntityManager, Factory))
                         return HandleResult.False;
 
                     // Unremovable items can't be inserted
-                    if(HasComp<UnremoveableComponent>(insert))
+                    if (HasComp<UnremoveableComponent>(insert))
                         return HandleResult.False;
 
                     // If we're only testing whether this step would be handled by the given event, then we're done.
@@ -297,7 +302,7 @@ namespace Content.Server.Construction
                             NeedHand = true,
                         };
 
-                        var started  = _doAfterSystem.TryStartDoAfter(doAfterEventArgs);
+                        var started = _doAfterSystem.TryStartDoAfter(doAfterEventArgs);
 
                         if (!started)
                             return HandleResult.False;
@@ -316,7 +321,7 @@ namespace Content.Server.Construction
                     // we split the stack in two and insert the split stack.
                     if (insertStep is MaterialConstructionGraphStep materialInsertStep)
                     {
-                        if (_stackSystem.Split(insert, materialInsertStep.Amount, Transform(interactUsing.User).Coordinates) is not {} stack)
+                        if (_stackSystem.Split(insert, materialInsertStep.Amount, Transform(interactUsing.User).Coordinates) is not { } stack)
                             return HandleResult.False;
 
                         insert = stack;
@@ -365,14 +370,14 @@ namespace Content.Server.Construction
 
                     // If we're handling an event after its DoAfter finished...
                     if (doAfterState == DoAfterState.Completed)
-                        return  HandleResult.True;
+                        return HandleResult.True;
 
-                    var result  = _toolSystem.UseTool(
+                    var result = _toolSystem.UseTool(
                         interactUsing.Used,
                         interactUsing.User,
                         uid,
                         TimeSpan.FromSeconds(toolInsertStep.DoAfter),
-                        new [] { toolInsertStep.Tool },
+                        new[] { toolInsertStep.Tool },
                         new ConstructionInteractDoAfterEvent(EntityManager, interactUsing),
                         out var doAfter,
                         toolInsertStep.Fuel);
@@ -382,7 +387,7 @@ namespace Content.Server.Construction
 
                 case TemperatureConstructionGraphStep temperatureChangeStep:
                 {
-                    if (ev is not OnTemperatureChangeEvent)
+                    if (ev is not TemperatureChangedEvent)
                         break;
 
                     // Some things, like microwaves, might need to block the temperature construction step from kicking in, or override it entirely.
@@ -400,7 +405,7 @@ namespace Content.Server.Construction
                     }
                     else if (TryComp<TemperatureComponent>(uid, out var tempComp))
                     {
-                        temp = tempComp.CurrentTemperature;
+                        temp = tempComp.Temperature;
                     }
                     else
                     {
@@ -543,6 +548,13 @@ namespace Content.Server.Construction
         }
 
         #region Event Handlers
+
+        // Why does this system have you subscribe to an event,
+        // and then pass it through 5 layers of bullshit into a switch statement which tries to guess what event got passed?
+        private void EnqueueRefEvent<T>(Entity<ConstructionComponent> entity, ref T args) where T : struct
+        {
+            EnqueueEvent(entity, entity.Comp, args);
+        }
 
         /// <summary>
         ///     Queues a directed event to be handled by construction on the next update tick.

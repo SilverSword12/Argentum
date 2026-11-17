@@ -17,8 +17,8 @@ namespace Content.Client.Chemistry.UI
     [GenerateTypedNameReferences]
     public sealed partial class ReagentDispenserWindow : FancyWindow
     {
-        [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-        [Dependency] private readonly IEntityManager _entityManager = default!;
+        [Dependency] private IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IEntityManager _entityManager = default!;
         public event Action<ItemStorageLocation>? OnDispenseReagentButtonPressed;
         public event Action<ItemStorageLocation>? OnEjectJugButtonPressed;
 
@@ -60,7 +60,7 @@ namespace Content.Client.Chemistry.UI
         /// <param name="state">State data sent by the server.</param>
         public void UpdateState(BoundUserInterfaceState state)
         {
-            var castState = (ReagentDispenserBoundUserInterfaceState) state;
+            var castState = (ReagentDispenserBoundUserInterfaceState)state;
             UpdateContainerInfo(castState);
             UpdateReagentsList(castState.Inventory);
 

@@ -16,7 +16,7 @@ public sealed partial class RottingComponent : Component
     /// Whether or not the rotting should deal damage
     /// </summary>
     [DataField]
-    public bool DealDamage = true;
+    public bool DealDamage = false;
 
     /// <summary>
     /// When the next check will happen for rot progression + effects like damage and ammonia
@@ -36,6 +36,12 @@ public sealed partial class RottingComponent : Component
     /// </summary>
     [DataField]
     public TimeSpan TotalRotTime = TimeSpan.Zero;
+
+    /// <summary>
+    /// The absolute maximum amount of time an object can acculate rot for.
+    /// </summary>
+    [DataField]
+    public TimeSpan MaximumTotalRotTime = TimeSpan.FromSeconds(7200);
 
     /// <summary>
     /// The damage dealt by rotting.

@@ -1,18 +1,18 @@
-using System.Linq;
 using Content.Server.Storage.EntitySystems;
 using Content.Server.Store.Systems;
 using Content.Shared.FixedPoint;
 using Content.Shared.Store;
 using Content.Shared.Store.Components;
 using Robust.Shared.Random;
+using System.Linq;
 
 namespace Content.Server.Traitor.Uplink.SurplusBundle;
 
-public sealed class SurplusBundleSystem : EntitySystem
+public sealed partial class SurplusBundleSystem : EntitySystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly EntityStorageSystem _entityStorage = default!;
-    [Dependency] private readonly StoreSystem _store = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private EntityStorageSystem _entityStorage = default!;
+    [Dependency] private StoreSystem _store = default!;
 
     public override void Initialize()
     {

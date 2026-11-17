@@ -1,6 +1,3 @@
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Content.Server.Construction.Components;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Construction;
@@ -19,18 +16,20 @@ using Robust.Shared.Containers;
 using Robust.Shared.Map;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Content.Server.Construction
 {
     public sealed partial class ConstructionSystem
     {
-        [Dependency] private readonly InventorySystem _inventorySystem = default!;
-        [Dependency] private readonly SharedInteractionSystem _interactionSystem = default!;
-        [Dependency] private readonly ActionBlockerSystem _actionBlocker = default!;
-        [Dependency] private readonly SharedHandsSystem _handsSystem = default!;
-        [Dependency] private readonly EntityLookupSystem _lookupSystem = default!;
-        [Dependency] private readonly SharedTransformSystem _transformSystem = default!;
-        [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
+        [Dependency] private InventorySystem _inventorySystem = default!;
+        [Dependency] private SharedInteractionSystem _interactionSystem = default!;
+        [Dependency] private ActionBlockerSystem _actionBlocker = default!;
+        [Dependency] private SharedHandsSystem _handsSystem = default!;
+        [Dependency] private EntityLookupSystem _lookupSystem = default!;
+        [Dependency] private EntityWhitelistSystem _whitelistSystem = default!;
 
         // --- WARNING! LEGACY CODE AHEAD! ---
         // This entire file contains the legacy code for initial construction.
@@ -66,7 +65,7 @@ namespace Content.Server.Construction
             {
                 while (containerSlotEnumerator.MoveNext(out var containerSlot))
                 {
-                    if(!containerSlot.ContainedEntity.HasValue)
+                    if (!containerSlot.ContainedEntity.HasValue)
                         continue;
 
                     if (TryComp(containerSlot.ContainedEntity.Value, out StorageComponent? storage))
@@ -81,7 +80,7 @@ namespace Content.Server.Construction
                 }
             }
 
-            var pos = _transformSystem.GetMapCoordinates(user);
+            var pos = TransformSystem.GetMapCoordinates(user);
 
             foreach (var near in _lookupSystem.GetEntitiesInRange(pos, 2f, LookupFlags.Contained | LookupFlags.Dynamic | LookupFlags.Sundries | LookupFlags.Approximate))
             {
@@ -317,20 +316,20 @@ namespace Content.Server.Construction
 
         private async void HandleStartItemConstruction(TryStartItemConstructionMessage ev, EntitySessionEventArgs args)
         {
-            if (args.SenderSession.AttachedEntity is {Valid: true} user)
+            if (args.SenderSession.AttachedEntity is { Valid: true } user)
                 await TryStartItemConstruction(ev.PrototypeName, user);
         }
 
         // LEGACY CODE. See warning at the top of the file!
         public async Task<bool> TryStartItemConstruction(string prototype, EntityUid user)
         {
-            if (!PrototypeManager.TryIndex(prototype, out ConstructionPrototype? constructionPrototype))
+            if (!ProtoMan.TryIndex(prototype, out ConstructionPrototype? constructionPrototype))
             {
                 Log.Error($"Tried to start construction of invalid recipe '{prototype}'!");
                 return false;
             }
 
-            if (!PrototypeManager.TryIndex(constructionPrototype.Graph,
+            if (!ProtoMan.TryIndex(constructionPrototype.Graph,
                     out ConstructionGraphPrototype? constructionGraph))
             {
                 Log.Error(
@@ -403,21 +402,21 @@ namespace Content.Server.Construction
         // LEGACY CODE. See warning at the top of the file!
         private async void HandleStartStructureConstruction(TryStartStructureConstructionMessage ev, EntitySessionEventArgs args)
         {
-            if (!PrototypeManager.TryIndex(ev.PrototypeName, out ConstructionPrototype? constructionPrototype))
+            if (!ProtoMan.TryIndex(ev.PrototypeName, out ConstructionPrototype? constructionPrototype))
             {
                 Log.Error($"Tried to start construction of invalid recipe '{ev.PrototypeName}'!");
                 RaiseNetworkEvent(new AckStructureConstructionMessage(ev.Ack));
                 return;
             }
 
-            if (!PrototypeManager.TryIndex(constructionPrototype.Graph, out ConstructionGraphPrototype? constructionGraph))
+            if (!ProtoMan.TryIndex(constructionPrototype.Graph, out ConstructionGraphPrototype? constructionGraph))
             {
                 Log.Error($"Invalid construction graph '{constructionPrototype.Graph}' in recipe '{ev.PrototypeName}'!");
                 RaiseNetworkEvent(new AckStructureConstructionMessage(ev.Ack));
                 return;
             }
 
-            if (args.SenderSession.AttachedEntity is not {Valid: true} user)
+            if (args.SenderSession.AttachedEntity is not { Valid: true } user)
             {
                 Log.Error($"Client sent {nameof(TryStartStructureConstructionMessage)} with no attached entity!");
                 return;
@@ -450,19 +449,8 @@ namespace Content.Server.Construction
             }
             else
             {
-                var newSet = new HashSet<int> {ev.Ack};
+                var newSet = new HashSet<int> { ev.Ack };
                 _beingBuilt[args.SenderSession] = newSet;
-            }
-
-            var location = GetCoordinates(ev.Location);
-
-            foreach (var condition in constructionPrototype.Conditions)
-            {
-                if (!condition.Condition(user, location, ev.Angle.GetCardinalDir()))
-                {
-                    Cleanup();
-                    return;
-                }
             }
 
             void Cleanup()
@@ -470,37 +458,80 @@ namespace Content.Server.Construction
                 _beingBuilt[args.SenderSession].Remove(ev.Ack);
             }
 
+            var location = GetCoordinates(ev.Location);
+
+            // funky start. delegated construction logic to TryStartStructureConstructionAt
+            if (await TryStartStructureConstructionAt(user, constructionPrototype, location, ev.Angle) is not {Valid: true} structure)
+            {
+                Cleanup();
+                return;
+            }
+
+            RaiseNetworkEvent(new AckStructureConstructionMessage(ev.Ack, GetNetEntity(structure)));
+            _adminLogger.Add(LogType.Construction, LogImpact.Low, $"{ToPrettyString(user):player} has turned a {ev.PrototypeName} construction ghost into {ToPrettyString(structure)} at {Transform(structure).Coordinates}");
+            Cleanup();
+            // funky end
+        }
+
+        // funky start. pulled the guts of HandleStartStructureConstruction out into a reusable method
+        public async Task<EntityUid?> TryStartStructureConstructionAt(
+            EntityUid user,
+            ConstructionPrototype constructionPrototype,
+            EntityCoordinates location,
+            Angle angle)
+        {
+            if (!ProtoMan.TryIndex(constructionPrototype.Graph, out var constructionGraph))
+            {
+                Log.Error($"Invalid construction graph '{constructionPrototype.Graph}' in recipe '{constructionPrototype.ID}'!");
+                return null;
+            }
+
+            if (_whitelistSystem.IsWhitelistFail(constructionPrototype.EntityWhitelist, user))
+            {
+                _popup.PopupEntity(Loc.GetString("construction-system-cannot-start"), user, user);
+                return null;
+            }
+
+            if (_container.IsEntityInContainer(user))
+            {
+                _popup.PopupEntity(Loc.GetString("construction-system-inside-container"), user, user);
+                return null;
+            }
+
+            var startNode = constructionGraph.Nodes[constructionPrototype.StartNode];
+            var targetNode = constructionGraph.Nodes[constructionPrototype.TargetNode];
+            var pathFind = constructionGraph.Path(startNode.Name, targetNode.Name);
+
+            foreach (var condition in constructionPrototype.Conditions)
+            {
+                if (!condition.Condition(user, location, angle.GetCardinalDir()))
+                    return null;
+            }
+
             if (!_actionBlocker.CanInteract(user, null)
                 || !TryComp(user, out HandsComponent? hands) || _handsSystem.GetActiveItem((user, hands)) == null)
             {
-                Cleanup();
-                return;
+                return null;
             }
 
-            var mapPos = _transformSystem.ToMapCoordinates(location);
+            var mapPos = TransformSystem.ToMapCoordinates(location);
             var predicate = GetPredicate(constructionPrototype.CanBuildInImpassable, mapPos);
 
             if (!_interactionSystem.InRangeUnobstructed(user, mapPos, predicate: predicate))
-            {
-                Cleanup();
-                return;
-            }
+                return null;
 
             if (pathFind == null)
-                throw new InvalidDataException($"Can't find path from starting node to target node in construction! Recipe: {ev.PrototypeName}");
+                throw new InvalidDataException($"Can't find path from starting node to target node in construction! Recipe: {constructionPrototype.ID}");
 
             var edge = startNode.GetEdge(pathFind[0].Name);
 
-            if(edge == null)
-                throw new InvalidDataException($"Can't find edge from starting node to the next node in pathfinding! Recipe: {ev.PrototypeName}");
-
-            var valid = false;
+            if (edge == null)
+                throw new InvalidDataException($"Can't find edge from starting node to the next node in pathfinding! Recipe: {constructionPrototype.ID}");
 
             if (_handsSystem.GetActiveItem((user, hands)) is not {Valid: true} holding)
-            {
-                Cleanup();
-                return;
-            }
+                return null;
+
+            var valid = false;
 
             // No support for conditions here!
 
@@ -521,26 +552,16 @@ namespace Content.Server.Construction
             }
 
             if (!valid)
-            {
-                Cleanup();
-                return;
-            }
+                return null;
 
-            if (await Construct(user,
-                    (ev.Ack + constructionPrototype.GetHashCode()).ToString(),
-                    constructionGraph,
-                    edge,
-                    targetNode,
-                    GetCoordinates(ev.Location),
-                    constructionPrototype.CanRotate ? ev.Angle : Angle.Zero) is not {Valid: true} structure)
-            {
-                Cleanup();
-                return;
-            }
-
-            RaiseNetworkEvent(new AckStructureConstructionMessage(ev.Ack, GetNetEntity(structure)));
-            _adminLogger.Add(LogType.Construction, LogImpact.Low, $"{ToPrettyString(user):player} has turned a {ev.PrototypeName} construction ghost into {ToPrettyString(structure)} at {Transform(structure).Coordinates}");
-            Cleanup();
+            return await Construct(user,
+                $"{constructionPrototype.ID}-{user}-{Guid.NewGuid()}",
+                constructionGraph,
+                edge,
+                targetNode,
+                location,
+                constructionPrototype.CanRotate ? angle : Angle.Zero);
         }
+        // end funky
     }
 }

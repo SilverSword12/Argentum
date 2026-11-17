@@ -1,14 +1,14 @@
-﻿using System.Text.Json.Nodes;
 using Content.Shared.CCVar;
 using Robust.Server.ServerStatus;
 using Robust.Shared.Configuration;
+using System.Text.Json.Nodes;
 
 namespace Content.Server.ServerInfo;
 
 /// <summary>
 /// Adds additional data like info links to the server info endpoint
 /// </summary>
-public sealed class ServerInfoManager
+public sealed partial class ServerInfoManager
 {
     private static readonly (CVarDef<string> cVar, string icon, string name)[] Vars =
     {
@@ -22,9 +22,9 @@ public sealed class ServerInfoManager
         // @formatter:on
     };
 
-    [Dependency] private readonly IStatusHost _statusHost = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
-    [Dependency] private readonly ILocalizationManager _loc = default!;
+    [Dependency] private IStatusHost _statusHost = default!;
+    [Dependency] private IConfigurationManager _cfg = default!;
+    [Dependency] private ILocalizationManager _loc = default!;
 
     public void Initialize()
     {

@@ -1,10 +1,11 @@
 - type: entity
+  parent: [ BaseStructure, StructureHealthFurnitureStrong ]
   id: Fireplace
-  parent: BaseStructure
   name: fireplace
   description: A place that has fire. Cozy!
   components:
   - type: Sprite
+    noRot: true
     sprite: Structures/Decoration/fireplace.rsi
     layers:
       - state: fireplace
@@ -35,7 +36,46 @@
     energy: 3
     color: "#FF6F00"
   - type: Damageable
+    damageModifierSet: RockMod
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 80
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+  - type: AlwaysHot
+  - type: Construction
+    graph: Fireplace
+    node: fireplaceComplete
+  - type: IgnitionSource
+    temperature: 700
+    ignited: true
+
+- type: entity
+  id: FireplaceUnfinished
+  parent: BaseStructure
+  name: unfinished fireplace
+  description: An unfinished, unlit fireplace. Still sort of cozy.
+  components:
+  - type: Sprite
+    sprite: Structures/Decoration/fireplace.rsi
+    state: fireplace
+  - type: Appearance
+  - type: HolidayVisuals
+    holidays:
+      festive:
+      - FestiveSeason
+  - type: GenericVisualizer
+    visuals:
+      enum.HolidayVisuals.Holiday:
+        christmas:
+          festive: { visible: true }
+  - type: Injurable
     damageContainer: StructuralInorganic
+  - type: Damageable
     damageModifierSet: Metallic
   - type: Destructible
     thresholds:
@@ -45,7 +85,6 @@
         behaviors:
           - !type:DoActsBehavior
             acts: [ "Destruction" ]
-  - type: AlwaysHot
-  - type: IgnitionSource
-    temperature: 700
-    ignited: true
+  - type: Construction
+    graph: Fireplace
+    node: fireplaceUnfinished

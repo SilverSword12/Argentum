@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Client.Actions.UI;
 using Content.Client.Cooldown;
 using Content.Shared.Alert;
@@ -7,12 +6,13 @@ using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Numerics;
 
 namespace Content.Client.UserInterface.Systems.Alerts.Controls
 {
-    public sealed class AlertControl : BaseButton
+    public sealed partial class AlertControl : BaseButton
     {
-        [Dependency] private readonly IEntityManager _entityManager = default!;
+        [Dependency] private IEntityManager _entityManager = default!;
 
         private readonly SpriteSystem _sprite;
 

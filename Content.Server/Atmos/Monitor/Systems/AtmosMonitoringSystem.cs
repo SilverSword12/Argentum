@@ -1,24 +1,22 @@
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Monitor.Components;
-using Content.Server.Atmos.Piping.Components;
 using Content.Server.Atmos.Piping.EntitySystems;
-using Content.Server.DeviceNetwork;
 using Content.Server.DeviceNetwork.Systems;
-using Content.Server.NodeContainer;
 using Content.Server.NodeContainer.EntitySystems;
 using Content.Server.NodeContainer.Nodes;
 using Content.Server.Power.Components;
 using Content.Server.Power.EntitySystems;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Atmos;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Monitor;
 using Content.Shared.Atmos.Piping.Components;
 using Content.Shared.Database;
 using Content.Shared.DeviceNetwork;
 using Content.Shared.DeviceNetwork.Events;
+using Content.Shared.Labels.Components;
 using Content.Shared.Power;
 using Content.Shared.Tag;
-using Robust.Shared.Prototypes;
 
 namespace Content.Server.Atmos.Monitor.Systems;
 
@@ -26,14 +24,13 @@ namespace Content.Server.Atmos.Monitor.Systems;
 // to it via local APC net, and starts sending updates of the
 // current atmosphere. Monitors fire (which always triggers as
 // a danger), and atmos (which triggers based on set thresholds).
-public sealed class AtmosMonitorSystem : EntitySystem
+public sealed partial class AtmosMonitorSystem : EntitySystem
 {
-    [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
-    [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-    [Dependency] private readonly AtmosDeviceSystem _atmosDeviceSystem = default!;
-    [Dependency] private readonly DeviceNetworkSystem _deviceNetSystem = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-    [Dependency] private readonly NodeContainerSystem _nodeContainerSystem = default!;
+    [Dependency] private ISharedAdminLogManager _adminLogger = default!;
+    [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+    [Dependency] private AtmosDeviceSystem _atmosDeviceSystem = default!;
+    [Dependency] private DeviceNetworkSystem _deviceNetSystem = default!;
+    [Dependency] private NodeContainerSystem _nodeContainerSystem = default!;
 
     // Commands
     public const string AtmosMonitorSetThresholdCmd = "atmos_monitor_set_threshold";
@@ -86,13 +83,13 @@ public sealed class AtmosMonitorSystem : EntitySystem
     {
         if (component.TemperatureThresholdId != null)
         {
-            var proto = _prototypeManager.Index<AtmosAlarmThresholdPrototype>(component.TemperatureThresholdId);
+            var proto = ProtoMan.Index<AtmosAlarmThresholdPrototype>(component.TemperatureThresholdId);
             component.TemperatureThreshold ??= new(proto);
         }
 
         if (component.PressureThresholdId != null)
         {
-            var proto = _prototypeManager.Index<AtmosAlarmThresholdPrototype>(component.PressureThresholdId);
+            var proto = ProtoMan.Index<AtmosAlarmThresholdPrototype>(component.PressureThresholdId);
             component.PressureThreshold ??= new(proto);
         }
 
@@ -102,7 +99,7 @@ public sealed class AtmosMonitorSystem : EntitySystem
         component.GasThresholds ??= new();
         foreach (var (gas, id) in component.GasThresholdPrototypes)
         {
-            var proto = _prototypeManager.Index<AtmosAlarmThresholdPrototype>(id);
+            var proto = ProtoMan.Index<AtmosAlarmThresholdPrototype>(id);
             component.GasThresholds.TryAdd(gas, new(proto));
         }
     }
@@ -168,6 +165,10 @@ public sealed class AtmosMonitorSystem : EntitySystem
                         gases.Add(gas, component.TileGas.GetMoles(gas));
                     }
 
+                    var name = "";
+                    if (TryComp<LabelComponent>(uid, out var labelComp))
+                        name = labelComp.CurrentLabel ?? "";
+
                     payload.Add(AtmosDeviceNetworkSystem.SyncData, new AtmosSensorData(
                         component.TileGas.Pressure,
                         component.TileGas.Temperature,
@@ -176,7 +177,8 @@ public sealed class AtmosMonitorSystem : EntitySystem
                         gases,
                         component.PressureThreshold ?? new(),
                         component.TemperatureThreshold ?? new(),
-                        component.GasThresholds ?? new()
+                        component.GasThresholds ?? new(),
+                        name
                     ));
                 }
 
@@ -429,11 +431,11 @@ public sealed class AtmosMonitorSystem : EntitySystem
                 if (gas == null || monitor.GasThresholds == null)
                     return;
 
-                logPrefix = ((Gas) gas).ToString();
+                logPrefix = ((Gas)gas).ToString();
                 logValueSuffix = "kPa";
-                monitor.GasThresholds.TryGetValue((Gas) gas, out logPreviousThreshold);
+                monitor.GasThresholds.TryGetValue((Gas)gas, out logPreviousThreshold);
 
-                monitor.GasThresholds[(Gas) gas] = threshold;
+                monitor.GasThresholds[(Gas)gas] = threshold;
                 break;
         }
 

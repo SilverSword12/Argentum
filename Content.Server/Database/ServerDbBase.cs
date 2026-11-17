@@ -1,12 +1,3 @@
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.Administration.Logs;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Construction.Prototypes;
@@ -19,6 +10,15 @@ using Robust.Shared.Network;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.Manager;
 using Robust.Shared.Utility;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.Database
 {
@@ -143,7 +143,7 @@ namespace Content.Server.Database
         {
             await using var db = await GetDb();
 
-            var profile = ConvertProfiles((HumanoidCharacterProfile) defaultProfile, 0);
+            var profile = ConvertProfiles((HumanoidCharacterProfile)defaultProfile, 0);
             var prefs = new Preference
             {
                 UserId = userId.UserId,
@@ -152,7 +152,7 @@ namespace Content.Server.Database
                 ConstructionFavorites = [],
             };
 
-            prefs.Profiles.Add(profile);
+            //    prefs.Profiles.Add(profile);
 
             db.DbContext.Preference.Add(prefs);
 
@@ -214,11 +214,16 @@ namespace Content.Server.Database
             profile.Species = humanoid.Species;
             profile.Age = humanoid.Age;
             profile.Sex = humanoid.Sex.ToString();
+            profile.Voice = humanoid.Voice.ToString();
             profile.Gender = humanoid.Gender.ToString();
             profile.EyeColor = appearance.EyeColor.ToHex();
             profile.SkinColor = appearance.SkinColor.ToHex();
-            profile.SpawnPriority = (int) humanoid.SpawnPriority;
+            profile.SpawnPriority = (int)humanoid.SpawnPriority;
             profile.OrganMarkings = JsonSerializer.SerializeToDocument(dataNode.ToJsonNode());
+            if(humanoid.Alignment != null) profile.Alignment = humanoid.Alignment.ToString();
+            if(humanoid.UniverseOrigin != null) profile.Origin = humanoid.UniverseOrigin.ToString();
+            if(humanoid.Motive != null) profile.Motive = humanoid.Motive.ToString();
+            if(humanoid.TurningPoint != null) profile.TurningPoint = humanoid.TurningPoint.ToString();
 
             // support for downgrades - at some point this should be removed
             var legacyMarkings = appearance.Markings
@@ -228,8 +233,8 @@ namespace Content.Server.Database
                 .ToList();
             var flattenedMarkings = appearance.Markings.SelectMany(it => it.Value)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            var hairMarking = flattenedMarkings.FirstOrNull(kvp => kvp.Key == HumanoidVisualLayers.Hair)?.Value.FirstOrDefault();
-            var facialHairMarking = flattenedMarkings.FirstOrNull(kvp => kvp.Key == HumanoidVisualLayers.FacialHair)?.Value.FirstOrDefault();
+            var hairMarking = flattenedMarkings.FirstOrNull(kvp => kvp.Key == HumanoidVisualLayers.Hair)?.Value.FirstOrNull();
+            var facialHairMarking = flattenedMarkings.FirstOrNull(kvp => kvp.Key == HumanoidVisualLayers.FacialHair)?.Value.FirstOrNull();
             profile.Markings =
                 JsonSerializer.SerializeToDocument(legacyMarkings.Select(marking => marking.ToString()).ToList());
             profile.HairName = hairMarking?.MarkingId ?? HairStyles.DefaultHairStyle;
@@ -238,25 +243,25 @@ namespace Content.Server.Database
             profile.FacialHairColor = (facialHairMarking?.MarkingColors[0] ?? Color.Black).ToHex();
 
             profile.Slot = slot;
-            profile.PreferenceUnavailable = (DbPreferenceUnavailableMode) humanoid.PreferenceUnavailable;
+            profile.PreferenceUnavailable = (DbPreferenceUnavailableMode)humanoid.PreferenceUnavailable;
 
             profile.Jobs.Clear();
             profile.Jobs.AddRange(
                 humanoid.JobPriorities
                     .Where(j => j.Value != JobPriority.Never)
-                    .Select(j => new Job {JobName = j.Key, Priority = (DbJobPriority) j.Value})
+                    .Select(j => new Job { JobName = j.Key, Priority = (DbJobPriority)j.Value })
             );
 
             profile.Antags.Clear();
             profile.Antags.AddRange(
                 humanoid.AntagPreferences
-                    .Select(a => new Antag {AntagName = a})
+                    .Select(a => new Antag { AntagName = a })
             );
 
             profile.Traits.Clear();
             profile.Traits.AddRange(
                 humanoid.TraitPreferences
-                        .Select(t => new Trait {TraitName = t})
+                        .Select(t => new Trait { TraitName = t })
             );
 
             profile.Loadouts.Clear();
@@ -853,7 +858,7 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
                     if (attempt >= maxRetryAttempts)
                     {
                         _opsLog.Error($"Max retry attempts reached. Failed to save {logs.Count} admin logs.");
-                        return;
+                        throw;
                     }
 
                     _opsLog.Warning($"Retrying in {retryDelay.TotalSeconds} seconds...");
@@ -1233,24 +1238,37 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
 
         public async Task<List<IAdminRemarksRecord>> GetAllAdminRemarks(Guid player)
         {
-            await using var db = await GetDb();
-            List<IAdminRemarksRecord> notes = new();
-            notes.AddRange(
-                (await (from note in db.DbContext.AdminNotes
-                        where note.PlayerUserId == player &&
-                              !note.Deleted &&
-                              (note.ExpirationTime == null || DateTime.UtcNow < note.ExpirationTime)
-                        select note)
-                    .Include(note => note.Round)
-                    .ThenInclude(r => r!.Server)
-                    .Include(note => note.CreatedBy)
-                    .Include(note => note.LastEditedBy)
-                    .Include(note => note.Player)
-                    .ToListAsync()).Select(MakeAdminNoteRecord));
-            notes.AddRange(await GetActiveWatchlistsImpl(db, player));
-            notes.AddRange(await GetMessagesImpl(db, player));
-            notes.AddRange(await GetBansAsNotesForUser(db, player));
-            return notes;
+            return await ParallelCollect<IAdminRemarksRecord>(
+                async () =>
+                {
+                    await using var db = await GetDb();
+                    return (await (from note in db.DbContext.AdminNotes
+                            where note.PlayerUserId == player &&
+                                  !note.Deleted &&
+                                  (note.ExpirationTime == null || DateTime.UtcNow < note.ExpirationTime)
+                            select note)
+                        .Include(note => note.Round)
+                        .ThenInclude(r => r!.Server)
+                        .Include(note => note.CreatedBy)
+                        .Include(note => note.LastEditedBy)
+                        .Include(note => note.Player)
+                        .ToListAsync()).Select(MakeAdminNoteRecord);
+                },
+                async () =>
+                {
+                    await using var db = await GetDb();
+                    return await GetActiveWatchlistsImpl(db, player);
+                },
+                async () =>
+                {
+                    await using var db = await GetDb();
+                    return await GetMessagesImpl(db, player);
+                },
+                async () =>
+                {
+                    await using var db = await GetDb();
+                    return await GetBansAsNotesForUser(db, player);
+                });
         }
         public async Task EditAdminNote(int id, string message, NoteSeverity severity, bool secret, Guid editedBy, DateTimeOffset editedAt, DateTimeOffset? expiryTime)
         {
@@ -1375,10 +1393,10 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
         protected async Task<List<AdminWatchlistRecord>> GetActiveWatchlistsImpl(DbGuard db, Guid player)
         {
             var entities = await (from watchlist in db.DbContext.AdminWatchlists
-                          where watchlist.PlayerUserId == player &&
-                                !watchlist.Deleted &&
-                                (watchlist.ExpirationTime == null || DateTime.UtcNow < watchlist.ExpirationTime)
-                          select watchlist)
+                                  where watchlist.PlayerUserId == player &&
+                                        !watchlist.Deleted &&
+                                        (watchlist.ExpirationTime == null || DateTime.UtcNow < watchlist.ExpirationTime)
+                                  select watchlist)
                 .Include(note => note.Round)
                 .ThenInclude(r => r!.Server)
                 .Include(note => note.CreatedBy)
@@ -1403,9 +1421,9 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
         protected async Task<List<AdminMessageRecord>> GetMessagesImpl(DbGuard db, Guid player)
         {
             var entities = await (from message in db.DbContext.AdminMessages
-                        where message.PlayerUserId == player && !message.Deleted &&
-                              (message.ExpirationTime == null || DateTime.UtcNow < message.ExpirationTime)
-                        select message).Include(note => note.Round)
+                                  where message.PlayerUserId == player && !message.Deleted &&
+                                        (message.ExpirationTime == null || DateTime.UtcNow < message.ExpirationTime)
+                                  select message).Include(note => note.Round)
                     .ThenInclude(r => r!.Server)
                     .Include(note => note.CreatedBy)
                     .Include(note => note.LastEditedBy)
@@ -1450,8 +1468,8 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
             return new BanNoteRecord(
                 ban.Id,
                 ban.Type,
-                [..ban.Rounds!.Select(br => MakeRoundRecord(br.Round!))],
-                [..playerRecords],
+                [.. ban.Rounds!.Select(br => MakeRoundRecord(br.Round!))],
+                [.. playerRecords],
                 ban.PlaytimeAtNote,
                 ban.Reason,
                 ban.Severity,
@@ -1467,7 +1485,7 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
                         ban.Unban.UnbanningAdmin.Value,
                         await dbContext.Player.SingleOrDefaultAsync(p => p.UserId == ban.Unban.UnbanningAdmin.Value)),
                 NormalizeDatabaseTime(ban.Unban?.UnbanTime),
-                [..ban.Roles!.Select(br => new BanRoleDef(br.RoleType, br.RoleId))]);
+                [.. ban.Roles!.Select(br => new BanRoleDef(br.RoleType, br.RoleId))]);
         }
 
         // These two are here because they get converted into notes later
@@ -1619,6 +1637,68 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
 
         #endregion
 
+        #region Custom vote logging
+
+        public async Task<int> CustomVoteLogAdd(
+            string title,
+            int roundId,
+            Guid? initiator,
+            ImmutableArray<string> options)
+        {
+            await using var db = await GetDb();
+
+            var log = new CustomVoteLog
+            {
+                Title = title,
+                RoundId = roundId,
+                InitiatorId = initiator,
+                State = CustomVoteState.Active,
+                TimeCreated = DateTime.UtcNow,
+                Options = options.Select((o, i) => new CustomVoteLogOption
+                    {
+                        Text = o,
+                        OptionIdx = (short)i,
+                        VoteCount = 0,
+                    })
+                    .ToList(),
+            };
+
+            db.DbContext.CustomVoteLog.Add(log);
+            await db.DbContext.SaveChangesAsync();
+
+            return log.Id;
+        }
+
+        public async Task CustomVoteLogFinish(int voteId, ImmutableArray<int> voteCounts)
+        {
+            await using var db = await GetDb();
+
+            var log = await db.DbContext.CustomVoteLog
+                .Include(cvl => cvl.Options)
+                .SingleAsync(v => v.Id == voteId);
+
+            log.State = CustomVoteState.Finished;
+
+            for (var i = 0; i < log.Options!.Count; i++)
+            {
+                log.Options[i].VoteCount = voteCounts[i];
+            }
+
+            await db.DbContext.SaveChangesAsync();
+        }
+
+        public async Task CustomVoteLogCancel(int voteId)
+        {
+            await using var db = await GetDb();
+
+            var log = await db.DbContext.CustomVoteLog.SingleAsync(v => v.Id == voteId);
+            log.State = CustomVoteState.Cancelled;
+
+            await db.DbContext.SaveChangesAsync();
+        }
+
+        #endregion
+
         public abstract Task SendNotification(DatabaseNotification notification);
 
         // SQLite returns DateTime as Kind=Unspecified, Npgsql actually knows for sure it's Kind=Utc.
@@ -1674,7 +1754,14 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
                 results.Add(await selector(item));
             }
 
-            return [..results];
+            return [.. results];
+        }
+
+        private static async Task<List<T>> ParallelCollect<T>(params IEnumerable<Func<Task<IEnumerable<T>>>> tasks)
+        {
+            var taskInstances = tasks.Select(a => a());
+            var results = await Task.WhenAll(taskInstances);
+            return results.SelectMany(x => x).ToList();
         }
     }
 }

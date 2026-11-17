@@ -1,4 +1,3 @@
-using Content.Shared.Access.Systems;
 using Content.Shared.StationRecords;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
@@ -11,7 +10,6 @@ namespace Content.Shared.Access.Components;
 /// and allows checking if something or somebody is authorized with these access levels.
 /// </summary>
 [RegisterComponent, NetworkedComponent]
-[Access(typeof(AccessReaderSystem))]
 public sealed partial class AccessReaderComponent : Component
 {
     /// <summary>
@@ -38,7 +36,7 @@ public sealed partial class AccessReaderComponent : Component
     /// An unmodified copy of the original list of the access groups that grant access to this reader.
     /// </summary>
     /// <remarks>
-    /// If null, the access lists of this entity have not been modified yet.
+    /// If null, entity isn't intialized yet.
     /// </remarks>
     [DataField]
     public List<HashSet<ProtoId<AccessLevelPrototype>>>? AccessListsOriginal = null;
@@ -48,6 +46,9 @@ public sealed partial class AccessReaderComponent : Component
     /// </summary>
     [DataField]
     public HashSet<StationRecordKey> AccessKeys = new();
+
+    [DataField]
+    public List<string> AccessNames = new();
 
     /// <summary>
     /// If specified, then this access reader will instead pull access requirements from entities contained in the
@@ -86,6 +87,12 @@ public sealed partial class AccessReaderComponent : Component
     [DataField]
     public bool BreakOnAccessBreaker = true;
 
+    [DataField]
+    public bool PersonalAccessMode = false;
+
+    [DataField]
+    public List<string> PersonalAccessNames = new();
+
     /// <summary>
     /// The examination text associated with this component.
     /// </summary>
@@ -95,16 +102,18 @@ public sealed partial class AccessReaderComponent : Component
     /// </remarks>
     [DataField]
     public LocId ExaminationText = "access-reader-examination";
+    [DataField]
+    public bool BlockUnanchor = true;
 }
 
 [DataDefinition, Serializable, NetSerializable]
 public readonly partial record struct AccessRecord(
     [property: DataField, ViewVariables(VVAccess.ReadWrite)]
-    TimeSpan AccessTime,
+    DateTime AccessTime,
     [property: DataField, ViewVariables(VVAccess.ReadWrite)]
     string Accessor)
 {
-    public AccessRecord() : this(TimeSpan.Zero, string.Empty)
+    public AccessRecord() : this(DateTime.MinValue, string.Empty)
     {
     }
 }
@@ -119,6 +128,9 @@ public sealed class AccessReaderComponentState : ComponentState
     public List<(NetEntity, uint)> AccessKeys;
     public Queue<AccessRecord> AccessLog;
     public int AccessLogLimit;
+    public List<string> AccessNames;
+    public List<string> PersonalAccessNames;
+    public bool PersonalAccessMode;
 
     public AccessReaderComponentState(
         bool enabled,
@@ -127,7 +139,10 @@ public sealed class AccessReaderComponentState : ComponentState
         List<HashSet<ProtoId<AccessLevelPrototype>>>? accessListsOriginal,
         List<(NetEntity, uint)> accessKeys,
         Queue<AccessRecord> accessLog,
-        int accessLogLimit)
+        int accessLogLimit,
+        List<string> accessNames,
+        List<string> personalAccessNames,
+        bool personalAccessMode)
     {
         Enabled = enabled;
         DenyTags = denyTags;
@@ -136,6 +151,9 @@ public sealed class AccessReaderComponentState : ComponentState
         AccessKeys = accessKeys;
         AccessLog = accessLog;
         AccessLogLimit = accessLogLimit;
+        AccessNames = accessNames;
+        PersonalAccessNames = personalAccessNames;
+        PersonalAccessMode = personalAccessMode;
     }
 }
 

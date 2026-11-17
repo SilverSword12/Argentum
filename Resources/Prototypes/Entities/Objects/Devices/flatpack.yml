@@ -34,7 +34,7 @@
       cpu_science: "#D381C9"
       cpu_supply: "#A46106"
   - type: StaticPrice
-    price: 250
+    price: 100
 
 - type: entity
   parent: BaseFlatpack
@@ -49,6 +49,26 @@
     - state: solar-assembly-part
   - type: StaticPrice
     price: 75
+
+- type: entity
+  parent: BaseFlatpack
+  id: AmeControllerFlatpack
+  name: AME controller flatpack
+  description: A flatpack used for constructing the terminal that controls the antimatter engine.
+  components:
+  - type: Sprite
+    layers:
+    - state: ame-part
+    - state: overlay
+      color: "#EFB341"
+  - type: Flatpack
+    entity: AmeController
+  - type: StaticPrice
+    price: 1000
+  - type: GuideHelp
+    guides:
+    - AME
+    - Power
 
 - type: entity
   parent: BaseFlatpack
@@ -214,6 +234,21 @@
 
 - type: entity
   parent: BaseFlatpack
+  id: PortableGeneratorJrPacmanFlatpack
+  name: J.R.P.A.C.M.A.N. flatpack
+  description: A flatpack used for constructing a J.R.P.A.C.M.A.N. Generator
+  components:
+  - type: Flatpack
+    entity: PortableGeneratorJrPacman
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay
+      color: "#cec8ac"
+    - state: icon-default
+
+- type: entity
+  parent: BaseFlatpack
   id: SpaceHeaterFlatpack
   name: space heater flatpack
   description: A flatpack used for constructing a space heater.
@@ -235,12 +270,63 @@
 
 - type: entity
   parent: BaseFlatpack
+  id: ComputerWithdrawBankATMFlatpack
+  name: withdraw-only ATM flatpack
+  description: A flatpack used for constructing a withdraw ATM.
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay
+      color: "#cec8ac"
+    - state: icon-default
+  - type: Flatpack
+    entity: ComputerWithdrawBankATM
+
+- type: entity
+  parent: BaseFlatpack
   id: CrewMonitoringServerFlatpack
   name: crew monitoring server flatpack
   description: A flatpack used for constructing a crew monitoring server.
   components:
   - type: Flatpack
     entity: CrewMonitoringServer
+
+- type: entity
+  parent: BaseFlatpack
+  id: ComputerStationModificationFlatpack
+  name: faction modification computer flatpack
+  description: A flatpack used for constructing a faction modification computer.
+  components:
+  - type: Flatpack
+    entity: ComputerStationModification
+
+- type: entity
+  parent: BaseFlatpack
+  id: ComputerGridControlFlatpack
+  name: grid control computer flatpack
+  description: A flatpack used for constructing a grid control computer.
+  components:
+  - type: Flatpack
+    entity: ComputerGridControl
+
+- type: entity
+  parent: BaseFlatpack
+  id: TegFlatpack
+  name: teg flatpack
+  description: A flatpack used for constructing a TEG.
+  components:
+  - type: Flatpack
+    entity: TegCenter
+
+- type: entity
+  parent: BaseFlatpack
+  id: TegCirculatorFlatpack
+  name: circulator flatpack
+  description: A flatpack used for constructing a circulator.
+  components:
+  - type: Flatpack
+    entity: TegCirculator
 
 - type: entity
   parent: BaseFlatpack
@@ -268,6 +354,39 @@
     - Chemicals
 
 - type: entity
+  parent: BaseFlatpack
+  id: CargoBountyComputerFlatpack
+  name: cargo bounty computer flatpack
+  description: A flatpack used for constructing a cargo bounty console.
+  components:
+  - type: Flatpack
+    entity: ComputerCargoBounty
+
+- type: entity
+  parent: BaseFlatpack
+  id: TinyFanFlatpack
+  name: tiny fan flatpack
+  description: A flatpack used for constructing a tiny fan. Useful for keeping gases in or out.
+  components:
+  - type: Flatpack
+    entity: AtmosDeviceFanTiny
+  - type: Sprite
+    layers:
+    - state: fan
+
+- type: entity
+  parent: BaseFlatpack
+  id: DirectionalFanFlatpack
+  name: directional fan flatpack
+  description: A flatpack used for constructing a directional fan. Useful for keeping gases in or out.
+  components:
+  - type: Flatpack
+    entity: AtmosDeviceFanDirectional
+  - type: Sprite
+    layers:
+    - state: fan
+
+- type: entity
   parent: [ BaseFlatpack, BaseSyndicateContraband ]
   id: SyndicateMicrowaveFlatpack
   name: donk co. microwave flatpack
@@ -287,11 +406,65 @@
   name: xenoborg extractor flatpack
   description: A flatpack used for constructing a xenoborg extractor.
   components:
+  - type: Sprite
+    layers:
+    - state: base-xenoborg
+    - state: overlay
+      color: "#452dfa"
+    - state: icon-xenoborg-extractor
   - type: Item
     size: Normal
   - type: Flatpack
     entity: XenoborgExtractor
+#  - type: GuideHelp
+#    guides:
+#    - Xenoborgs
+
+- type: entity
+  parent: BaseFlatpack
+  id: MachineAnomalyVesselFlatpack
+  name: anomaly vessel flatpack
+  description: A flatpack used for constructing an anomaly vessel.
+  components:
+  - type: Flatpack
+    entity: MachineAnomalyVessel
   - type: GuideHelp
     guides:
-    - Xenoborgs
+    - ScannersAndVessels
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay
+      color: "#D381C9"
+    - state: icon-default
+#IV!
+- type: entity
+  parent: BaseFlatpack
+  id: IVstandflatpack
+  name: iv flatpack
+  description: A flatpack used for constructing an iv drip.
+  components:
+  - type: Sprite
+    sprite: _RMC14/Structures/Machines/Medical/iv_drip.rsi
+    layers:
+    - state: flatpack
+  - type: Flatpack
+    entity: CMIV
 
+- type: entity
+  parent: BaseFlatpack
+  id: ComputerInvoicePrinterFlatpack
+  name: invoice printer computer flatpack
+  description: A flatpack used for constructing an invoice printer computer.
+  components:
+  - type: Flatpack
+    entity: ComputerInvoicePrinter
+
+- type: entity
+  parent: BaseFlatpack
+  id: HolopadLongRangeFlatpack
+  name: long-range holopad flatpack
+  description: A flatpack used for constructing a long-range holopad.
+  components:
+  - type: Flatpack
+    entity: HolopadLongRange

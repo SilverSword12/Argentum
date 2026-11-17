@@ -1,4 +1,4 @@
-﻿using Content.Server.Worldgen.Prototypes;
+using Content.Server.Worldgen.Prototypes;
 using Content.Server.Worldgen.Systems.Debris;
 using Content.Server.Worldgen.Tools;
 using Content.Shared.Storage;
@@ -38,7 +38,7 @@ public sealed partial class NoiseDrivenDebrisSelectorComponent : Component
     ///     The noise channel to use as a density controller.
     /// </summary>
     /// <remarks>This noise channel should be mapped to exactly the range [0, 1] unless you want a lot of warnings in the log.</remarks>
-    [DataField("noiseChannel", customTypeSerializer: typeof(PrototypeIdSerializer<NoiseChannelPrototype>))]
+    [DataField("noiseChannel")]
     public string NoiseChannel { get; private set; } = default!;
 }
 

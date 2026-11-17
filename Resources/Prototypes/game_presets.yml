@@ -40,6 +40,7 @@
     - Zombie
     - Wizard
     - Xenoborgs
+    - Changeling
     - KesslerSyndromeScheduler
     - RampingStationEventScheduler
     - SpaceTrafficControlEventScheduler
@@ -62,6 +63,7 @@
     - Zombie
     - Wizard
     - Xenoborgs
+    - Changeling
     - BasicStationEventScheduler
     - KesslerSyndromeScheduler
     - MeteorSwarmMildScheduler
@@ -263,3 +265,14 @@
   - KesslerSyndromeScheduler
   - SpaceTrafficControlEventScheduler
   - BasicRoundstartVariation
+
+- type: gamePreset
+  id: Persist
+  alias:
+  - persist
+  - westayinbaybee
+  name: persist-title
+  showInVote: false
+  description: persist-description
+  rules:
+  - PersistRoundstartVariation

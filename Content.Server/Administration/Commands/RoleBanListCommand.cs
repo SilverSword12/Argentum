@@ -1,6 +1,6 @@
-﻿using Content.Server.Administration.BanList;
-using Content.Server.EUI;
+using Content.Server.Administration.BanList;
 using Content.Server.Database;
+using Content.Server.EUI;
 using Content.Shared.Administration;
 using Content.Shared.Database;
 using Robust.Shared.Console;
@@ -8,13 +8,13 @@ using Robust.Shared.Console;
 namespace Content.Server.Administration.Commands;
 
 [AdminCommand(AdminFlags.Ban)]
-public sealed class RoleBanListCommand : IConsoleCommand
+public sealed partial class RoleBanListCommand : IConsoleCommand
 {
-    [Dependency] private readonly IServerDbManager _dbManager = default!;
+    [Dependency] private IServerDbManager _dbManager = default!;
 
-    [Dependency] private readonly EuiManager _eui = default!;
+    [Dependency] private EuiManager _eui = default!;
 
-    [Dependency] private readonly IPlayerLocator _locator = default!;
+    [Dependency] private IPlayerLocator _locator = default!;
 
     public string Command => "rolebanlist";
     public string Description => Loc.GetString("cmd-rolebanlist-desc");

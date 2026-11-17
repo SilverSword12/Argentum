@@ -7,6 +7,8 @@ namespace Content.Server.Atmos.Piping.Trinary.Components
     {
         [DataField]
         public bool Enabled = true;
+        [DataField]
+        public bool DesiredEnabled = false;
 
         [DataField("inlet")]
         public string InletName = "inlet";
@@ -23,7 +25,14 @@ namespace Content.Server.Atmos.Piping.Trinary.Components
         [DataField]
         public float MaxTransferRate = Atmospherics.MaxTransferRate;
 
+        /// <remark>
+        /// Moffstation - this is left here to ensure compatibility with maps
+        /// starting with pre-set gas filters.
+        /// </remark>
         [DataField]
         public Gas? FilteredGas;
+
+        [DataField]
+        public HashSet<Gas> FilteredGases = []; // Moffstation - filter multiple gases
     }
 }

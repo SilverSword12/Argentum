@@ -1,12 +1,11 @@
-using System.Linq;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Map.Enumerators;
 
 namespace Content.Shared.Tiles;
 
-public sealed class ProtectedGridSystem : EntitySystem
+public sealed partial class ProtectedGridSystem : EntitySystem
 {
-    [Dependency] private readonly SharedMapSystem _map = default!;
+    [Dependency] private SharedMapSystem _map = default!;
 
     /// <inheritdoc/>
     public override void Initialize()

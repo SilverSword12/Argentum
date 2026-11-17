@@ -236,7 +236,7 @@ namespace Content.Client.UserInterface.Controls
             }
 
             // Add space for the label if it has text
-            if (! string.IsNullOrEmpty(Label?.Text))
+            if (!string.IsNullOrEmpty(Label?.Text))
             {
                 Label.Measure(availableSize);
                 desiredSize.X += separation + Label.DesiredSize.X;
@@ -245,13 +245,13 @@ namespace Content.Client.UserInterface.Controls
 
             // Add space for the state labels if at least one of them has text
             var stateLabelSpace = Vector2.Zero;
-            if (! string.IsNullOrEmpty(OffStateLabel?.Text))
+            if (!string.IsNullOrEmpty(OffStateLabel?.Text))
             {
                 OffStateLabel.Measure(availableSize);
                 stateLabelSpace = OffStateLabel.DesiredSize;
             }
 
-            if (! string.IsNullOrEmpty(OnStateLabel?.Text))
+            if (!string.IsNullOrEmpty(OnStateLabel?.Text))
             {
                 OnStateLabel.Measure(availableSize);
                 stateLabelSpace.Y = float.Max(stateLabelSpace.Y, OnStateLabel.DesiredSize.Y);
@@ -271,7 +271,7 @@ namespace Content.Client.UserInterface.Controls
         {
             var separation = ActualSeparation;
 
-            var actualMainLabelWidth = finalSize.X - separation - TrackOutline.DesiredSize.X;
+            var actualMainLabelWidth = Math.Max(0f, finalSize.X - separation - TrackOutline.DesiredSize.X);
             float iconPosition = 0;
             float stateLabelPosition = 0;
 
@@ -307,7 +307,7 @@ namespace Content.Client.UserInterface.Controls
             ThumbFill.Arrange(thumbTargetBox);
             ThumbOutline.Arrange(thumbTargetBox);
 
-            var stateLabelsTargetBox = new UIBox2(stateLabelPosition, 0, finalSize.X, finalSize.Y);
+            var stateLabelsTargetBox = new UIBox2(Math.Min(finalSize.X, stateLabelPosition), 0, finalSize.X, finalSize.Y);
             OffStateLabel?.Arrange(stateLabelsTargetBox);
             OnStateLabel?.Arrange(stateLabelsTargetBox);
 

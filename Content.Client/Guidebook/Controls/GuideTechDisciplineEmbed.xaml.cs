@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Content.Client.Guidebook.Richtext;
 using Content.Shared.Research.Prototypes;
 using JetBrains.Annotations;
@@ -8,6 +6,8 @@ using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Prototypes;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Content.Client.Guidebook.Controls;
 
@@ -17,8 +17,8 @@ namespace Content.Client.Guidebook.Controls;
 [UsedImplicitly, GenerateTypedNameReferences]
 public sealed partial class GuideTechDisciplineEmbed : BoxContainer, IDocumentTag
 {
-    [Dependency] private readonly ILogManager _logManager = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
+    [Dependency] private ILogManager _logManager = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
 
     private readonly ISawmill _sawmill;
 

@@ -1,4 +1,4 @@
-﻿- type: entity
+- type: entity
   parent: BaseItem
   id: BaseComputerCircuitboard
   name: computer board
@@ -11,7 +11,7 @@
     - type: Item
       storedRotation: -90
     - type: StaticPrice
-      price: 100
+      price: 90
     - type: PhysicalComposition
       materialComposition:
         Glass: 230
@@ -96,7 +96,74 @@
     - type: ComputerBoard
       prototype: ComputerCargoOrders
     - type: StaticPrice
-      price: 750
+      price: 90
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: GridControlComputerCircuitboard
+  name: grid control computer board
+  description: A computer printed circuit board for a grid control computer.
+  components:
+    - type: Sprite
+      state: cpu_supply
+    - type: ComputerBoard
+      prototype: ComputerGridControl
+    - type: StaticPrice
+      price: 90
+
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: MessageBoardCircuitboard
+  name: message board computer board
+  description: A computer printed circuit board for a message board computer.
+  components:
+    - type: Sprite
+      state: cpu_supply
+    - type: ComputerBoard
+      prototype: ComputerMessageBoard
+    - type: StaticPrice
+      price: 90
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: StationModComputerCircuitboard
+  name: faction modification computer board
+  description: A computer printed circuit board for a faction modification computer.
+  components:
+    - type: Sprite
+      state: cpu_supply
+    - type: ComputerBoard
+      prototype: ComputerStationModification
+    - type: StaticPrice
+      price: 90
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: IdPrinterCircuitboard
+  name: ID printer console board
+  description: A computer printed circuit board for an ID printer console.
+  components:
+    - type: Sprite
+      state: cpu_supply
+    - type: ComputerBoard
+      prototype: ComputerIdPrinter
+    - type: StaticPrice
+      price: 90
+
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: InvoicePrinterCircuitboard
+  name: Invoice printer console board
+  description: A computer printed circuit board for an Invoice printer console.
+  components:
+    - type: Sprite
+      state: cpu_supply
+    - type: ComputerBoard
+      prototype: ComputerInvoicePrinter
+    - type: StaticPrice
+      price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -109,7 +176,7 @@
   - type: ComputerBoard
     prototype: ComputerCargoOrdersEngineering
   - type: StaticPrice
-    price: 750
+    price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -122,7 +189,7 @@
   - type: ComputerBoard
     prototype: ComputerCargoOrdersMedical
   - type: StaticPrice
-    price: 750
+    price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -135,7 +202,7 @@
   - type: ComputerBoard
     prototype: ComputerCargoOrdersScience
   - type: StaticPrice
-    price: 750
+    price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -148,7 +215,7 @@
   - type: ComputerBoard
     prototype: ComputerCargoOrdersSecurity
   - type: StaticPrice
-    price: 750
+    price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -161,7 +228,7 @@
   - type: ComputerBoard
     prototype: ComputerCargoOrdersService
   - type: StaticPrice
-    price: 750
+    price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -174,7 +241,7 @@
   - type: ComputerBoard
     prototype: ComputerFundingAllocation
   - type: StaticPrice
-    price: 750
+    price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -339,10 +406,7 @@
     - type: ComputerBoard
       prototype: ComputerId
     - type: StaticPrice
-      price: 750
-    - type: Tag
-      tags:
-      - HighRiskItem
+      price: 90
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -513,9 +577,23 @@
     - type: Sprite
       state: cpu_service
     - type: StaticPrice
-      price: 150
+      price: 90
     - type: ComputerBoard
       prototype: ComputerMassMedia
+
+#Persistence14 BookPublisher
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: ComputerBookPublisherCircuitboard
+  name: book publisher console board
+  description: Show your book to the world!
+  components:
+    - type: Sprite
+      state: cpu_service
+    - type: StaticPrice
+      price: 90
+    - type: ComputerBoard
+      prototype: ComputerBookPublisher
 
 - type: entity
   parent: BaseComputerCircuitboard
@@ -560,6 +638,26 @@
       state: cpu_science
     - type: ComputerBoard
       prototype: StationAiUploadComputer
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: StationTeleportersControlCircuitboard
+  name: teleporters control console board
+  description: A computer printed circuit board for a teleporter control console.
+  components:
+  - type: Sprite
+    state: cpu_command
+  - type: ComputerBoard
+    prototype: ComputerStationTeleportersControl
+
+- type: entity
+  parent: BaseComputerCircuitboard
+  id: SyndicateTeleportersControlCircuitboard
+  name: syndicate teleporters control console board
+  description: A computer printed circuit board for a teleporter control console.
+  components:
+  - type: ComputerBoard
+    prototype: ComputerSyndicateTeleportersControl
 
 - type: entity
   parent: BaseComputerCircuitboard

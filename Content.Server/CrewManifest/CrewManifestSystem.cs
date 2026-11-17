@@ -1,30 +1,31 @@
-using System.Linq;
 using Content.Server.Administration;
 using Content.Server.EUI;
 using Content.Server.Station.Systems;
-using Content.Server.StationRecords;
-using Content.Server.StationRecords.Systems;
 using Content.Shared.Administration;
 using Content.Shared.CCVar;
+using Content.Shared.CrewAssignments.Components;
 using Content.Shared.CrewManifest;
+using Content.Shared.CrewRecords.Components;
 using Content.Shared.GameTicking;
 using Content.Shared.Roles;
 using Content.Shared.Station.Components;
 using Content.Shared.StationRecords;
+using Content.Shared.StationRecords.Components;
+using Content.Shared.StationRecords.Events;
+using Content.Shared.StationRecords.Systems;
 using Robust.Shared.Configuration;
 using Robust.Shared.Console;
 using Robust.Shared.Player;
-using Robust.Shared.Prototypes;
+using System.Linq;
 
 namespace Content.Server.CrewManifest;
 
-public sealed class CrewManifestSystem : EntitySystem
+public sealed partial class CrewManifestSystem : EntitySystem
 {
-    [Dependency] private readonly StationSystem _stationSystem = default!;
-    [Dependency] private readonly StationRecordsSystem _recordsSystem = default!;
-    [Dependency] private readonly EuiManager _euiManager = default!;
-    [Dependency] private readonly IConfigurationManager _configManager = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private StationSystem _stationSystem = default!;
+    [Dependency] private StationRecordsSystem _recordsSystem = default!;
+    [Dependency] private EuiManager _euiManager = default!;
+    [Dependency] private IConfigurationManager _configManager = default!;
 
     /// <summary>
     ///     Cached crew manifest entries. The alternative is to outright
@@ -37,7 +38,7 @@ public sealed class CrewManifestSystem : EntitySystem
 
     public override void Initialize()
     {
-        SubscribeLocalEvent<AfterGeneralRecordCreatedEvent>(AfterGeneralRecordCreated);
+        SubscribeLocalEvent<GeneralRecordCreatedEvent>(GeneralRecordCreated);
         SubscribeLocalEvent<RecordModifiedEvent>(OnRecordModified);
         SubscribeLocalEvent<RecordRemovedEvent>(OnRecordRemoved);
         SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
@@ -49,13 +50,6 @@ public sealed class CrewManifestSystem : EntitySystem
 
     private void OnRoundRestart(RoundRestartCleanupEvent ev)
     {
-        foreach (var (_, euis) in _openEuis)
-        {
-            foreach (var (_, eui) in euis)
-            {
-                eui.Close();
-            }
-        }
 
         _openEuis.Clear();
         _cachedEntries.Clear();
@@ -75,19 +69,19 @@ public sealed class CrewManifestSystem : EntitySystem
     // Not a big fan of this one. Rebuilds the crew manifest every time
     // somebody spawns in, meaning that at round start, it rebuilds the crew manifest
     // wrt the amount of players readied up.
-    private void AfterGeneralRecordCreated(AfterGeneralRecordCreatedEvent ev)
+    private void GeneralRecordCreated(ref GeneralRecordCreatedEvent ev)
     {
         BuildCrewManifest(ev.Key.OriginStation);
         UpdateEuis(ev.Key.OriginStation);
     }
 
-    private void OnRecordModified(RecordModifiedEvent ev)
+    private void OnRecordModified(ref RecordModifiedEvent ev)
     {
         BuildCrewManifest(ev.Key.OriginStation);
         UpdateEuis(ev.Key.OriginStation);
     }
 
-    private void OnRecordRemoved(RecordRemovedEvent ev)
+    private void OnRecordRemoved(ref RecordRemovedEvent ev)
     {
         BuildCrewManifest(ev.Key.OriginStation);
         UpdateEuis(ev.Key.OriginStation);
@@ -161,10 +155,6 @@ public sealed class CrewManifestSystem : EntitySystem
     /// <param name="owner">If this EUI should be 'owned' by an entity.</param>
     public void OpenEui(EntityUid station, ICommonSession session, EntityUid? owner = null)
     {
-        if (!HasComp<StationRecordsComponent>(station))
-        {
-            return;
-        }
 
         if (!_openEuis.TryGetValue(station, out var euis))
         {
@@ -174,6 +164,10 @@ public sealed class CrewManifestSystem : EntitySystem
 
         if (euis.ContainsKey(session))
         {
+            var eui2 = new CrewManifestEui(station, owner, this);
+            euis[session] = eui2;
+            _euiManager.OpenEui(eui2, session);
+            eui2.StateDirty();
             return;
         }
 
@@ -219,30 +213,57 @@ public sealed class CrewManifestSystem : EntitySystem
     ///     Builds the crew manifest for a station. Stores it in the cache afterwards.
     /// </summary>
     /// <param name="station"></param>
-    private void BuildCrewManifest(EntityUid station)
+    public void BuildCrewManifest(EntityUid station)
     {
-        var iter = _recordsSystem.GetRecordsOfType<GeneralStationRecord>(station);
-
+        if (!TryComp<StationDataComponent>(station, out var sD) || sD == null) return;
+        if (!TryComp<CrewRecordsComponent>(station, out var crewRecords) || crewRecords == null) return;
+        if (!TryComp<CrewAssignmentsComponent>(station, out var crewAssignments) || crewAssignments == null) return;
+        List<EntityUid> activeWorkers = new();
+        var query = EntityQueryEnumerator<JobNetComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            if (comp.WorkingFor != null && comp.WorkingFor == sD.UID)
+            {
+                activeWorkers.Add(comp.Owner);
+            }
+        }
         var entries = new CrewManifestEntries();
 
         var entriesSort = new List<(JobPrototype? job, CrewManifestEntry entry)>();
-        foreach (var recordObject in iter)
+        foreach (var employee in activeWorkers)
         {
-            var record = recordObject.Item2;
-            var entry = new CrewManifestEntry(record.Name, record.JobTitle, record.JobIcon, record.JobPrototype);
+            EntityUid? player = null;
+#pragma warning disable RA0030 // Consider using the non-generic variant of this method
+            if (TryComp<TransformComponent>(employee, out var comp) && comp != null)
+            {
+                player = comp.ParentUid;
+            }
+#pragma warning restore RA0030 // Consider using the non-generic variant of this method
+            if (player == null) continue;
+            var name = Name(player.Value);
+            if (!crewRecords.TryGetRecord(name, out var record) || record == null) continue;
+            if (!crewAssignments.TryGetAssignment(record.AssignmentID, out var assignment) || assignment == null) continue;
 
-            _prototypeManager.TryIndex(record.JobPrototype, out JobPrototype? job);
+            var passengerProtoId = "Passenger";
+
+            var entry = new CrewManifestEntry(name, assignment.Name, "JobIconUnknown", passengerProtoId);
+
+            ProtoMan.TryIndex(passengerProtoId, out JobPrototype? job);
             entriesSort.Add((job, entry));
         }
 
-        entriesSort.Sort((a, b) =>
+        var jobWeights = Comp<StationDataComponent>(station).JobWeights;
+        if (JobUIComparer.TryCreate(ProtoMan, jobWeights, out var comparer))
         {
-            var cmp = JobUIComparer.Instance.Compare(a.job, b.job);
-            if (cmp != 0)
-                return cmp;
+            entriesSort.Sort((a, b) =>
+            {
+                var cmp = comparer.Compare(a.job, b.job);
+                if (cmp != 0)
+                    return cmp;
 
-            return string.Compare(a.entry.Name, b.entry.Name, StringComparison.CurrentCultureIgnoreCase);
-        });
+                return string.Compare(a.entry.Name, b.entry.Name, StringComparison.CurrentCultureIgnoreCase);
+            });
+        }
 
         entries.Entries = entriesSort.Select(x => x.entry).ToArray();
         _cachedEntries[station] = entries;
@@ -250,9 +271,9 @@ public sealed class CrewManifestSystem : EntitySystem
 }
 
 [AdminCommand(AdminFlags.Admin)]
-public sealed class CrewManifestCommand : LocalizedEntityCommands
+public sealed partial class CrewManifestCommand : LocalizedEntityCommands
 {
-    [Dependency] private readonly CrewManifestSystem _manifestSystem = default!;
+    [Dependency] private CrewManifestSystem _manifestSystem = default!;
 
     public override string Command => "crewmanifest";
 

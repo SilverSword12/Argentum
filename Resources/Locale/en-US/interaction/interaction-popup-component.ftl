@@ -15,6 +15,7 @@ petting-success-dehydrated-carp = You pet {THE($target)} on {POSS-ADJ($target)} 
 petting-success-dog = You pet {THE($target)} on {POSS-ADJ($target)} soft floofy head.
 petting-success-frog = You pet {THE($target)} on {POSS-ADJ($target)} slippery little head.
 petting-success-goat = You pet {THE($target)} on {POSS-ADJ($target)} horned floofy head.
+petting-success-sheep = You pet {THE($target)} on {POSS-ADJ($target)} soft fluffy head.
 petting-success-goose = Against all odds, you manage to pet {THE($target)} on {POSS-ADJ($target)} horrible little head.
 petting-success-kangaroo = You pet {THE($target)} on {POSS-ADJ($target)} Strayan head.
 petting-success-possum = You pet {THE($target)} on {POSS-ADJ($target)} horrible little head.
@@ -42,6 +43,7 @@ petting-failure-corrupted-corgi = You reach out to pet {THE($target)}, but think
 petting-failure-crab = You reach out to pet {THE($target)}, but {SUBJECT($target)} {CONJUGATE-BASIC($target, "snap", "snaps")} {POSS-ADJ($target)} claws in your general direction!
 petting-failure-dehydrated-carp = You pet {THE($target)} on {POSS-ADJ($target)} dry little head.
 petting-failure-goat = You reach out to pet {THE($target)}, but {SUBJECT($target)} stubbornly {CONJUGATE-BASIC($target, "refuse", "refuses")}!
+petting-failure-sheep = You reach out to pet {THE($target)}, but {SUBJECT($target)} stubbornly {CONJUGATE-BASIC($target, "refuse", "refuses")}!
 petting-failure-goose = You reach out to pet {THE($target)}, but {SUBJECT($target)} {CONJUGATE-BE($target)} too horrible!
 petting-failure-possum = You reach out to pet {THE($target)}, but are met with hisses and snarls!
 petting-failure-pig = You reach out to pet {THE($target)}, but are met with irritated oinks and squeals!
@@ -73,6 +75,7 @@ petting-success-syndicate-cyborg = You pet {THE($target)} on {POSS-ADJ($target)}
 petting-success-derelict-cyborg = You pet {THE($target)} on {POSS-ADJ($target)} rusty metal head.
 petting-success-recycler = You pet {THE($target)} on {POSS-ADJ($target)} mildly threatening steel exterior.
 petting-success-station-ai = You pet {THE($target)} on {POSS-ADJ($target)} cold, square screen.
+petting-success-shredder = You poke {THE($target)}'s paper slot. Ouch!
 
 petting-failure-honkbot = You reach out to pet {THE($target)}, but {SUBJECT($target)} {CONJUGATE-BASIC($target, "honk", "honks")} in refusal!
 petting-failure-cleanbot = You reach out to pet {THE($target)}, but {SUBJECT($target)} {CONJUGATE-BE($target)} busy mopping!
@@ -88,6 +91,7 @@ petting-failure-service-cyborg = You reach out to pet {THE($target)}, but {SUBJE
 petting-failure-syndicate-cyborg = You reach out to pet {THE($target)}, but {POSS-ADJ($target)} treacherous affiliation makes you reconsider.
 petting-failure-derelict-cyborg = You reach out to pet {THE($target)}, but {POSS-ADJ($target)} rusty and jagged exterior makes you reconsider.
 petting-failure-station-ai = You reach out to pet {THE($target)}, but {SUBJECT($target)} {CONJUGATE-BASIC($target, "zap", "zaps")} your hand away.
+petting-failure-shredder = You should keep your fingers clear of {THE($target)}.
 
 petting-success-station-ai-others = { CAPITALIZE(THE($user)) } pets {THE($target)} on {POSS-ADJ($target)} cold, square screen.
 

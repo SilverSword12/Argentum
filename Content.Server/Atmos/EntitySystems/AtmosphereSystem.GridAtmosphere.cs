@@ -1,4 +1,5 @@
 using Content.Server.Atmos.Components;
+using Content.Server.Atmos.Piping.Components;
 using Content.Server.Atmos.Reactions;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
@@ -49,6 +50,40 @@ public sealed partial class AtmosphereSystem
         {
             tile.GridIndex = uid;
         }
+
+        component.RestoreDeviceOrder = component.AtmosDevicesOrder.Count > 0;
+    }
+
+
+    // Persistence Edit: Keep device order on load
+    private void ReapplyDeviceOrder(GridAtmosphereComponent atmos)
+    {
+        atmos.RestoreDeviceOrder = false;
+
+        var byUid = new Dictionary<EntityUid, Entity<AtmosDeviceComponent>>(atmos.AtmosDevices.Count);
+        foreach (var device in atmos.AtmosDevices)
+        {
+            byUid[device.Owner] = device;
+        }
+
+        var ordered = new List<Entity<AtmosDeviceComponent>>(atmos.AtmosDevices.Count);
+        var placed = new HashSet<EntityUid>();
+
+        foreach (var uid in atmos.AtmosDevicesOrder)          // saved order first
+        {
+            if (byUid.TryGetValue(uid, out var device) && placed.Add(uid))
+                ordered.Add(device);
+        }
+
+        foreach (var device in atmos.AtmosDevices)            // anything new keeps relative order
+        {
+            if (!placed.Contains(device.Owner))
+                ordered.Add(device);
+        }
+
+        atmos.AtmosDevices.Clear();                            // resets free list to indices 0..n-1
+        foreach (var device in ordered)
+            atmos.AtmosDevices.Add(device);
     }
 
     private void OnGridAtmosphereStartup(EntityUid uid, GridAtmosphereComponent component, ComponentStartup args)
@@ -72,7 +107,7 @@ public sealed partial class AtmosphereSystem
                 newGridAtmos = AddComp<GridAtmosphereComponent>(newGrid);
 
             // We assume the tiles on the new grid have the same coordinates as they did on the old grid...
-            var enumerator = _mapSystem.GetAllTilesEnumerator(newGrid, mapGrid);
+            var enumerator = _mapSystem.GetAllTiles(newGrid, mapGrid);
 
             while (enumerator.MoveNext(out var tile))
             {
@@ -324,7 +359,7 @@ public sealed partial class AtmosphereSystem
             atmos.InvalidatedCoords.Add(indices);
         }
 
-        var enumerator = _map.GetAllTilesEnumerator(uid, grid);
+        var enumerator = _map.GetAllTiles(uid, grid);
         while (enumerator.MoveNext(out var tile))
         {
             atmos.InvalidatedCoords.Add(tile.Value.GridIndices);

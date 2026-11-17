@@ -1,4 +1,4 @@
-﻿using Content.Shared.Humanoid.Markings;
+using Content.Shared.Humanoid.Markings;
 using Robust.Shared.Serialization;
 
 namespace Content.Shared.Humanoid
@@ -24,6 +24,8 @@ namespace Content.Shared.Humanoid
         LArm,
         RHand,
         LHand,
+        RHandOverlay, // Scav: Things that go on top of hands
+        LHandOverlay, // Scav
         RLeg,
         LLeg,
         RFoot,

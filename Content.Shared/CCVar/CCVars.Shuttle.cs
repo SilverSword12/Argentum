@@ -1,4 +1,4 @@
-﻿using Content.Shared.Administration;
+using Content.Shared.Administration;
 using Content.Shared.CCVar.CVarAccess;
 using Robust.Shared.Configuration;
 
@@ -31,7 +31,7 @@ public sealed partial class CCVars
     ///     Whether the arrivals shuttle is enabled.
     /// </summary>
     public static readonly CVarDef<bool> ArrivalsShuttles =
-        CVarDef.Create("shuttle.arrivals", true, CVar.SERVERONLY);
+        CVarDef.Create("shuttle.arrivals", false, CVar.SERVERONLY);
 
     /// <summary>
     ///     The map to use for the arrivals station.
@@ -68,7 +68,7 @@ public sealed partial class CCVars
     ///     Whether to automatically spawn escape shuttles.
     /// </summary>
     public static readonly CVarDef<bool> GridFill =
-        CVarDef.Create("shuttle.grid_fill", true, CVar.SERVERONLY);
+        CVarDef.Create("shuttle.grid_fill", false, CVar.SERVERONLY);
 
     /// <summary>
     ///     Whether to automatically preloading grids by GridPreloaderSystem
@@ -111,8 +111,9 @@ public sealed partial class CCVars
     ///     The maximum <see cref="PhysicsComponent.Mass"/> a grid can have before it becomes unable to FTL.
     ///     Any value equal to or less than zero will disable this check.
     /// </summary>
+    [CVarControl(AdminFlags.VarEdit)]
     public static readonly CVarDef<float> FTLMassLimit =
-        CVarDef.Create("shuttle.mass_limit", 300f, CVar.SERVERONLY);
+        CVarDef.Create("shuttle.mass_limit", 480000f, CVar.SERVERONLY);
 
     /// <summary>
     ///     How long to knock down entities for if they aren't buckled when FTL starts and stops.
@@ -167,7 +168,7 @@ public sealed partial class CCVars
     ///     Whether the emergency shuttle is enabled or should the round just end.
     /// </summary>
     public static readonly CVarDef<bool> EmergencyShuttleEnabled =
-        CVarDef.Create("shuttle.emergency", true, CVar.SERVERONLY);
+        CVarDef.Create("shuttle.emergency", false, CVar.SERVERONLY);
 
     /// <summary>
     ///     The percentage of time passed from the initial call to when the shuttle can no longer be recalled.
@@ -181,7 +182,7 @@ public sealed partial class CCVars
     /// </summary>
     [CVarControl(AdminFlags.Server | AdminFlags.Mapping, min: 0, max: int.MaxValue)]
     public static readonly CVarDef<int> EmergencyShuttleAutoCallTime =
-        CVarDef.Create("shuttle.auto_call_time", 90, CVar.SERVERONLY);
+        CVarDef.Create("shuttle.auto_call_time", 0, CVar.SERVERONLY);
 
     /// <summary>
     ///     Time in minutes after the round was extended (by recalling the shuttle) to call
@@ -196,11 +197,9 @@ public sealed partial class CCVars
     ///     A higher value means grids have a lower effective mass and therefore will get pushed stronger.
     ///     A value of 0 will disable pushback.
     ///     The default has been chosen such that a one tile grid roughly equals 2/3 Urist masses.
-    ///     TODO: Make grid mass a sane number so we can get rid of this.
-    ///         At the moment they have a very low mass of roughly 0.48 kg per tile independent of any walls or anchored objects on them.
     /// </summary>
     public static readonly CVarDef<float> GridImpulseMultiplier =
-        CVarDef.Create("shuttle.grid_impulse_multiplier", 0.01f, CVar.SERVERONLY);
+        CVarDef.Create("shuttle.grid_impulse_multiplier", 16f, CVar.SERVERONLY);
 
     #region impacts
 
@@ -216,7 +215,7 @@ public sealed partial class CCVars
     /// </summary>
     [CVarControl(AdminFlags.VarEdit)]
     public static readonly CVarDef<float> MinimumImpactInertia =
-        CVarDef.Create("shuttle.impact.minimum_inertia", 5f * 50f, CVar.SERVERONLY); // 100tile grid (cargo shuttle) going at 5 m/s
+        CVarDef.Create("shuttle.impact.minimum_inertia", 5f * 80000f, CVar.SERVERONLY); // 100tile grid (cargo shuttle) at 800 kg/tile going at 5 m/s
 
     /// <summary>
     /// Minimum velocity difference between 2 bodies for a shuttle impact to be guaranteed to trigger any special behaviors like damage.

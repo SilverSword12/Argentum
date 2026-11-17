@@ -15,9 +15,9 @@
     RandomArtifactSpawner: 0.25
     # weighted down since it sells for a lot
     NuclearBombKeg: 0.1
-    # money
-    SpaceCash500: 0.5
-    SpaceCash1000: 0.25
+    # # money
+    # SpaceCash500: 0.5
+    # SpaceCash1000: 0.25
 
 - type: weightedRandomEntity
   id: SalvageRewardRare
@@ -27,8 +27,6 @@
     IngotSilver: 1.0
     SheetPlasma: 1.0
     SheetUranium: 1.0
-    CratePartsT3: 1.0
-    CratePartsT3T4: 0.5
     TechnologyDiskRare: 0.5
     # cloning boards
     CloningPodMachineCircuitboard: 0.5
@@ -46,10 +44,10 @@
     ClothingOuterArmorBasicSlim: 0.25
     # rare weapons
     WeaponMakeshiftLaser: 0.1
-    # money
-    SpaceCash500: 1.0
-    SpaceCash1000: 0.75
-    SpaceCash2500: 0.5
+    # # money
+    # SpaceCash500: 1.0
+    # SpaceCash1000: 0.75
+    # SpaceCash2500: 0.5
 
 - type: weightedRandomEntity
   id: SalvageRewardEpic
@@ -57,7 +55,6 @@
     # rare machinery
     AmmoTechFabCircuitboard: 1.0
     ResearchAndDevelopmentServerMachineCircuitboard: 1.0
-    CratePartsT4: 1.0
     PowerCellAntiqueProto: 0.25
     # basic weapons
     CrateArmorySMG: 1.0
@@ -69,7 +66,7 @@
     # rare chemicals
     ChemistryBottleCognizine: 1.0
     ChemistryBottleOmnizine: 1.0
-    # money
-    SpaceCash2500: 1.0
-    SpaceCash5000: 0.75
-    SpaceCash10000: 0.5
+    # # money
+    # SpaceCash2500: 1.0
+    # SpaceCash5000: 0.75
+    # SpaceCash10000: 0.5

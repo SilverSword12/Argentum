@@ -1,0 +1,29 @@
+<controls:FancyWindow xmlns="https://spacestation14.io"
+                           xmlns:gfx="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
+                           xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
+                           SetSize="600 690"
+                           MinSize="600 690">
+    <BoxContainer Orientation="Vertical">
+        <ScrollContainer VerticalExpand="True">
+            <TabContainer Name="BoardTabContainer"  Access="Public">
+                <BoxContainer Orientation="Vertical" Name="PublicBoard">
+                    <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+                        <Button Text="Create A New Entry" Name="CreateEntryPublicButton" Access="Public" HorizontalExpand="True" />
+                        <Button Name="MuteButton" Text="Mute Notifications" Access="Public" ToggleMode="True" />
+                    </BoxContainer>
+                    <TabContainer Name="PublicCategories" VerticalExpand="True" HorizontalExpand="True" Access="Public"/>
+                </BoxContainer>
+                <BoxContainer Orientation="Vertical" Name="DirectMessages">
+                    <Label Text="Send Message: " StyleClasses="LabelKeyText"/>
+                    <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+                        <LineEdit Name="SendMessageLE" PlaceHolder="Recipient Name" HorizontalExpand="True" Access="Public"/>
+                        <Button Text="Compose Message" Name="SendMessageButton" Access="Public" />
+                    </BoxContainer>
+                    <Label Text="Conversations:" StyleClasses="LabelKeyText"/>
+                    <BoxContainer Access="Public" Orientation="Vertical" Name="ActiveConversations">
+                    </BoxContainer>
+                </BoxContainer>
+            </TabContainer>
+        </ScrollContainer> 
+    </BoxContainer>
+</controls:FancyWindow>

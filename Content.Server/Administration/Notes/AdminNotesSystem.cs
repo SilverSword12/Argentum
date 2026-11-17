@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Server.Administration.Commands;
 using Content.Server.Chat.Managers;
 using Content.Server.EUI;
@@ -9,16 +8,17 @@ using Robust.Shared.Console;
 using Robust.Shared.Enums;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Server.Administration.Notes;
 
-public sealed class AdminNotesSystem : EntitySystem
+public sealed partial class AdminNotesSystem : EntitySystem
 {
-    [Dependency] private readonly IConsoleHost _console = default!;
-    [Dependency] private readonly IAdminNotesManager _notes = default!;
-    [Dependency] private readonly IPlayerManager _playerManager = default!;
-    [Dependency] private readonly IChatManager _chat = default!;
-    [Dependency] private readonly EuiManager _euis = default!;
+    [Dependency] private IConsoleHost _console = default!;
+    [Dependency] private IAdminNotesManager _notes = default!;
+    [Dependency] private IPlayerManager _playerManager = default!;
+    [Dependency] private IChatManager _chat = default!;
+    [Dependency] private EuiManager _euis = default!;
 
     public override void Initialize()
     {
@@ -28,8 +28,8 @@ public sealed class AdminNotesSystem : EntitySystem
 
     private void AddVerbs(GetVerbsEvent<Verb> ev)
     {
-        if (EntityManager.GetComponentOrNull<ActorComponent>(ev.User) is not {PlayerSession: var user} ||
-            EntityManager.GetComponentOrNull<ActorComponent>(ev.Target) is not {PlayerSession: var target})
+        if (EntityManager.GetComponentOrNull<ActorComponent>(ev.User) is not { PlayerSession: var user } ||
+            EntityManager.GetComponentOrNull<ActorComponent>(ev.Target) is not { PlayerSession: var target })
         {
             return;
         }

@@ -1,10 +1,8 @@
-using System.Linq;
 using Content.Server.Administration.Logs;
 using Content.Server.Cloning.Components;
 using Content.Server.DeviceLinking.Systems;
 using Content.Server.Medical.Components;
 using Content.Server.Power.EntitySystems;
-using Content.Shared.UserInterface;
 using Content.Shared.Cloning;
 using Content.Shared.Cloning.CloningConsole;
 using Content.Shared.Database;
@@ -15,21 +13,23 @@ using Content.Shared.Mind;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Power;
+using Content.Shared.UserInterface;
 using Robust.Server.GameObjects;
 using Robust.Server.Player;
+using System.Linq;
 
 namespace Content.Server.Cloning
 {
-    public sealed class CloningConsoleSystem : EntitySystem
+    public sealed partial class CloningConsoleSystem : EntitySystem
     {
-        [Dependency] private readonly DeviceLinkSystem _signalSystem = default!;
-        [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly IPlayerManager _playerManager = default!;
-        [Dependency] private readonly CloningPodSystem _cloningPodSystem = default!;
-        [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
-        [Dependency] private readonly MobStateSystem _mobStateSystem = default!;
-        [Dependency] private readonly PowerReceiverSystem _powerReceiverSystem = default!;
-        [Dependency] private readonly SharedMindSystem _mindSystem = default!;
+        [Dependency] private DeviceLinkSystem _signalSystem = default!;
+        [Dependency] private IAdminLogManager _adminLogger = default!;
+        [Dependency] private IPlayerManager _playerManager = default!;
+        [Dependency] private CloningPodSystem _cloningPodSystem = default!;
+        [Dependency] private UserInterfaceSystem _uiSystem = default!;
+        [Dependency] private MobStateSystem _mobStateSystem = default!;
+        [Dependency] private PowerReceiverSystem _powerReceiverSystem = default!;
+        [Dependency] private SharedMindSystem _mindSystem = default!;
 
         public override void Initialize()
         {

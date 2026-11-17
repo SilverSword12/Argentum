@@ -1,10 +1,10 @@
-using Content.Shared.GPS.Components;
 using Content.Client.GPS.UI;
 using Content.Client.Items;
+using Content.Shared.GPS.Components;
 
 namespace Content.Client.GPS.Systems;
 
-public sealed class HandheldGpsSystem : EntitySystem
+public sealed partial class HandheldGpsSystem : EntitySystem
 {
     public override void Initialize()
     {

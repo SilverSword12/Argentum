@@ -1,20 +1,20 @@
-using System.Diagnostics.CodeAnalysis;
 using Content.Server.Administration;
 using Content.Shared.Administration;
 using Content.Shared.CCVar;
 using Robust.Server.Player;
 using Robust.Shared.Configuration;
 using Robust.Shared.Console;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Server.Mind.Commands;
 
 [AdminCommand(AdminFlags.VarEdit)]
-public sealed class RenameCommand : LocalizedEntityCommands
+public sealed partial class RenameCommand : LocalizedEntityCommands
 {
-    [Dependency] private readonly IConfigurationManager _cfgManager = default!;
-    [Dependency] private readonly IEntityManager _entManager = default!;
-    [Dependency] private readonly IPlayerManager _playerManager = default!;
-    [Dependency] private readonly MetaDataSystem _metaSystem = default!;
+    [Dependency] private IConfigurationManager _cfgManager = default!;
+    [Dependency] private IEntityManager _entManager = default!;
+    [Dependency] private IPlayerManager _playerManager = default!;
+    [Dependency] private MetaDataSystem _metaSystem = default!;
 
     public override string Command => "rename";
 

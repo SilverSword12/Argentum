@@ -15,6 +15,9 @@
     slots:
     - neck
   - type: Stethoscope
+  - type: PhysicalComposition
+    materialComposition:
+      Plastic: 25
 
 - type: entity
   parent: BaseAction
@@ -22,12 +25,13 @@
   name: Listen with stethoscope
   components:
   - type: Action
-    icon:
-      sprite: Clothing/Neck/Misc/stethoscope.rsi
-      state: icon
     priority: -1
     itemIconStyle: BigAction
     checkCanInteract: false
+  - type: Sprite
+    sprite: Clothing/Neck/Misc/stethoscope.rsi
+    layers:
+    - state: icon
   - type: TargetAction
   - type: EntityTargetAction
     event: !type:StethoscopeActionEvent
@@ -44,6 +48,10 @@
     sprite: Clothing/Neck/Misc/bling.rsi
   - type: Item
     sprite: Clothing/Neck/Misc/bling.rsi
+  - type: PhysicalComposition
+    materialComposition:
+      Plastic: 25
+      Gold: 1
 
 - type: entity
   parent: ClothingNeckBase
@@ -57,6 +65,9 @@
     sprite: Clothing/Neck/Misc/lawyerbadge.rsi
   - type: TypingIndicatorClothing
     proto: lawyer
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 25
 
 - type: entity
   parent: ClothingNeckBase
@@ -73,3 +84,6 @@
     tags:
     - Trash
     - WhitelistChameleon
+  - type: PhysicalComposition
+    materialComposition:
+      Paper: 25

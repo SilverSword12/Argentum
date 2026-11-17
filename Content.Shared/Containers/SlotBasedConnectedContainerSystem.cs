@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Inventory;
 using Content.Shared.Whitelist;
 using Robust.Shared.Containers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Shared.Containers;
 
@@ -10,11 +10,11 @@ namespace Content.Shared.Containers;
 /// System for getting container that is linked to subject entity. Container is supposed to be present in certain character slot.
 /// Can be used for linking ammo feeder, solution source for spray nozzle, etc.
 /// </summary>
-public sealed class SlotBasedConnectedContainerSystem : EntitySystem
+public sealed partial class SlotBasedConnectedContainerSystem : EntitySystem
 {
-    [Dependency] private readonly SharedContainerSystem _containers = default!;
-    [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
-    [Dependency] private readonly InventorySystem _inventory = default!;
+    [Dependency] private SharedContainerSystem _containers = default!;
+    [Dependency] private EntityWhitelistSystem _whitelistSystem = default!;
+    [Dependency] private InventorySystem _inventory = default!;
 
     /// <inheritdoc />
     public override void Initialize()

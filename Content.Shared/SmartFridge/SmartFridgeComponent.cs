@@ -1,9 +1,6 @@
 using Content.Shared.Whitelist;
-using Robust.Shared.Analyzers;
 using Robust.Shared.Audio;
-using Robust.Shared.GameObjects;
 using Robust.Shared.GameStates;
-using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 
 namespace Content.Shared.SmartFridge;
@@ -45,10 +42,12 @@ public sealed partial class SmartFridgeComponent : Component
     /// <summary>
     /// A mapping of smart fridge entries to the actual contained contents
     /// </summary>
-    [DataField, AutoNetworkedField]
+    [AutoNetworkedField]
     [Access(typeof(SharedSmartFridgeSystem), Other = AccessPermissions.ReadExecute)]
     public Dictionary<SmartFridgeEntry, HashSet<NetEntity>> ContainedEntries = new();
 
+    [DataField]
+    public Dictionary<string, HashSet<NetEntity>> ContainedEntriesCopy = new();
     /// <summary>
     /// The flavour text displayed at the bottom of the SmartFridge's UI
     /// </summary>
@@ -97,7 +96,7 @@ public enum SmartFridgeUiKey : byte
 }
 
 /// <summary>
-/// Send by the client when trying to dispense an item inside the fridge.
+/// Sent by the client when trying to dispense an item inside the fridge.
 /// </summary>
 [Serializable, NetSerializable]
 public sealed class SmartFridgeDispenseItemMessage(SmartFridgeEntry entry) : BoundUserInterfaceMessage
@@ -106,7 +105,7 @@ public sealed class SmartFridgeDispenseItemMessage(SmartFridgeEntry entry) : Bou
 }
 
 /// <summary>
-/// Send by the client when trying to remove an empty smart fridge entry from the list of items in the UI.
+/// Sent by the client when trying to remove an empty smart fridge entry from the list of items in the UI.
 /// </summary>
 [Serializable, NetSerializable]
 public sealed class SmartFridgeRemoveEntryMessage(SmartFridgeEntry entry) : BoundUserInterfaceMessage

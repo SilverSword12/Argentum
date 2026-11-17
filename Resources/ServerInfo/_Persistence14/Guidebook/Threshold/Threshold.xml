@@ -1,0 +1,23 @@
+<Document>
+  # Welcome to Persistence SS14!
+
+  ## The Basics
+
+  In Persistence SS14 the game world and characters are saved and loaded and so the round never ends; nothing is ever reset and the world is built up continously.
+
+  These guidebook entries will teach you how to get started in Persistence SS14 and the important mechanics to have an enjoyable and successful time.
+
+  ## Getting Started
+  A jobs desk will be nearby the starting cryogenic storage which can help you find an assignment with the station or an independent faction.
+  You can always change your assignment, join a faction or start an independent crew later once you have the necessary equipment and money.
+
+  Your character has access to exclusive rumors and rumored imports which makes you a valuable member of any crew. Completing rumors is important for characters to become wealthy and powerful.
+
+  ## Access your Job Network Implant
+ The Job Network is used to manage assignment, insights, rumors and more. Using the Job Network is key to managing your character and understanding the game world.
+  <Box>
+    <GuideEntityEmbed Entity="ReinforcementRadioSyndicateNukeops" Caption="Open Job Network"/>
+  </Box>
+  The Job Network is opened using an action with this icon.
+</Document>
+

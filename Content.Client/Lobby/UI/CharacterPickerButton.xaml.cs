@@ -30,23 +30,20 @@ public sealed partial class CharacterPickerButton : ContainerButton
         IPrototypeManager prototypeManager,
         ISharedPlayerManager playerMan,
         ButtonGroup group,
-        HumanoidCharacterProfile profile,
+        HumanoidCharacterProfile? profile,
         bool isSelected)
     {
         RobustXamlLoader.Load(this);
         AddStyleClass(StyleClassButton);
         ToggleMode = true;
         Group = group;
-        var description = profile.Name;
-
-        View.LoadPreview(profile);
-
-        var highPriorityJob = profile.JobPriorities.SingleOrDefault(p => p.Value == JobPriority.High).Key;
-        if (highPriorityJob != default)
+        var name = "Empty Slot";
+        if (profile != null)
         {
-            var jobName = prototypeManager.Index(highPriorityJob).LocalizedName;
-            description = $"{description}\n{jobName}";
+            name = profile.Name;
+            View.LoadPreview(profile);
         }
+        var description = name;
 
         Pressed = isSelected;
         DeleteButton.Visible = !isSelected;

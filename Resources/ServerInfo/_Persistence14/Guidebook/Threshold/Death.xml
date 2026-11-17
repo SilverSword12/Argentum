@@ -1,0 +1,20 @@
+<Document>
+  # Death
+  This guide will explain death in Persistence and what you can do about it.
+
+  Characters in Persistence are typically recoverable and so a dead character usually has two options:
+
+  ## Death SOS
+    Using the "Death Network" action you can open a menu where you can emit a death SOS.
+    This broadcasts a radio globally which contains the coordinates of your body.
+
+    Typically you can be swiftly recovered by a medical department and revived even after a prolonged period of rotting.
+
+  ## Accept Death
+    Using the "Death Network" action you can open a menu where you can accept death.
+    A character that accepts death will be permanently killed and cannot be recreated.
+
+    You will be returned to the lobby to create a new character.
+
+</Document>
+

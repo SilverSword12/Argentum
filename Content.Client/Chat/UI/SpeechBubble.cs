@@ -12,12 +12,12 @@ using Robust.Shared.Utility;
 
 namespace Content.Client.Chat.UI
 {
-    public abstract class SpeechBubble : Control
+    public abstract partial class SpeechBubble : Control
     {
-        [Dependency] private readonly IGameTiming _timing = default!;
-        [Dependency] private readonly IEyeManager _eyeManager = default!;
-        [Dependency] private readonly IEntityManager _entityManager = default!;
-        [Dependency] protected readonly IConfigurationManager ConfigManager = default!;
+        [Dependency] private IGameTiming _timing = default!;
+        [Dependency] private IEyeManager _eyeManager = default!;
+        [Dependency] private IEntityManager _entityManager = default!;
+        [Dependency] protected IConfigurationManager ConfigManager = default!;
         private readonly SharedTransformSystem _transformSystem;
 
         public enum SpeechType : byte
@@ -26,17 +26,34 @@ namespace Content.Client.Chat.UI
             Say,
             Whisper,
             Looc
-        }
+        }/// <summary>
+         ///     Base time a speech bubble stays on screen, before scaling by message size.
+         /// </summary>
+        private static readonly TimeSpan BaseTotalTime = TimeSpan.FromSeconds(1.0);
 
         /// <summary>
-        ///     The total time a speech bubble stays on screen.
+        ///     Approximate line height used to estimate how many lines the bubble contains.
+        ///     This scales lifetime based on the *rendered* bubble height rather than raw characters.
         /// </summary>
-        private static readonly TimeSpan TotalTime = TimeSpan.FromSeconds(4);
+        private const float ApproxLineHeightPx = 18f;
 
         /// <summary>
-        ///     The amount of time at the end of the bubble's life at which it starts fading.
+        ///     Additional lifetime added per extra rendered line.
         /// </summary>
-        private static readonly TimeSpan FadeTime = TimeSpan.FromSeconds(0.25f);
+        private static readonly TimeSpan TimePerExtraLine = TimeSpan.FromSeconds(2.5);
+
+        /// <summary>
+        ///     Lifetime clamps so bubbles never linger forever (or vanish too quickly).
+        /// </summary>
+        private static readonly TimeSpan MinTotalTime = TimeSpan.FromSeconds(1.0);
+        private static readonly TimeSpan MaxTotalTime = TimeSpan.FromSeconds(20.0);
+
+        /// <summary>
+        ///     Fade duration is computed as a fraction of total lifetime, then clamped.
+        /// </summary>
+        private const float FadeFractionOfTotal = 0.30f;
+        private static readonly TimeSpan MinFadeTime = TimeSpan.FromSeconds(0.35);
+        private static readonly TimeSpan MaxFadeTime = TimeSpan.FromSeconds(2.5);
 
         /// <summary>
         ///     The distance in world space to offset the speech bubble from the center of the entity.
@@ -55,6 +72,8 @@ namespace Content.Client.Chat.UI
         /// The time at which this bubble will die.
         /// </summary>
         private TimeSpan _deathTime;
+
+        private TimeSpan _fadeTime;
 
         public float VerticalOffset { get; set; }
         private float _verticalOffsetAchieved;
@@ -103,7 +122,26 @@ namespace Content.Client.Chat.UI
             bubble.Measure(Vector2Helpers.Infinity);
             ContentSize = bubble.DesiredSize;
             _verticalOffsetAchieved = -ContentSize.Y;
-            _deathTime = _timing.RealTime + TotalTime;
+
+            // Scale lifetime based on rendered bubble height (i.e. how many lines it wrapped to).
+            // This reliably makes longer messages persist longer, even for fancy bubbles.
+            var lines = 1;
+            if (ContentSize.Y > 0)
+                lines = (int)MathF.Max(1, MathF.Ceiling(ContentSize.Y / ApproxLineHeightPx));
+
+            var totalTime = BaseTotalTime + TimePerExtraLine * (lines - 1);
+
+            if (totalTime < MinTotalTime)
+                totalTime = MinTotalTime;
+            else if (totalTime > MaxTotalTime)
+                totalTime = MaxTotalTime;
+
+            var fadeSeconds = MathHelper.Clamp((float)totalTime.TotalSeconds * FadeFractionOfTotal,
+                (float)MinFadeTime.TotalSeconds,
+                (float)MaxFadeTime.TotalSeconds);
+
+            _fadeTime = TimeSpan.FromSeconds(fadeSeconds);
+            _deathTime = _timing.RealTime + totalTime;
         }
 
         protected abstract Control BuildBubble(ChatMessage message, string speechStyleClass, Color? fontColor = null);
@@ -136,10 +174,10 @@ namespace Content.Client.Chat.UI
                 return;
             }
 
-            if (timeLeft <= FadeTime.TotalSeconds)
+            if (timeLeft <= _fadeTime.TotalSeconds)
             {
                 // Update alpha if we're fading.
-                Modulate = Color.White.WithAlpha(timeLeft / (float)FadeTime.TotalSeconds);
+                Modulate = Color.White.WithAlpha(timeLeft / (float)_fadeTime.TotalSeconds);
             }
             else
             {
@@ -182,7 +220,7 @@ namespace Content.Client.Chat.UI
         {
             if (_deathTime > _timing.RealTime)
             {
-                _deathTime = _timing.RealTime + FadeTime;
+                _deathTime = _timing.RealTime + _fadeTime;
             }
         }
 
@@ -214,6 +252,7 @@ namespace Content.Client.Chat.UI
             var label = new RichTextLabel
             {
                 MaxWidth = SpeechMaxWidth,
+                OutlineColorOverride = TextOutline.Default.Color,
             };
 
             label.SetMessage(FormatSpeech(message.WrappedMessage, fontColor));
@@ -243,7 +282,8 @@ namespace Content.Client.Chat.UI
             {
                 var label = new RichTextLabel
                 {
-                    MaxWidth = SpeechMaxWidth
+                    MaxWidth = SpeechMaxWidth,
+                    OutlineColorOverride = TextOutline.Default.Color,
                 };
 
                 label.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleContent", fontColor));
@@ -260,15 +300,17 @@ namespace Content.Client.Chat.UI
             var bubbleHeader = new RichTextLabel
             {
                 ModulateSelfOverride = Color.White.WithAlpha(ConfigManager.GetCVar(CCVars.SpeechBubbleSpeakerOpacity)),
-                Margin = new Thickness(1, 1, 1, 1),
+                Margin = new Thickness(2, 0, 2, 0),
+                OutlineColorOverride = TextOutline.Default.Color,
             };
 
             var bubbleContent = new RichTextLabel
             {
                 ModulateSelfOverride = Color.White.WithAlpha(ConfigManager.GetCVar(CCVars.SpeechBubbleTextOpacity)),
                 MaxWidth = SpeechMaxWidth,
-                Margin = new Thickness(2, 6, 2, 2),
+                Margin = new Thickness(2, 0, 2, 0),
                 StyleClasses = { "bubbleContent" },
+                OutlineColorOverride = TextOutline.Default.Color,
             };
 
             //We'll be honest. *Yes* this is hacky. Doing this in a cleaner way would require a bottom-up refactor of how saycode handles sending chat messages. -Myr
@@ -283,7 +325,7 @@ namespace Content.Client.Chat.UI
                 ModulateSelfOverride = Color.White.WithAlpha(ConfigManager.GetCVar(CCVars.SpeechBubbleBackgroundOpacity)),
                 HorizontalAlignment = HAlignment.Center,
                 VerticalAlignment = VAlignment.Bottom,
-                Margin = new Thickness(4, 14, 4, 2)
+                Margin = new Thickness(4, 20, 4, 2)
             };
 
             var headerPanel = new PanelContainer

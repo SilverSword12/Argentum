@@ -1,3 +1,4 @@
+using Content.Shared._Persistence14.PersistentIdentifier;
 using Content.Shared.Interaction;
 using Content.Shared.Timing;
 using Content.Shared.Verbs;
@@ -8,12 +9,13 @@ using Robust.Shared.Timing;
 namespace Content.Shared.Xenoarchaeology.Equipment;
 
 /// <summary> Controls behaviour of artifact node scanner device. </summary>
-public sealed class NodeScannerSystem : EntitySystem
+public sealed partial class NodeScannerSystem : EntitySystem
 {
     [Dependency] private readonly UseDelaySystem _useDelay = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly SharedUserInterfaceSystem _ui = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly PersistentIdentifierSystem _pid = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -33,7 +35,12 @@ public sealed class NodeScannerSystem : EntitySystem
 
             connected.NextUpdate = _timing.CurTime + connected.LinkUpdateInterval;
 
-            var attachedArtifact = connected.AttachedTo;
+            if (!_pid.TryResolveId(connected.AttachedTo, out var attachedArtifact))
+            {
+                RemCompDeferred(uid, connected); // Scanner not connected to valid entity
+                continue;
+            }
+
             var artifactCoordinates = Transform(attachedArtifact).Coordinates;
             if (!_transform.InRange(artifactCoordinates, transform.Coordinates, scanner.MaxLinkedRange))
             {
@@ -80,18 +87,15 @@ public sealed class NodeScannerSystem : EntitySystem
         EntityUid actor
     )
     {
-        if (!_timing.IsFirstTimePredicted)
-            return;
-
         if (TryComp(device, out UseDelayComponent? useDelay)
             && !_useDelay.TryResetDelay((device, useDelay), true))
             return;
 
         var connected = EnsureComp<NodeScannerConnectedComponent>(device);
         EntityUid artifact = unlockingEnt;
-        if (connected.AttachedTo != artifact)
+        if (!_pid.TryResolveId(connected.AttachedTo, out var connectedArtifact) || connectedArtifact.Owner != artifact)
         {
-            connected.AttachedTo = artifact;
+            _pid.AssignIdReference(ref connected.AttachedTo, artifact);
             Dirty(device, connected);
         }
 

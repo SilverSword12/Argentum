@@ -1,0 +1,431 @@
+- type: infrastructureLevel
+  id: ILevelGeneral1
+  demotionXP: 0
+  requiredXP: 0
+  name: Simple Trading Outpost (1)
+  markets:
+    - market
+  groups:
+    StationBounty : 1
+    MaterialBounty : 1
+    ServiceBounty : 1
+    GasBounty : 1
+    ReagentBounty : 1
+  income: 0
+  bountyPriceMult: 0.6
+
+- type: infrastructureLevel
+  id: ILevelGeneral2
+  demotionXP: 9
+  requiredXP: 10
+  name: Decent Trading Station (2)
+  markets:
+    - market
+    - market2
+  groups:
+    StationBounty : 2
+    MaterialBounty : 2
+    ServiceBounty : 2
+    GasBounty : 2
+    ReagentBounty : 2
+  income: 0
+  level: 2
+  bountyPriceMult: 0.7
+
+- type: infrastructureLevel
+  id: ILevelGeneral3
+  demotionXP: 39
+  requiredXP: 40
+  name: Busy Trade Hub (3)
+  markets:
+    - market
+    - market2
+    - market3
+  groups:
+    StationBounty : 3
+    MaterialBounty : 3
+    ServiceBounty : 2
+    GasBounty : 2
+    ReagentBounty : 2
+    HunterBounty : 1
+  income: 10000
+  level: 3
+  bountyPriceMult: 0.8
+
+- type: infrastructureLevel
+  id: ILevelGeneral4
+  demotionXP: 99
+  requiredXP: 100
+  name: Masterful Trade Citadel (4)
+  markets:
+    - market
+    - market2
+    - market3
+    - market4
+  groups:
+    StationBounty : 4
+    MaterialBounty : 4
+    ServiceBounty : 3
+    GasBounty : 3
+    ReagentBounty : 3
+    HunterBounty : 2
+  income: 30000
+  level: 4
+  bountyPriceMult: 0.9
+
+- type: infrastructureLevel
+  id: ILevelScience1
+  demotionXP: 0
+  requiredXP: 0
+  name: Simple Research Outpost (1)
+  markets:
+    - sciencemarket
+  groups:
+    ScienceBounty : 2
+    MaterialBounty : 2
+    ReagentBounty : 1
+  income: 0
+  bountyPriceMult: 0.6
+
+- type: infrastructureLevel
+  id: ILevelScience2
+  demotionXP: 9
+  requiredXP: 10
+  name: Established Analysis Centre (2)
+  markets:
+    - sciencemarket
+    - sciencemarket2
+  groups:
+    ScienceBounty : 3
+    MaterialBounty : 2
+    ReagentBounty : 1
+    GasBounty : 1
+    ExplorationBounty : 1
+  income: 0
+  level: 2
+  bountyPriceMult: 0.7
+
+- type: infrastructureLevel
+  id: ILevelScience3
+  demotionXP: 39
+  requiredXP: 40
+  name: Robust Research Station (3)
+  markets:
+    - sciencemarket
+    - sciencemarket2
+    - sciencemarket3
+  groups:
+    ScienceBounty : 4
+    MaterialBounty : 2
+    ReagentBounty : 2
+    GasBounty : 2
+    ExplorationBounty : 2
+  income: 10000
+  level: 3
+  bountyPriceMult: 0.8
+
+- type: infrastructureLevel
+  id: ILevelScience4
+  demotionXP: 99
+  requiredXP: 100
+  name: Prestigious Scientific Intstitution (4)
+  markets:
+    - sciencemarket
+    - sciencemarket2
+    - sciencemarket3
+    - sciencemarket4
+  groups:
+    ScienceBounty : 5
+    MaterialBounty : 3
+    ReagentBounty : 3
+    GasBounty : 3
+    ExplorationBounty : 3
+  income: 30000
+  level: 4
+  bountyPriceMult: 0.9
+
+- type: infrastructureLevel
+  id: ILevelExploration1
+  demotionXP: 0
+  requiredXP: 0
+  name: Simple Explorer's Post (1)
+  markets:
+    - explorermarket
+    - huntermarket
+  groups:
+    ExplorationBounty : 2
+    HunterBounty : 1
+    ServiceBounty : 1
+  income: 0
+  bountyPriceMult: 0.6
+
+- type: infrastructureLevel
+  id: ILevelExploration2
+  demotionXP: 9
+  requiredXP: 10
+  name: Decent Explorer's Outpost (2)
+  markets:
+    - explorermarket
+    - explorermarket2
+    - huntermarket
+    - huntermarket2
+  groups:
+    ExplorationBounty : 3
+    HunterBounty : 1
+    ServiceBounty : 1
+    MaterialBounty : 1
+    StationBounty : 1
+  income: 0
+  level: 2
+  bountyPriceMult: 0.7
+
+- type: infrastructureLevel
+  id: ILevelExploration3
+  demotionXP: 39
+  requiredXP: 40
+  name: Established Exploration Station (3)
+  markets:
+    - explorermarket
+    - explorermarket2
+    - explorermarket3
+    - huntermarket
+    - huntermarket2
+    - huntermarket3
+  groups:
+    ExplorationBounty : 4
+    HunterBounty : 2
+    ServiceBounty : 2
+    MaterialBounty : 2
+    StationBounty : 2
+  income: 10000
+  level: 3
+  bountyPriceMult: 0.8
+
+- type: infrastructureLevel
+  id: ILevelExploration4
+  demotionXP: 99
+  requiredXP: 100
+  name: Beacon of Exploration (4)
+  markets:
+    - explorermarket
+    - explorermarket2
+    - explorermarket3
+    - explorermarket4
+    - huntermarket
+    - huntermarket2
+    - huntermarket3
+    - huntermarket4
+  groups:
+    ExplorationBounty : 5
+    HunterBounty : 3
+    ServiceBounty : 3
+    MaterialBounty : 3
+    StationBounty : 3
+  income: 30000
+  level: 4
+  bountyPriceMult: 0.9
+
+
+
+- type: infrastructureLevel
+  id: ILevelHunter1
+  demotionXP: 0
+  requiredXP: 0
+  name: Simple Hunter's Outpost (1)
+  markets:
+    - huntermarket
+  groups:
+    HunterBounty : 4
+    ExplorationBounty : 1
+    ScienceBounty : 1
+  income: 0
+  bountyPriceMult: 0.6
+
+- type: infrastructureLevel
+  id: ILevelHunter2
+  demotionXP: 9
+  requiredXP: 10
+  name: Burgeoning Hunter's Haven (2)
+  markets:
+    - huntermarket
+    - huntermarket2
+  groups:
+    HunterBounty : 6
+    ExplorationBounty : 2
+    ScienceBounty : 1
+  income: 0
+  level: 2
+  bountyPriceMult: 0.7
+
+- type: infrastructureLevel
+  id: ILevelHunter3
+  demotionXP: 39
+  requiredXP: 40
+  name: Robust Hunter's Station (3)
+  markets:
+    - huntermarket
+    - huntermarket2
+    - huntermarket3
+  groups:
+    HunterBounty : 8
+    ExplorationBounty : 2
+    ScienceBounty : 2
+  income: 10000
+  level: 3
+  bountyPriceMult: 0.8
+
+- type: infrastructureLevel
+  id: ILevelHunter4
+  demotionXP: 99
+  requiredXP: 100
+  name: Legendary Hunter's Refuge (4)
+  markets:
+    - huntermarket
+    - huntermarket2
+    - huntermarket3
+    - huntermarket4
+  groups:
+    HunterBounty : 9
+    ExplorationBounty : 3
+    ScienceBounty : 3
+  income: 30000
+  level: 4
+  bountyPriceMult: 0.9
+
+#Persistence 14
+
+- type: infrastructureLevel
+  id: ILevelService1
+  demotionXP: 0
+  requiredXP: 0
+  name: Simple Corner Store (1)
+  markets:
+    - servicemarket
+  groups:
+    ServiceBounty : 4
+    HunterBounty : 2
+  income: -5000
+  bountyPriceMult: 0.6
+
+- type: infrastructureLevel
+  id: ILevelService2
+  demotionXP: 9
+  requiredXP: 10
+  name: Burgeoning Bodega (2)
+  markets:
+    - servicemarket
+    - servicemarket2
+  groups:
+    ServiceBounty : 7
+    HunterBounty : 2
+  income: 0
+  level: 2
+  bountyPriceMult: 0.7
+
+- type: infrastructureLevel
+  id: ILevelService3
+  demotionXP: 39
+  requiredXP: 40
+  name: Robust General Store (3)
+  markets:
+    - servicemarket
+    - servicemarket2
+    - servicemarket3
+  groups:
+    ServiceBounty : 9
+    HunterBounty : 3
+  income: 10000
+  level: 3
+  bountyPriceMult: 0.8
+
+- type: infrastructureLevel
+  id: ILevelService4
+  demotionXP: 99
+  requiredXP: 100
+  name: Space Mall (4)
+  markets:
+    - servicemarket
+    - servicemarket2
+    - servicemarket3
+    - servicemarket4
+  groups:
+    ServiceBounty : 10
+    HunterBounty : 5
+  income: 30000
+  level: 4
+  bountyPriceMult: 0.9
+
+
+
+- type: infrastructureLevel
+  id: ILevelEngineer1
+  demotionXP: 0
+  requiredXP: 0
+  name: Simple Industrial Detachment (1)
+  markets:
+    - engineermarket
+  groups:
+    GasBounty : 2
+    MaterialBounty : 1
+    ReagentBounty : 1
+    StationBounty : 1
+  income: 0
+  bountyPriceMult: 0.6
+
+- type: infrastructureLevel
+  id: ILevelEngineer2
+  demotionXP: 9
+  requiredXP: 10
+  name: Industrial Engineering Outpost (2)
+  markets:
+    - engineermarket
+    - engineermarket2
+  groups:
+    GasBounty : 4
+    MaterialBounty : 2
+    ReagentBounty : 2
+    StationBounty : 1
+    ExplorationBounty : 1
+  income: 0
+  level: 2
+  bountyPriceMult: 0.7
+
+- type: infrastructureLevel
+  id: ILevelEngineer3
+  demotionXP: 39
+  requiredXP: 40
+  name: Robust Industrial Station (3)
+  markets:
+    - engineermarket
+    - engineermarket2
+    - engineermarket3
+  groups:
+    GasBounty : 6
+    MaterialBounty : 3
+    ReagentBounty : 2
+    StationBounty : 2
+    ExplorationBounty : 3
+  income: 10000
+  level: 3
+  bountyPriceMult: 0.8
+
+- type: infrastructureLevel
+  id: ILevelEngineer4
+  demotionXP: 99
+  requiredXP: 100
+  name: Exemplary Industrial Fortress (4)
+  markets:
+    - engineermarket
+    - engineermarket2
+    - engineermarket3
+    - engineermarket4
+  groups:
+    GasBounty : 7
+    MaterialBounty : 4
+    ReagentBounty : 3
+    StationBounty : 3
+    ExplorationBounty : 3
+  income: 30000
+  level: 4
+  bountyPriceMult: 0.9
+

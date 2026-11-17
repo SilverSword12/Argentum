@@ -1,4 +1,3 @@
-using Content.Server.Atmos.Components;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
 using Robust.Shared.Map.Components;
@@ -8,6 +7,7 @@ namespace Content.Server.Atmos.EntitySystems
 {
     public sealed partial class AtmosphereSystem
     {
+
         private void ProcessCell(
             Entity<GridAtmosphereComponent, GasTileOverlayComponent, MapGridComponent, TransformComponent> ent,
             TileAtmosphere tile, int fireCount)
@@ -28,19 +28,19 @@ namespace Content.Server.Atmos.EntitySystems
 
             for (var i = 0; i < Atmospherics.Directions; i++)
             {
-                var direction = (AtmosDirection) (1 << i);
-                if(tile.AdjacentBits.IsFlagSet(direction))
+                var direction = (AtmosDirection)(1 << i);
+                if (tile.AdjacentBits.IsFlagSet(direction))
                     adjacentTileLength++;
             }
 
-            for(var i = 0; i < Atmospherics.Directions; i++)
+            for (var i = 0; i < Atmospherics.Directions; i++)
             {
-                var direction = (AtmosDirection) (1 << i);
+                var direction = (AtmosDirection)(1 << i);
                 if (!tile.AdjacentBits.IsFlagSet(direction)) continue;
                 var enemyTile = tile.AdjacentTiles[i];
 
                 // If the tile is null or has no air, we don't do anything for it.
-                if(enemyTile?.Air == null) continue;
+                if (enemyTile?.Air == null) continue;
                 if (fireCount <= enemyTile.CurrentCycle) continue;
                 Archive(enemyTile, fireCount);
 
@@ -54,7 +54,8 @@ namespace Content.Server.Atmos.EntitySystems
                     }
 
                     shouldShareAir = true;
-                } else if (CompareExchange(tile, enemyTile) != GasCompareResult.NoExchange)
+                }
+                else if (CompareExchange(tile, enemyTile) != GasCompareResult.NoExchange)
                 {
                     AddActiveTile(gridAtmosphere, enemyTile);
                     if (ExcitedGroups)
@@ -71,7 +72,7 @@ namespace Content.Server.Atmos.EntitySystems
                         if (tile.ExcitedGroup == null)
                             ExcitedGroupAddTile(excitedGroup, tile);
 
-                        if(enemyTile.ExcitedGroup == null)
+                        if (enemyTile.ExcitedGroup == null)
                             ExcitedGroupAddTile(excitedGroup, enemyTile);
                     }
 
@@ -99,26 +100,29 @@ namespace Content.Server.Atmos.EntitySystems
                 }
             }
 
-            if(tile.Air != null)
+            if (tile.Air != null)
                 React(tile.Air, tile);
 
             InvalidateVisuals(ent, tile);
 
             var remove = true;
 
-            if(tile.Air!.Temperature > Atmospherics.MinimumTemperatureStartSuperConduction)
+            if (tile.Air!.Temperature > Atmospherics.MinimumTemperatureStartSuperConduction)
                 if (ConsiderSuperconductivity(gridAtmosphere, tile, true))
                     remove = false;
 
-            if(ExcitedGroups && tile.ExcitedGroup == null && remove)
+            if (ExcitedGroups && tile.ExcitedGroup == null && remove)
                 RemoveActiveTile(gridAtmosphere, tile);
         }
 
         private void Archive(TileAtmosphere tile, int fireCount)
         {
             if (tile.Air != null)
+            {
+                // TODO ATMOS: This is an extremely large hotspot in LINDA, accounting for 1/5th of its time.
+                // Please make GasMixture a struct or use a FauxGasMixture with an InlineArray to handle copying this sanely.
                 tile.AirArchived = new GasMixture(tile.Air);
-
+            }
             tile.ArchivedCycle = fireCount;
         }
 
@@ -197,12 +201,25 @@ namespace Content.Server.Atmos.EntitySystems
         }
 
         /// <summary>
-        ///     Shares gas between two tiles. Part of LINDA.
+        /// Performs a share operation between two tiles, sharing both physical gas and temperature.
         /// </summary>
+        /// <param name="tileReceiver">The <see cref="TileAtmosphere"/> receiving the share.</param>
+        /// <param name="tileSharer">The <see cref="TileAtmosphere"/> sharing its air.</param>
+        /// <param name="atmosAdjacentTurfs">The number of <see cref="TileAtmosphere"/>s next to the receiver that air can flow to.</param>
+        /// <returns>The pressure difference between the two tiles after sharing.</returns>
+        /// <para>LINDA is an FEA-like solver and this method is basically the core of it.
+        /// In FEA we divide the problem into infinitesimal parts and try to step towards the desired end state:
+        /// a steady state where all air is equalized between tiles.</para>
+        /// <para>To do this we share the tiles air between other tiles over time (as well as the temperature).
+        /// Note that the timestep is actually a cyclestep, so running the cycles faster leads to a faster equalization.
+        /// Hilarious, I know.</para>
         public float Share(TileAtmosphere tileReceiver, TileAtmosphere tileSharer, int atmosAdjacentTurfs)
         {
-            if (tileReceiver.Air is not {} receiver || tileSharer.Air is not {} sharer ||
-                    tileReceiver.AirArchived == null || tileSharer.AirArchived == null)
+            // TODO ATMOS: Method needs to timestep over deltaTime instead of per cycle
+            // TODO ATMOS: Method needs to account for adjacent turfs in the situation where air is moving from receiver to sharer.
+            // See https://github.com/tgstation/tgstation/pull/63785
+            if (tileReceiver.Air is not { } receiver || tileSharer.Air is not { } sharer ||
+                tileReceiver.AirArchived == null || tileSharer.AirArchived == null)
                 return 0f;
 
             var temperatureDelta = tileReceiver.AirArchived.Temperature - tileSharer.AirArchived.Temperature;
@@ -221,15 +238,16 @@ namespace Content.Server.Atmos.EntitySystems
             var movedMoles = 0f;
             var absMovedMoles = 0f;
 
-            for(var i = 0; i < Atmospherics.TotalNumberOfGases; i++)
+            for (var i = 0; i < Atmospherics.TotalNumberOfGases; i++)
             {
                 var thisValue = receiver.Moles[i];
                 var sharerValue = sharer.Moles[i];
                 var delta = (thisValue - sharerValue) / (atmosAdjacentTurfs + 1);
-                if (!(MathF.Abs(delta) >= Atmospherics.GasMinMoles)) continue;
+                if (!(MathF.Abs(delta) >= Atmospherics.GasMinMoles))
+                    continue;
                 if (absTemperatureDelta > Atmospherics.MinimumTemperatureDeltaToConsider)
                 {
-                    var gasHeatCapacity = delta * GasSpecificHeats[i];
+                    var gasHeatCapacity = delta * GasMolarHeatCapacities[i];
                     if (delta > 0)
                     {
                         heatCapacityToSharer += gasHeatCapacity;
@@ -240,8 +258,10 @@ namespace Content.Server.Atmos.EntitySystems
                     }
                 }
 
-                if (!receiver.Immutable) receiver.Moles[i] -= delta;
-                if (!sharer.Immutable) sharer.Moles[i] += delta;
+                if (!receiver.Immutable)
+                    receiver.Moles[i] -= delta;
+                if (!sharer.Immutable)
+                    sharer.Moles[i] += delta;
                 movedMoles += delta;
                 absMovedMoles += MathF.Abs(delta);
             }
@@ -256,16 +276,21 @@ namespace Content.Server.Atmos.EntitySystems
                 // Transfer of thermal energy (via changed heat capacity) between self and sharer.
                 if (!receiver.Immutable && newHeatCapacity > Atmospherics.MinimumHeatCapacity)
                 {
-                    receiver.Temperature = ((oldHeatCapacity * receiver.Temperature) - (heatCapacityToSharer * tileReceiver.AirArchived.Temperature) + (heatCapacitySharerToThis * tileSharer.AirArchived.Temperature)) / newHeatCapacity;
+                    receiver.Temperature =
+                        (oldHeatCapacity * receiver.Temperature -
+                         heatCapacityToSharer * tileReceiver.AirArchived.Temperature +
+                         heatCapacitySharerToThis * tileSharer.AirArchived.Temperature) / newHeatCapacity;
                 }
 
                 if (!sharer.Immutable && newSharerHeatCapacity > Atmospherics.MinimumHeatCapacity)
                 {
-                    sharer.Temperature = ((oldSharerHeatCapacity * sharer.Temperature) - (heatCapacitySharerToThis * tileSharer.AirArchived.Temperature) + (heatCapacityToSharer * tileReceiver.AirArchived.Temperature)) / newSharerHeatCapacity;
+                    sharer.Temperature =
+                        (oldSharerHeatCapacity * sharer.Temperature -
+                         heatCapacitySharerToThis * tileSharer.AirArchived.Temperature +
+                         heatCapacityToSharer * tileReceiver.AirArchived.Temperature) / newSharerHeatCapacity;
                 }
 
                 // Thermal energy of the system (self and sharer) is unchanged.
-
                 if (MathF.Abs(oldSharerHeatCapacity) > Atmospherics.MinimumHeatCapacity)
                 {
                     if (MathF.Abs(newSharerHeatCapacity / oldSharerHeatCapacity - 1) < 0.1)
@@ -275,12 +300,25 @@ namespace Content.Server.Atmos.EntitySystems
                 }
             }
 
-            if (!(temperatureDelta > Atmospherics.MinimumTemperatureToMove) &&
-                !(MathF.Abs(movedMoles) > Atmospherics.MinimumMolesDeltaToMove)) return 0f;
+            // If we didn't move enough air or if the temperature difference is too small,
+            // we don't consider there to be a pressure difference.
+            // TODO ATMOS: This is a very weird early return, please figure out why this exists because this logic seems to be double checked
+            // in a lot of other places (ex. HighPressureDelta).
+            if (!(absTemperatureDelta > Atmospherics.MinimumTemperatureToMove) &&
+                !(MathF.Abs(movedMoles) > Atmospherics.MinimumMolesDeltaToMove))
+                return 0f;
+
             var moles = receiver.TotalMoles;
             var theirMoles = sharer.TotalMoles;
 
-            return (tileReceiver.AirArchived.Temperature * (moles + movedMoles)) - (tileSharer.AirArchived.Temperature * (theirMoles - movedMoles)) * Atmospherics.R / receiver.Volume;
+            /*
+             To get the pressure delta:
+             PV = nRT
+             P = nRT / V
+             \Delta P = ((n_1 * T_1) - (n_2 * T_2)) * R / V
+             */
+            return (tileReceiver.AirArchived.Temperature * (moles + movedMoles) -
+                    tileSharer.AirArchived.Temperature * (theirMoles - movedMoles)) * Atmospherics.R / receiver.Volume;
         }
 
         /// <summary>
@@ -318,7 +356,7 @@ namespace Content.Server.Atmos.EntitySystems
         /// </summary>
         public float TemperatureShare(TileAtmosphere tileReceiver, float conductionCoefficient, float sharerTemperature, float sharerHeatCapacity)
         {
-            if (tileReceiver.Air is not {} receiver || tileReceiver.AirArchived == null)
+            if (tileReceiver.Air is not { } receiver || tileReceiver.AirArchived == null)
                 return 0;
 
             var temperatureDelta = tileReceiver.AirArchived.Temperature - sharerTemperature;

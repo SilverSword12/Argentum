@@ -18,7 +18,7 @@ public sealed partial class HumanoidProfileEditor
         TraitsList.RemoveAllChildren();
 
         var traits = _prototypeManager.EnumeratePrototypes<TraitPrototype>().OrderBy(t => Loc.GetString(t.Name)).ToList();
-        TabContainer.SetTabTitle(3, Loc.GetString("humanoid-profile-editor-traits-tab"));
+        TabContainer.SetTabTitle(4, Loc.GetString("humanoid-profile-editor-traits-tab"));
 
         if (traits.Count < 1)
         {
@@ -37,6 +37,7 @@ public sealed partial class HumanoidProfileEditor
 
         foreach (var trait in traits)
         {
+            if (!trait.Selectable) continue;
             if (trait.Category == null)
             {
                 defaultTraits.Add(trait.ID);
@@ -53,13 +54,14 @@ public sealed partial class HumanoidProfileEditor
         // Create UI view from model
         foreach (var (categoryId, categoryTraits) in traitGroups)
         {
+            BoxContainer box = new();
             TraitCategoryPrototype? category = null;
 
             if (categoryId != TraitCategoryPrototype.Default)
             {
                 category = _prototypeManager.Index<TraitCategoryPrototype>(categoryId);
                 // Label
-                TraitsList.AddChild(new Label
+                box.AddChild(new Label
                 {
                     Text = Loc.GetString(category.Name),
                     Margin = new Thickness(0, 10, 0, 0),
@@ -99,12 +101,15 @@ public sealed partial class HumanoidProfileEditor
             // Selection counter
             if (category is { MaxTraitPoints: >= 0 })
             {
-                TraitsList.AddChild(new Label
+                box.AddChild(new Label
                 {
                     Text = Loc.GetString("humanoid-profile-editor-trait-count-hint", ("current", selectionCount), ("max", category.MaxTraitPoints)),
                     FontColorOverride = Color.Gray
                 });
             }
+
+            
+            box.Orientation = LayoutOrientation.Vertical;
 
             foreach (var selector in selectors)
             {
@@ -117,8 +122,9 @@ public sealed partial class HumanoidProfileEditor
                     selector.Checkbox.Label.FontColorOverride = Color.Red;
                 }
 
-                TraitsList.AddChild(selector);
+                box.AddChild(selector);
             }
+            TraitsList.AddChild(box);
         }
     }
 }

@@ -220,6 +220,16 @@
       Manipulator: 3
 
 - type: entity
+  id: PlushieLatheCircuitboard
+  parent: BaseMachineCircuitboard
+  name: plushie lathe machine board
+  components:
+  - type: MachineBoard
+    prototype: PlushieLathe
+    stackRequirements:
+      Manipulator: 3
+
+- type: entity
   id: VaccinatorMachineCircuitboard
   parent: BaseMachineCircuitboard
   name: vaccinator machine board
@@ -271,6 +281,23 @@
         Glass: 5
 
 - type: entity
+  id: ArtifactAnalyzerAdvancedMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: advanced artifact analyzer machine board
+  description: A machine printed circuit board for an advanced artifact analyzer.
+  components:
+    - type: Sprite
+      state: science
+    - type: MachineBoard
+      prototype: MachineArtifactAnalyzerAdvanced
+      stackRequirements:
+        Manipulator: 4
+        Steel: 5
+        Glass: 5
+        Uranium: 1
+        Plasma: 3
+
+- type: entity
   id: ArtifactCrusherMachineCircuitboard
   parent: BaseMachineCircuitboard
   name: artifact crusher machine board
@@ -284,6 +311,21 @@
       Manipulator: 2
       Glass: 1
       Steel: 5
+
+- type: entity
+  id: StationTeleporterMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: teleporter machine board
+  description: A machine printed circuit board for a bluespace teleporter.
+  components:
+  - type: Sprite
+    state: science
+  - type: MachineBoard
+    prototype: StationTeleporter
+    stackRequirements:
+      Manipulator: 3
+      Cable: 5
+      PlasmaGlass: 10
 
 - type: entity
   parent: BaseMachineCircuitboard
@@ -345,6 +387,9 @@
         Manipulator: 2
         Cable: 1
         Glass: 1
+    - type: Tag
+      tags:
+      - ApeCircuitboard
 
 - type: entity
   id: ThermomachineFreezerMachineCircuitBoard
@@ -461,6 +506,30 @@
       Manipulator: 3
       Cable: 5
 
+# Start Persistence: make atmos fans into machines
+- type: entity
+  id: AtmosDeviceFanTinyMachineCircuitBoard
+  parent: BaseMachineCircuitboard
+  name: tiny fan machine board
+  description: A machine printed circuit board for a tiny fan.
+  components:
+  - type: Sprite
+    state: engineering
+  - type: MachineBoard
+    prototype: AtmosDeviceFanTiny
+
+- type: entity
+  id: AtmosDeviceFanDirectionalMachineCircuitBoard
+  parent: BaseMachineCircuitboard
+  name: directional fan machine board
+  description: A machine printed circuit board for a directional fan.
+  components:
+  - type: Sprite
+    state: engineering
+  - type: MachineBoard
+    prototype: AtmosDeviceFanDirectional
+# End Persistence
+
 - type: entity
   id: CloningPodMachineCircuitboard
   parent: BaseMachineCircuitboard
@@ -549,7 +618,7 @@
       stackRequirements:
         Manipulator: 1
         Glass: 1
-        Steel: 3
+        Plastic: 3
       tagRequirements:
         GlassBeaker:
           amount: 2
@@ -573,6 +642,25 @@
         amount: 2
         defaultPrototype: KitchenKnife
         examineName: construction-insert-info-examine-name-knife
+- type: entity
+  id: ButcheringMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: industrial butchering machine board
+  description: A machine printed circuit board for an industrial butcherer.
+  components:
+  - type: Sprite
+    state: service
+  - type: MachineBoard
+    prototype: ButcheringMachine
+    stackRequirements:
+      Manipulator: 3
+      Steel: 5
+    tagRequirements:
+      Knife:
+        amount: 2
+        defaultPrototype: KitchenKnife
+        examineName: construction-insert-info-examine-name-knife
+
 
 - type: entity
   id: HydroponicsTrayMachineCircuitboard
@@ -681,7 +769,7 @@
       prototype: PowerCageRecharger
       stackRequirements:
         Manipulator: 4
-        Steel: 5
+        Plasteel: 5
         Cable: 10
     - type: PhysicalComposition
       materialComposition:
@@ -831,6 +919,26 @@
       price: 40
 
 - type: entity
+  id: PortableGeneratorMegamanMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: M.E.G.A.M.A.N.-type portable generator machine board
+  components:
+    - type: Sprite
+      state: engineering
+    - type: MachineBoard
+      prototype: PortableGeneratorMegaman
+      stackRequirements:
+        Manipulator: 2
+        CableHV: 8
+    - type: PhysicalComposition
+      materialComposition:
+        Glass: 300
+      chemicalComposition:
+        Silicon: 30
+    - type: StaticPrice
+      price: 60
+
+- type: entity
   id: ThrusterMachineCircuitboard
   parent: BaseMachineCircuitboard
   name: thruster machine board
@@ -841,7 +949,7 @@
     prototype: Thruster
     stackRequirements:
       Manipulator: 4
-      Steel: 5
+      Plasteel: 5
 
 - type: entity
   id: GyroscopeMachineCircuitboard
@@ -857,6 +965,19 @@
       Glass: 2
 
 - type: entity
+  id: GyroscopeFloorMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: subfloor gyroscope machine board
+  components:
+  - type: Sprite
+    state: supply
+  - type: MachineBoard
+    prototype: GyroscopeFloor
+    stackRequirements:
+      Manipulator: 1
+      Glass: 1
+
+- type: entity
   id: PortableGeneratorSuperPacmanMachineCircuitboard
   parent: BaseMachineCircuitboard
   name: S.U.P.E.R.P.A.C.M.A.N.-type portable generator machine board
@@ -868,6 +989,26 @@
       stackRequirements:
         Manipulator: 2
         CableHV: 10
+    - type: PhysicalComposition
+      materialComposition:
+        Glass: 200
+      chemicalComposition:
+        Silicon: 20
+    - type: StaticPrice
+      price: 40
+
+- type: entity
+  id: PortableGeneratorOldmanMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: O.L.D.M.A.N.-type portable generator machine board
+  components:
+    - type: Sprite
+      state: engineering
+    - type: MachineBoard
+      prototype: PortableGeneratorOldman
+      stackRequirements:
+        Manipulator: 2
+        Cable: 10
     - type: PhysicalComposition
       materialComposition:
         Glass: 200
@@ -1009,6 +1150,78 @@
         Glass: 1
 
 - type: entity
+  id: RecyclerMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: recycler machine board
+  components:
+    - type: Sprite
+      state: supply
+    - type: MachineBoard
+      prototype: Recycler
+      stackRequirements:
+        Manipulator: 3
+        Steel: 6
+
+- type: entity
+  id: ShredderMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: shredder machine board
+  components:
+  - type: Sprite
+    state: supply
+  - type: MachineBoard
+    prototype: Shredder
+    stackRequirements:
+      Manipulator: 2
+      Steel: 4
+
+- type: entity
+  id: PersonalCryoMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: personal cryopod machine board
+  description: A circuit board for a personal cryopod.
+  components:
+    - type: Sprite
+      state: engineering
+    - type: MachineBoard
+      prototype: CryogenicSleepUnitPersonal
+      stackRequirements:
+        Cable: 5
+        CableMV: 5
+        CableHV: 5
+        Steel: 10
+
+- type: entity
+  id: MCTNMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: multi-channel transfer node machine board
+  components:
+    - type: Sprite
+      state: engineering
+    - type: MachineBoard
+      prototype: MCTNodeMachine
+      stackRequirements:
+        Cable: 5
+        CableMV: 5
+        CableHV: 5
+        Manipulator: 2
+        Steel: 10
+
+- type: entity
+  id: TrappedFluidExtractorMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: gas miner machine board
+  components:
+    - type: Sprite
+      state: engineering
+    - type: MachineBoard
+      prototype: TrappedFluidExtractor
+      stackRequirements:
+        CableMV: 5
+        Manipulator: 2
+        Plasteel: 5
+
+- type: entity
   parent: BaseMachineCircuitboard
   id: OreProcessorIndustrialMachineCircuitboard
   name: industrial ore processor machine board
@@ -1103,6 +1316,7 @@
         Manipulator: 2
         CableHV: 5
         Glass: 2
+        Plasteel: 2
 
 - type: entity
   id: SurveillanceCameraRouterCircuitboard
@@ -1199,7 +1413,7 @@
     - type: MachineBoard
       prototype: BoozeDispenserEmpty
       stackRequirements:
-        Steel: 5
+        Plastic: 5
       tagRequirements:
           GlassBeaker:
             amount: 1
@@ -1231,9 +1445,26 @@
     prototype: CargoMailTeleporter
     stackRequirements:
       Manipulator: 2
-      Steel: 5
+      Plasteel: 5
 
 - type: entity
+  id: MixingMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: mixing machine board
+  description: A machine printed circuit board for a mixing machine.
+  components:
+    - type: Sprite
+      state: service
+    - type: MachineBoard
+      prototype: MixingMachineEmpty
+      stackRequirements:
+        Steel: 5
+      tagRequirements:
+          GlassBeaker:
+            amount: 1
+            defaultPrototype: Beaker
+- type: entity
+
   id: SodaDispenserMachineCircuitboard
   parent: BaseMachineCircuitboard
   name: soda dispenser machine board
@@ -1244,7 +1475,7 @@
     - type: MachineBoard
       prototype: SodaDispenserEmpty
       stackRequirements:
-        Steel: 5
+        Plastic: 5
       tagRequirements:
           GlassBeaker:
             amount: 1
@@ -1260,6 +1491,20 @@
     state: engineering
   - type: MachineBoard
     prototype: TelecomServer
+    stackRequirements:
+      Steel: 1
+      Cable: 2
+
+- type: entity
+  id: TelecomServerAdvancedCircuitboard
+  parent: BaseMachineCircuitboard
+  name: high tech telecommunication server machine board
+  description: A machine printed circuit board for an high tech telecommunication server.
+  components:
+  - type: Sprite
+    state: engineering
+  - type: MachineBoard
+    prototype: AdvancedTelecomServer
     stackRequirements:
       Steel: 1
       Cable: 2
@@ -1289,7 +1534,7 @@
   - type: Sprite
     state: supply
   - type: MachineBoard
-    prototype: GravityGeneratorMini
+    prototype: GravityGeneratorMiniUncharged
     stackRequirements:
       Manipulator: 7
       Steel: 5
@@ -1306,7 +1551,7 @@
     prototype: StationAnchor
     stackRequirements:
       Manipulator: 7
-      Steel: 10
+      Plasteel: 10
       Glass: 5
       CableHV: 8
       Uranium: 2

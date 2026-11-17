@@ -1,21 +1,21 @@
-using System.Threading;
-using System.Threading.Tasks;
-using Content.Shared.NPC.Components;
 using Content.Server.NPC.Pathfinding;
 using Content.Shared.Chemistry.Components.SolutionManager;
 using Content.Shared.Damage.Components;
 using Content.Shared.Damage.Systems;
-using Content.Shared.Interaction;
-using Content.Shared.Mobs.Components;
-using Content.Shared.Silicons.Bots;
 using Content.Shared.Emag.Components;
 using Content.Shared.FixedPoint;
+using Content.Shared.Interaction;
+using Content.Shared.Mobs.Components;
+using Content.Shared.NPC.Components;
+using Content.Shared.Silicons.Bots;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators.Specific;
 
 public sealed partial class PickNearbyInjectableOperator : HTNOperator
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
+    [Dependency] private IEntityManager _entManager = default!;
     private MedibotSystem _medibot = default!;
     private PathfindingSystem _pathfinding = default!;
     private DamageableSystem _damageable = default!;

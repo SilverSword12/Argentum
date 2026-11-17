@@ -23,3 +23,11 @@
   - Closet
   - WallLocker
   - WallCloset
+
+- type: paintableGroupCategory # Persistence
+  id: Items
+  groups:
+  - ItemContainers
+  - ItemPDAs
+  - ItemHeadsets
+  - PillBottle

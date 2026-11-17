@@ -1,11 +1,11 @@
 using Content.Shared.Item.ItemToggle.Components;
-using Content.Shared.Trigger.Systems;
 using Content.Shared.StepTrigger.Systems;
+using Content.Shared.Trigger.Systems;
 using Robust.Shared.Physics.Components;
 
 namespace Content.Shared.Mousetrap;
 
-public sealed class MousetrapSystem : EntitySystem
+public sealed partial class MousetrapSystem : EntitySystem
 {
     public override void Initialize()
     {

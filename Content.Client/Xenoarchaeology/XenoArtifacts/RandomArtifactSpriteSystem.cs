@@ -3,7 +3,7 @@ using Robust.Client.GameObjects;
 
 namespace Content.Client.Xenoarchaeology.XenoArtifacts;
 
-public sealed class RandomArtifactSpriteSystem : VisualizerSystem<RandomArtifactSpriteComponent>
+public sealed partial class RandomArtifactSpriteSystem : VisualizerSystem<RandomArtifactSpriteComponent>
 {
     protected override void OnAppearanceChange(EntityUid uid, RandomArtifactSpriteComponent component, ref AppearanceChangeEvent args)
     {
@@ -11,6 +11,9 @@ public sealed class RandomArtifactSpriteSystem : VisualizerSystem<RandomArtifact
             return;
 
         if (!AppearanceSystem.TryGetData<int>(uid, SharedArtifactsVisuals.SpriteIndex, out var spriteIndex, args.Component))
+            spriteIndex = component.SelectedSprite;
+
+        if (spriteIndex < 0)
             return;
 
         if (!AppearanceSystem.TryGetData<bool>(uid, SharedArtifactsVisuals.IsUnlocking, out var isUnlocking, args.Component))

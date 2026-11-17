@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Server.Administration.Managers;
 using Content.Shared.Administration;
 using Content.Shared.CCVar;
@@ -6,19 +5,20 @@ using Content.Shared.Database;
 using Robust.Server.Player;
 using Robust.Shared.Configuration;
 using Robust.Shared.Console;
+using System.Linq;
 
 
 namespace Content.Server.Administration.Commands;
 
 [AdminCommand(AdminFlags.Ban)]
-public sealed class BanCommand : LocalizedCommands
+public sealed partial class BanCommand : LocalizedCommands
 {
 
-    [Dependency] private readonly IPlayerLocator _locator = default!;
-    [Dependency] private readonly IBanManager _bans = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
-    [Dependency] private readonly IPlayerManager _playerManager = default!;
-    [Dependency] private readonly ILogManager _logManager = default!;
+    [Dependency] private IPlayerLocator _locator = default!;
+    [Dependency] private IBanManager _bans = default!;
+    [Dependency] private IConfigurationManager _cfg = default!;
+    [Dependency] private IPlayerManager _playerManager = default!;
+    [Dependency] private ILogManager _logManager = default!;
 
     public override string Command => "ban";
 

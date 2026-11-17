@@ -1,16 +1,21 @@
 using Content.Shared.Actions;
 using Content.Shared.Actions.Components;
+using Content.Shared.CCVar;
 using Content.Shared.Mobs.Components;
+using Robust.Shared;
+using Robust.Shared.Configuration;
+using Robust.Shared.Timing;
 
 namespace Content.Shared.Mobs.Systems;
 
 /// <summary>
 ///     Adds and removes defined actions when a mob's <see cref="MobState"/> changes.
 /// </summary>
-public sealed class MobStateActionsSystem : EntitySystem
+public sealed partial class MobStateActionsSystem : EntitySystem
 {
     [Dependency] private readonly SharedActionsSystem _actions = default!;
-
+    [Dependency] private readonly IConfigurationManager _configurationManager = default!;
+    [Dependency] private readonly IGameTiming _timing = default!;
     /// <inheritdoc/>
     public override void Initialize()
     {
@@ -27,7 +32,7 @@ public sealed class MobStateActionsSystem : EntitySystem
     {
         if (!TryComp<MobStateActionsComponent>(uid, out var mobStateActionsComp))
             return;
-
+        if (mobStateActionsComp.GrantedActions.Count > 0) return;
         ComposeActions(uid, mobStateActionsComp, component.CurrentState);
     }
 
@@ -41,7 +46,7 @@ public sealed class MobStateActionsSystem : EntitySystem
 
         foreach (var act in component.GrantedActions)
         {
-            Del(act);
+            QueueDel(act);
         }
         component.GrantedActions.Clear();
 
@@ -53,6 +58,11 @@ public sealed class MobStateActionsSystem : EntitySystem
             EntityUid? act = null;
             if (_actions.AddAction(uid, ref act, id, uid, action))
                 component.GrantedActions.Add(act.Value);
+        }
+        if (newMobState == MobState.Dead)
+        {
+            var respawnTime = TimeSpan.FromSeconds(_configurationManager.GetCVar(CCVars.AcceptDeathTime));
+            component.AcceptDeathCooldown = _timing.CurTime + respawnTime;
         }
     }
 }

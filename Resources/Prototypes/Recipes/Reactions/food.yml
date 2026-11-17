@@ -9,8 +9,9 @@
     Enzyme:
       amount: 5
       catalyst: true
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodCheese
 
 - type: reaction
@@ -24,8 +25,9 @@
     Enzyme:
       amount: 5
       catalyst: true
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodChevre
 
 - type: reaction
@@ -35,11 +37,11 @@
   conserveEnergy: false
   reactants:
     Flour:
-      amount: 15
+      amount: 45
     Water:
-      amount: 10
+      amount: 15
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodDough
 
 - type: reaction
@@ -54,8 +56,9 @@
       amount: 10
     Egg:
       amount: 6
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodDoughCornmeal
 
 - type: reaction
@@ -68,8 +71,9 @@
       amount: 15
     Water:
       amount: 10
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodDoughTortilla
 
 - type: reaction
@@ -79,11 +83,11 @@
   conserveEnergy: false
   reactants:
     Fiber:
-      amount: 10
+      amount: 40
     Flour:
       amount: 5
     Water:
-      amount: 10
+      amount: 15
   effects:
   - !type:SpawnEntity
     entity: FoodDoughCotton
@@ -95,15 +99,17 @@
   conserveEnergy: false
   reactants:
     Flour:
-      amount: 15
+      amount: 20
+    Butter:
+      amount: 10
     Egg:
-      amount: 12
+      amount: 6
     Sugar:
-      amount: 5
+      amount: 10
     Milk:
-      amount: 5
+      amount: 10
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodCakeBatter
 
 - type: reaction
@@ -112,13 +118,13 @@
   quantized: true
   conserveEnergy: false
   reactants:
-    Milk:
-      amount: 15
+    Cream:
+      amount: 30
     TableSalt:
-      amount: 5
-      catalyst: true
+      amount: 1
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodButter
 
 - type: reaction
@@ -128,13 +134,16 @@
   conserveEnergy: false
   reactants:
     Flour:
-      amount: 15
-    Egg:
-      amount: 12
-    TableSalt:
+      amount: 40
+    Butter:
+      amount: 10
+    Water:
       amount: 5
+    Sugar:
+      amount: 5
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodDoughPie
 
 # TG has a cake recipe that uses soy milk instead of eggs.
@@ -152,8 +161,9 @@
       amount: 15
     Sugar:
       amount: 5
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodCakeBatter
 
 - type: reaction
@@ -163,12 +173,13 @@
   conserveEnergy: false
   reactants:
     MilkSoy:
-      amount: 30
+      amount: 55
     Enzyme:
       amount: 5
       catalyst: true
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodTofu
 
 - type: reaction
@@ -183,8 +194,9 @@
       amount: 5
     Egg:
       amount: 6
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodMeatMeatball
 
 - type: reaction
@@ -199,8 +211,9 @@
       amount: 2
     Sugar:
       amount: 2
+  group: Precipitate
   effects:
-    - !type:SpawnEntity
+  - !type:SpawnEntity
       entity: FoodSnackChocolateBar
 
 # Condiments

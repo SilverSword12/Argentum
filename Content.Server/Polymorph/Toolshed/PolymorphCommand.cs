@@ -1,10 +1,10 @@
-﻿using System.Linq;
 using Content.Server.Administration;
 using Content.Server.Polymorph.Systems;
 using Content.Shared.Administration;
 using Content.Shared.Polymorph;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Toolshed;
+using System.Linq;
 
 namespace Content.Server.Polymorph.Toolshed;
 
@@ -12,7 +12,7 @@ namespace Content.Server.Polymorph.Toolshed;
 ///     Polymorphs the given entity(s) into the target morph.
 /// </summary>
 [ToolshedCommand, AdminCommand(AdminFlags.Fun)]
-public sealed class PolymorphCommand : ToolshedCommand
+public sealed partial class PolymorphCommand : ToolshedCommand
 {
     private PolymorphSystem? _system;
     [Dependency] private IPrototypeManager _proto = default!;

@@ -1,16 +1,15 @@
-using Content.Server.GameTicking.Rules.Components;
 using Content.Server.StationEvents.Components;
-using Content.Server.StationRecords;
-using Content.Server.StationRecords.Systems;
 using Content.Shared.StationRecords;
 using Content.Shared.GameTicking.Components;
+using Content.Shared.StationRecords.Components;
+using Content.Shared.StationRecords.Systems;
 using Robust.Shared.Random;
 
 namespace Content.Server.StationEvents.Events;
 
-public sealed class ClericalErrorRule : StationEventSystem<ClericalErrorRuleComponent>
+public sealed partial class ClericalErrorRule : StationEventSystem<ClericalErrorRuleComponent>
 {
-    [Dependency] private readonly StationRecordsSystem _stationRecords = default!;
+    [Dependency] private StationRecordsSystem _stationRecords = default!;
 
     protected override void Started(EntityUid uid, ClericalErrorRuleComponent component, GameRuleComponent gameRule, GameRuleStartedEvent args)
     {
@@ -27,8 +26,8 @@ public sealed class ClericalErrorRule : StationEventSystem<ClericalErrorRuleComp
         if (recordCount == 0)
             return;
 
-        var min = (int) Math.Max(1, Math.Round(component.MinToRemove * recordCount));
-        var max = (int) Math.Max(min, Math.Round(component.MaxToRemove * recordCount));
+        var min = (int)Math.Max(1, Math.Round(component.MinToRemove * recordCount));
+        var max = (int)Math.Max(min, Math.Round(component.MaxToRemove * recordCount));
         var toRemove = RobustRandom.Next(min, max);
         var keys = new List<uint>();
         for (var i = 0; i < toRemove; i++)

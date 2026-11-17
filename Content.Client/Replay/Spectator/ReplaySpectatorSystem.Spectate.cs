@@ -1,10 +1,10 @@
-using System.Numerics;
 using Content.Client.Replay.UI;
 using Content.Shared.Verbs;
 using Robust.Shared.Console;
 using Robust.Shared.Map;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
+using System.Numerics;
 
 namespace Content.Client.Replay.Spectator;
 
@@ -55,13 +55,13 @@ public sealed partial class ReplaySpectatorSystem
             RemComp<ReplaySpectatorComponent>(old.Value);
     }
 
-    public TransformComponent SpawnSpectatorGhost(EntityCoordinates coords, bool gridAttach)
+    public Entity<TransformComponent> SpawnSpectatorGhost(EntityCoordinates coords, bool gridAttach, Angle rotation = default)
     {
         var old = _player.LocalEntity;
         var session = _player.GetSessionById(DefaultUser);
         _player.SetLocalSession(session);
 
-        var ent = Spawn("ReplayObserver", coords);
+        var ent = SpawnAttachedTo("ReplayObserver", coords, rotation: rotation);
         _eye.SetMaxZoom(ent, Vector2.One * 5);
         EnsureComp<ReplaySpectatorComponent>(ent);
 
@@ -83,7 +83,7 @@ public sealed partial class ReplaySpectatorSystem
         _stateMan.RequestStateChange<ReplayGhostState>();
 
         _spectatorData = GetSpectatorData();
-        return xform;
+        return (ent, xform);
     }
 
     private void SpectateCommand(IConsoleShell shell, string argStr, string[] args)

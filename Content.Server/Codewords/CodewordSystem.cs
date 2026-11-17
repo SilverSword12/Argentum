@@ -1,21 +1,20 @@
-﻿using System.Linq;
 using Content.Server.Administration.Logs;
 using Content.Server.GameTicking.Events;
 using Content.Shared.Database;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using System.Linq;
 
 namespace Content.Server.Codewords;
 
 /// <summary>
 /// Gamerule that provides codewords for other gamerules that rely on them.
 /// </summary>
-public sealed class CodewordSystem : EntitySystem
+public sealed partial class CodewordSystem : EntitySystem
 {
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-    [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IAdminLogManager _adminLogger = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     public override void Initialize()
     {
@@ -36,7 +35,7 @@ public sealed class CodewordSystem : EntitySystem
     public string[] GetCodewords(ProtoId<CodewordFactionPrototype> faction)
     {
         var query = EntityQueryEnumerator<CodewordManagerComponent>();
-        while (query.MoveNext(out  _, out var manager))
+        while (query.MoveNext(out _, out var manager))
         {
             if (!manager.Codewords.TryGetValue(faction, out var codewordEntity))
                 return GenerateForFaction(faction, ref manager);
@@ -53,7 +52,7 @@ public sealed class CodewordSystem : EntitySystem
 
     private string[] GenerateForFaction(ProtoId<CodewordFactionPrototype> faction, ref CodewordManagerComponent manager)
     {
-        var factionProto = _prototypeManager.Index<CodewordFactionPrototype>(faction.Id);
+        var factionProto = ProtoMan.Index<CodewordFactionPrototype>(faction.Id);
 
         var codewords = GenerateCodewords(factionProto.Generator);
         var codewordsContainer = Spawn(prototype: null, MapCoordinates.Nullspace);
@@ -70,11 +69,11 @@ public sealed class CodewordSystem : EntitySystem
     /// </summary>
     public string[] GenerateCodewords(ProtoId<CodewordGeneratorPrototype> generatorId)
     {
-        var generator = _prototypeManager.Index(generatorId);
+        var generator = ProtoMan.Index(generatorId);
 
         var codewordPool = new List<string>();
         foreach (var dataset in generator.Words
-                     .Select(datasetPrototype => _prototypeManager.Index(datasetPrototype)))
+                     .Select(datasetPrototype => ProtoMan.Index(datasetPrototype)))
         {
             codewordPool.AddRange(dataset.Values);
         }

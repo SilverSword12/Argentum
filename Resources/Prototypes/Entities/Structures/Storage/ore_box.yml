@@ -1,24 +1,17 @@
 ﻿- type: entity
+  parent: [ BaseStructureDynamic, StructureHealthContainer ]
   id: OreBox
   name: ore box
   description: A large storage container for holding unprocessed ores.
-  parent: BaseStructureDynamic
   components:
   - type: StaticPrice
     price: 500
   - type: Anchorable
   - type: InteractionOutline
   - type: Damageable
-    damageContainer: StructuralInorganic
-    damageModifierSet: Wood
+    damageModifierSet: WoodMod
   - type: Destructible
     thresholds:
-    - trigger:
-        !type:DamageTrigger
-        damage: 150
-      behaviors:
-      - !type:DoActsBehavior
-        acts: [ "Destruction" ]
     - trigger:
         !type:DamageTrigger
         damage: 100
@@ -29,8 +22,6 @@
           MaterialWoodPlank1:
             min: 3
             max: 5
-      - !type:DoActsBehavior
-        acts: [ "Destruction" ]
   - type: Climbable
 
   # orebox-specific
@@ -51,13 +42,18 @@
           False: { visible: true }
   - type: Storage
     grid:
-    - 0,0,9,5
+    - 0,0,19,9
     maxItemSize: Normal
     storageOpenSound: /Audio/Effects/closetopen.ogg
     storageCloseSound: /Audio/Effects/closetclose.ogg
     whitelist:
       tags:
+      - ArtifactFragment
       - Ore
+  - type: DumpTarget
+  - type: Tag
+    tags:
+    - OreBox
   - type: UserInterface
     interfaces:
       enum.StorageUiKey.Key:
@@ -72,9 +68,11 @@
         shape:
           !type:PhysShapeCircle
           radius: 0.3
-        # very not dense to make it easy to pull
-        density: 20
+        density: 170
         mask:
         - MachineMask
         layer:
         - MachineLayer
+  - type: Construction
+    graph: OreBoxGraph
+    node: ore_box

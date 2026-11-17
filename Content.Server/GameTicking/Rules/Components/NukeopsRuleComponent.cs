@@ -1,7 +1,5 @@
 using Content.Server.RoundEnd;
-using Content.Shared.Dataset;
 using Content.Shared.NPC.Prototypes;
-using Content.Shared.Roles;
 using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
@@ -87,7 +85,7 @@ public sealed partial class NukeopsRuleComponent : Component
     public WinType WinType = WinType.Neutral;
 
     [DataField]
-    public List<WinCondition> WinConditions = new ();
+    public List<WinCondition> WinConditions = new();
 
     [DataField]
     public EntityUid? TargetStation;
@@ -109,8 +107,7 @@ public enum WinType : byte
     /// </summary>
     OpsMajor,
     /// <summary>
-    ///     Minor win. All nukies were alive at the end of the round.
-    ///     Alternatively, some nukies were alive, but the disk was left behind.
+    ///     Operative minor win. At least one nukie survived, and the disk was left behind.
     /// </summary>
     OpsMinor,
     /// <summary>

@@ -12,19 +12,20 @@
     fuelCost: 15
     doAfterDelay: 3
   - type: Damageable
-    damageContainer: StructuralInorganic
     damageModifierSet: RGlass
+  - type: Injurable
+    damageContainer: StructuralInorganic
   - type: Destructible
     thresholds:
     - trigger:
         !type:DamageTrigger
-        damage: 200
+        damage: 150
       behaviors:
       - !type:DoActsBehavior
         acts: [ "Destruction" ]
     - trigger:
         !type:DamageTrigger
-        damage: 100
+        damage: 75
       behaviors:
       - !type:PlaySoundBehavior
         sound:
@@ -50,9 +51,12 @@
       sprite: Structures/Windows/cracks.rsi
   - type: StaticPrice
     price: 100
+  - type: Construction
+    graph: Window
+    node: miningWindow
 
 - type: entity
-  parent: ShuttleWindow
+  parent: MiningWindow
   id: MiningWindowDiagonal
   suffix: diagonal
   placement:
@@ -96,3 +100,6 @@
   - type: DamageVisuals
     damageOverlay:
       sprite: Structures/Windows/cracks_diagonal.rsi
+  - type: Construction
+    graph: WindowDiagonal
+    node: miningWindowDiagonal

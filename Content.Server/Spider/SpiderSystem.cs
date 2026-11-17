@@ -1,21 +1,19 @@
-using System.Linq;
 using Content.Server.Popups;
-using Content.Shared.Spider;
 using Content.Shared.Maps;
 using Content.Shared.Mobs.Systems;
-using Robust.Server.GameObjects;
+using Content.Shared.Spider;
 using Robust.Shared.Map;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
 
 namespace Content.Server.Spider;
 
-public sealed class SpiderSystem : SharedSpiderSystem
+public sealed partial class SpiderSystem : SharedSpiderSystem
 {
-    [Dependency] private readonly PopupSystem _popup = default!;
-    [Dependency] private readonly TurfSystem _turf = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly MobStateSystem _mobState = default!;
+    [Dependency] private PopupSystem _popup = default!;
+    [Dependency] private TurfSystem _turf = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private MobStateSystem _mobState = default!;
 
     /// <summary>
     ///     A recycled hashset used to check turfs for spiderwebs.

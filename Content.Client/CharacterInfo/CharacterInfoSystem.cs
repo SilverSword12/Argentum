@@ -1,13 +1,16 @@
-﻿using Content.Shared.CharacterInfo;
+using Content.Shared.CharacterInfo;
 using Content.Shared.Objectives;
+using Content.Shared.Roles;
+using Content.Shared.Traits;
 using Robust.Client.Player;
 using Robust.Client.UserInterface;
+using Robust.Shared.Prototypes;
 
 namespace Content.Client.CharacterInfo;
 
-public sealed class CharacterInfoSystem : EntitySystem
+public sealed partial class CharacterInfoSystem : EntitySystem
 {
-    [Dependency] private readonly IPlayerManager _players = default!;
+    [Dependency] private IPlayerManager _players = default!;
 
     public event Action<CharacterData>? OnCharacterUpdate;
 
@@ -29,10 +32,25 @@ public sealed class CharacterInfoSystem : EntitySystem
         RaiseNetworkEvent(new RequestCharacterInfoEvent(GetNetEntity(entity.Value)));
     }
 
+    public void UpdateDetailExaminable(string content)
+    {
+        RaiseNetworkEvent(new UpdateDetailExaminableEvent(content));
+    }
+
     private void OnCharacterInfoEvent(CharacterInfoEvent msg, EntitySessionEventArgs args)
     {
         var entity = GetEntity(msg.NetEntity);
-        var data = new CharacterData(entity, msg.JobTitle, msg.Objectives, msg.Briefing, Name(entity));
+        var data = new CharacterData
+        {
+            Entity = entity,
+            Job = msg.Job ?? "Passanger",
+            Faction = msg.Faction,
+            BankBal = msg.BankBal,
+            Objectives = msg.Objectives,
+            Briefing = msg.Briefing,
+            EntityName = Name(entity),
+            Traits = msg.Traits
+        };
 
         OnCharacterUpdate?.Invoke(data);
     }
@@ -47,10 +65,27 @@ public sealed class CharacterInfoSystem : EntitySystem
     public readonly record struct CharacterData(
         EntityUid Entity,
         string Job,
+        string? Faction,
+        string BankBal,
         Dictionary<string, List<ObjectiveInfo>> Objectives,
         string? Briefing,
-        string EntityName
-    );
+        string? DetailExaminable,
+        string EntityName,
+        List<ProtoId<TraitPrototype>> Traits
+    )
+    {
+        public static CharacterData JohnDoe => new CharacterData(
+            Entity: default,
+            Objectives: new Dictionary<string, List<Shared.Objectives.ObjectiveInfo>>(),
+            Briefing: null,
+            Job: "Captain",
+            EntityName: "John Doe",
+            Faction: null,
+            BankBal: "$0",
+            DetailExaminable: null,
+            Traits: new()
+        );
+    };
 
     /// <summary>
     /// Event raised to get additional controls to display in the character info menu.

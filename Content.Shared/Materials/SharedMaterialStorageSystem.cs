@@ -1,13 +1,14 @@
-using System.Linq;
 using Content.Shared.Interaction;
 using Content.Shared.Interaction.Components;
+using Content.Shared.Research.Components;
 using Content.Shared.Stacks;
+using Content.Shared.Storage.Components;
 using Content.Shared.Whitelist;
 using JetBrains.Annotations;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
-using Content.Shared.Research.Components;
+using System.Linq;
 
 namespace Content.Shared.Materials;
 
@@ -15,12 +16,11 @@ namespace Content.Shared.Materials;
 /// This handles storing materials and modifying their amounts
 /// <see cref="MaterialStorageComponent"/>
 /// </summary>
-public abstract class SharedMaterialStorageSystem : EntitySystem
+public abstract partial class SharedMaterialStorageSystem : EntitySystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private EntityWhitelistSystem _whitelistSystem = default!;
 
     /// <summary>
     /// Default volume for a sheet if the material's entity prototype has no material composition.
@@ -35,6 +35,8 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         SubscribeLocalEvent<MaterialStorageComponent, MapInitEvent>(OnMapInit);
         SubscribeLocalEvent<MaterialStorageComponent, InteractUsingEvent>(OnInteractUsing);
         SubscribeLocalEvent<MaterialStorageComponent, TechnologyDatabaseModifiedEvent>(OnDatabaseModified);
+        SubscribeLocalEvent<MaterialStorageComponent, GetDumpableVerbEvent>(OnGetDumpableVerb);
+        SubscribeLocalEvent<MaterialStorageComponent, DumpEvent>(OnDump);
     }
 
     public override void Update(float frameTime)
@@ -179,7 +181,7 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
     /// <param name="materials"></param>
     /// <returns>If the amount can be changed</returns>
     /// <param name="localOnly"></param>
-    public bool CanChangeMaterialAmount(Entity<MaterialStorageComponent?> entity, Dictionary<string,int> materials, bool localOnly = false)
+    public bool CanChangeMaterialAmount(Entity<MaterialStorageComponent?> entity, Dictionary<string, int> materials, bool localOnly = false)
     {
         if (!Resolve(entity, ref entity.Comp))
             return false;
@@ -221,7 +223,7 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         if (!CanChangeMaterialAmount(uid, materialId, volume, component, localOnly))
             return false;
 
-        var changeEv = new ConsumeStoredMaterialsEvent((uid, component), new() {{materialId, volume}}, localOnly);
+        var changeEv = new ConsumeStoredMaterialsEvent((uid, component), new() { { materialId, volume } }, localOnly);
         RaiseLocalEvent(uid, ref changeEv);
         var remaining = changeEv.Materials.Values.First();
 
@@ -371,7 +373,7 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         insertingComp.EndTime = _timing.CurTime + storage.InsertionTime;
         if (!storage.IgnoreColor)
         {
-            _prototype.TryIndex<MaterialPrototype>(composition.MaterialComposition.Keys.First(), out var lastMat);
+            ProtoMan.TryIndex<MaterialPrototype>(composition.MaterialComposition.Keys.First(), out var lastMat);
             insertingComp.MaterialColor = lastMat?.Color;
         }
         _appearance.SetData(receiver, MaterialStorageVisuals.Inserting, true);
@@ -410,14 +412,36 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         UpdateMaterialWhitelist(ent);
     }
 
+    private void OnGetDumpableVerb(Entity<MaterialStorageComponent> ent, ref GetDumpableVerbEvent args)
+    {
+        if (!HasComp<DumpTargetComponent>(ent))
+            return;
+
+        args.Verb = Loc.GetString("dump-material-storage-verb-name", ("storage", ent));
+    }
+
+    private void OnDump(Entity<MaterialStorageComponent> ent, ref DumpEvent args)
+    {
+        if (args.Handled || !HasComp<DumpTargetComponent>(ent))
+            return;
+
+        args.Handled = true;
+        args.PlaySound = true;
+
+        foreach (var entity in args.DumpQueue)
+        {
+            TryInsertMaterialEntity(args.User, entity, ent, ent.Comp);
+        }
+    }
+
     public int GetSheetVolume(MaterialPrototype material)
     {
         if (material.StackEntity == null)
             return DefaultSheetVolume;
 
-        var proto = _prototype.Index<EntityPrototype>(material.StackEntity);
+        var proto = ProtoMan.Index<EntityPrototype>(material.StackEntity);
 
-        if (!proto.TryGetComponent<PhysicalCompositionComponent>(out var composition, EntityManager.ComponentFactory))
+        if (!proto.TryComp<PhysicalCompositionComponent>(out var composition, EntityManager.ComponentFactory))
             return DefaultSheetVolume;
 
         return composition.MaterialComposition.FirstOrDefault(kvp => kvp.Key == material.ID).Value;

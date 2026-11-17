@@ -1,6 +1,6 @@
 - type: entity
+  parent: [ BaseStructure, StructureHealthDoorStrong ]
   id: HighSecDoor
-  parent: BaseStructure
   name: high security door
   description: Keeps the bad out and keeps the good in.
   placement:
@@ -114,22 +114,46 @@
   - type: Airtight
   - type: Occluder
   - type: Damageable
-    damageContainer: StructuralInorganic
-    damageModifierSet: StrongMetallic
+    damageModifierSet: PlasteelMod
   - type: Destructible
     thresholds:
     - trigger:
         !type:DamageTrigger
-        damage: 1500
+        damage: 350
       behaviors:
-      - !type:DoActsBehavior
-        acts: ["Destruction"]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          SheetPlasteel1:
+            min: 1
+            max: 2
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalSlam
+          params:
+            volume: -4
   - type: Construction
     graph: Airlock
     node: highSecDoor
   - type: Tag
     tags:
       - HighSecDoor
+      - Airlock
       # This tag is used to nagivate the Airlock construction graph. It's needed because this construction graph is shared between Airlock, AirlockGlass, and HighSecDoor
+
+- type: entity
+  id: VaultDoor # Persistence14: Craftable variant
+  parent: HighSecDoor
+  name: vault door
+  description: Keeps the bad out and keeps the good in. Reinforced with titanium and plasteel, you're not getting through this anytime soon.
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: WiresPanelSecurity
+    securityLevel: vaultdoor
+  - type: Construction
+    graph: VaultDoor
+    node: complete_vault_door
       - DoorRemoteWhitelist
       # This tag is used by door remotes to allow or not a door remote to normally be able to interact with a door
+  - type: StructureAligner
+  - type: StructureAlignerPylon

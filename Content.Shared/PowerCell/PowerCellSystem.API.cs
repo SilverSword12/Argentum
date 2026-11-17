@@ -1,8 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Power.Components;
 using Content.Shared.PowerCell.Components;
 using JetBrains.Annotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Shared.PowerCell;
 
@@ -138,10 +137,7 @@ public sealed partial class PowerCellSystem
             if (user == null)
                 return false;
 
-            if (predicted)
-                _popup.PopupClient(Loc.GetString("power-cell-no-battery"), ent.Owner, user.Value);
-            else
-                _popup.PopupEntity(Loc.GetString("power-cell-no-battery"), ent.Owner, user.Value);
+            _popup.PopupEntity(Loc.GetString("power-cell-no-battery"), ent.Owner, user.Value);
 
             return false;
         }
@@ -151,10 +147,7 @@ public sealed partial class PowerCellSystem
             if (user == null)
                 return false;
 
-            if (predicted)
-                _popup.PopupClient(Loc.GetString("power-cell-insufficient"), ent.Owner, user.Value);
-            else
-                _popup.PopupEntity(Loc.GetString("power-cell-insufficient"), ent.Owner, user.Value);
+            _popup.PopupEntity(Loc.GetString("power-cell-insufficient"), ent.Owner, user.Value);
 
             return false;
         }
@@ -177,10 +170,7 @@ public sealed partial class PowerCellSystem
             if (user == null)
                 return false;
 
-            if (predicted)
-                _popup.PopupClient(Loc.GetString("power-cell-no-battery"), ent.Owner, user.Value);
-            else
-                _popup.PopupEntity(Loc.GetString("power-cell-no-battery"), ent.Owner, user.Value);
+            _popup.PopupEntity(Loc.GetString("power-cell-no-battery"), ent.Owner, user.Value);
 
             return false;
         }
@@ -190,10 +180,7 @@ public sealed partial class PowerCellSystem
             if (user == null)
                 return false;
 
-            if (predicted)
-                _popup.PopupClient(Loc.GetString("power-cell-insufficient"), ent.Owner, user.Value);
-            else
-                _popup.PopupEntity(Loc.GetString("power-cell-insufficient"), ent.Owner, user.Value);
+            _popup.PopupEntity(Loc.GetString("power-cell-insufficient"), ent.Owner, user.Value);
 
             return false;
         }

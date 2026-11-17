@@ -3,18 +3,17 @@ using Content.Shared.Nutrition.Components;
 using Content.Shared.Popups;
 using Content.Shared.Random.Helpers;
 using Content.Shared.Tag;
-using Robust.Shared.Random;
 using Robust.Shared.Timing;
 
 namespace Content.Shared.Nutrition.EntitySystems;
 
-public sealed class MessyDrinkerSystem : EntitySystem
+public sealed partial class MessyDrinkerSystem : EntitySystem
 {
-    [Dependency] private readonly IngestionSystem _ingestion = default!;
-    [Dependency] private readonly SharedPuddleSystem _puddle = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly TagSystem _tag = default!;
+    [Dependency] private IngestionSystem _ingestion = default!;
+    [Dependency] private SharedPuddleSystem _puddle = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private TagSystem _tag = default!;
 
     public override void Initialize()
     {
@@ -41,7 +40,7 @@ public sealed class MessyDrinkerSystem : EntitySystem
             return;
 
         if (ent.Comp.SpillMessagePopup != null)
-            _popup.PopupPredicted(Loc.GetString(ent.Comp.SpillMessagePopup), null, ent, ent, PopupType.MediumCaution);
+            _popup.PopupEntity(Loc.GetString(ent.Comp.SpillMessagePopup), ent, ent, PopupType.MediumCaution);
 
         var split = ev.Split.SplitSolution(ent.Comp.SpillAmount);
 

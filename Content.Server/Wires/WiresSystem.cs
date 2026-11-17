@@ -1,16 +1,13 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Content.Server.Construction;
 using Content.Server.Construction.Components;
 using Content.Server.Hands.Systems;
-using Content.Server.Power.Components;
 using Content.Shared.DoAfter;
 using Content.Shared.GameTicking;
 using Content.Shared.Hands.Components;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
 using Content.Shared.Power;
+using Content.Shared.Rejuvenate;
 using Content.Shared.Tools;
 using Content.Shared.Tools.Components;
 using Content.Shared.Wires;
@@ -18,19 +15,20 @@ using Robust.Server.GameObjects;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 
 namespace Content.Server.Wires;
 
-public sealed class WiresSystem : SharedWiresSystem
+public sealed partial class WiresSystem : SharedWiresSystem
 {
-    [Dependency] private readonly IPrototypeManager _protoMan = default!;
-    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
-    [Dependency] private readonly HandsSystem _hands = default!;
-    [Dependency] private readonly SharedPopupSystem _popupSystem = default!;
-    [Dependency] private readonly SharedInteractionSystem _interactionSystem = default!;
-    [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly ConstructionSystem _construction = default!;
+    [Dependency] private SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private HandsSystem _hands = default!;
+    [Dependency] private SharedPopupSystem _popupSystem = default!;
+    [Dependency] private SharedInteractionSystem _interactionSystem = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private ConstructionSystem _construction = default!;
 
     private static readonly ProtoId<ToolQualityPrototype> CuttingQuality = "Cutting";
     private static readonly ProtoId<ToolQualityPrototype> PulsingQuality = "Pulsing";
@@ -52,9 +50,11 @@ public sealed class WiresSystem : SharedWiresSystem
         SubscribeLocalEvent<WiresComponent, WiresActionMessage>(OnWiresActionMessage);
         SubscribeLocalEvent<WiresComponent, InteractUsingEvent>(OnInteractUsing);
         SubscribeLocalEvent<WiresComponent, MapInitEvent>(OnMapInit);
+        SubscribeLocalEvent<WiresComponent, ComponentInit>(OnCompInit);
         SubscribeLocalEvent<WiresComponent, TimedWireEvent>(OnTimedWire);
         SubscribeLocalEvent<WiresComponent, PowerChangedEvent>(OnWiresPowered);
         SubscribeLocalEvent<WiresComponent, WireDoAfterEvent>(OnDoAfter);
+        SubscribeLocalEvent<WiresComponent, RejuvenateEvent>(OnRejuvenate);
         SubscribeLocalEvent<WiresPanelSecurityComponent, WiresPanelSecurityEvent>(SetWiresPanelSecurity);
     }
 
@@ -73,7 +73,7 @@ public sealed class WiresSystem : SharedWiresSystem
         List<IWireAction> wireActions = new();
         var dummyWires = 0;
 
-        if (!_protoMan.Resolve(wires.LayoutId, out WireLayoutPrototype? layoutPrototype))
+        if (!ProtoMan.Resolve(wires.LayoutId, out WireLayoutPrototype? layoutPrototype))
         {
             return;
         }
@@ -87,7 +87,7 @@ public sealed class WiresSystem : SharedWiresSystem
 
         // does the prototype have a parent (and are the wires empty?) if so, we just create
         // a new layout based on that
-        foreach (var parentLayout in _protoMan.EnumerateParents<WireLayoutPrototype>(wires.LayoutId))
+        foreach (var parentLayout in ProtoMan.EnumerateParents<WireLayoutPrototype>(wires.LayoutId))
         {
             if (parentLayout.Wires != null)
             {
@@ -187,10 +187,10 @@ public sealed class WiresSystem : SharedWiresSystem
             return null;
 
         List<WireColor> colors =
-            new((WireColor[]) Enum.GetValues(typeof(WireColor)));
+            new((WireColor[])Enum.GetValues(typeof(WireColor)));
 
         List<WireLetter> letters =
-            new((WireLetter[]) Enum.GetValues(typeof(WireLetter)));
+            new((WireLetter[])Enum.GetValues(typeof(WireLetter)));
 
 
         var wireSet = new List<Wire>();
@@ -448,7 +448,7 @@ public sealed class WiresSystem : SharedWiresSystem
         {
             if (TryComp(args.User, out ActorComponent? actor))
             {
-                _uiSystem.OpenUi(uid, WiresUiKey.Key, actor.PlayerSession);
+                UI.OpenUi(uid, WiresUiKey.Key, actor.PlayerSession);
                 args.Handled = true;
             }
         }
@@ -459,16 +459,56 @@ public sealed class WiresSystem : SharedWiresSystem
         if (args.Open)
             return;
 
-        _uiSystem.CloseUi(ent.Owner, WiresUiKey.Key);
+        UI.CloseUi(ent.Owner, WiresUiKey.Key);
     }
 
-    private void OnMapInit(EntityUid uid, WiresComponent component, MapInitEvent args)
+    private void OnCompInit(EntityUid uid, WiresComponent component, ComponentInit args)
     {
         if (!string.IsNullOrEmpty(component.LayoutId))
             SetOrCreateWireLayout(uid, component);
 
         if (component.SerialNumber == null)
             GenerateSerialNumber(uid, component);
+
+        if (component.WireSeed == 0)
+            component.WireSeed = _random.Next(1, int.MaxValue);
+
+        // Update the construction graph to make sure that it starts on the node specified by WiresPanelSecurityComponent
+        if (TryComp<WiresPanelSecurityComponent>(uid, out var wiresPanelSecurity) &&
+            !string.IsNullOrEmpty(wiresPanelSecurity.SecurityLevel) &&
+            TryComp<ConstructionComponent>(uid, out var construction))
+        {
+            _construction.ChangeNode(uid, null, wiresPanelSecurity.SecurityLevel, true, construction);
+        }
+
+        UpdateUserInterface(uid);
+    }
+
+    private void OnRejuvenate(Entity<WiresComponent> ent, ref RejuvenateEvent args)
+    {
+        foreach (var wire in ent.Comp.WiresList)
+        {
+            // Rejuvenate has no user so we mend as the entity having the wire.
+            if (wire.Action == null || wire.Action.Mend(ent, wire))
+            {
+                wire.IsCut = false;
+            }
+
+            wire.Action?.Update(wire);
+        }
+
+        // If we don't update the interface wires will be desynced on client.
+        UpdateUserInterface(ent.Owner, ent.Comp);
+    }
+
+    private void OnMapInit(EntityUid uid, WiresComponent component, MapInitEvent args)
+    {
+        if (component.SerialNumber == null)
+            GenerateSerialNumber(uid, component);
+        else
+            return;
+        if (!string.IsNullOrEmpty(component.LayoutId))
+            SetOrCreateWireLayout(uid, component);
 
         if (component.WireSeed == 0)
             component.WireSeed = _random.Next(1, int.MaxValue);
@@ -499,7 +539,7 @@ public sealed class WiresSystem : SharedWiresSystem
             for (var i = 0; i < 4; i++)
             {
                 // Cyrillic Letters
-                data[i] = (char) _random.Next(0x0410, 0x0430);
+                data[i] = (char)_random.Next(0x0410, 0x0430);
             }
         }
         else
@@ -507,14 +547,14 @@ public sealed class WiresSystem : SharedWiresSystem
             for (var i = 0; i < 4; i++)
             {
                 // Letters
-                data[i] = (char) _random.Next(0x41, 0x5B);
+                data[i] = (char)_random.Next(0x41, 0x5B);
             }
         }
 
         for (var i = 5; i < 9; i++)
         {
             // Digits
-            data[i] = (char) _random.Next(0x30, 0x3A);
+            data[i] = (char)_random.Next(0x30, 0x3A);
         }
 
         wires.SerialNumber = new string(data);
@@ -542,23 +582,18 @@ public sealed class WiresSystem : SharedWiresSystem
         var statuses = new List<(int position, object key, object value)>();
         foreach (var (key, value) in wires.Statuses)
         {
-            var valueCast = ((int position, StatusLightData? value)) value;
+            var valueCast = ((int position, StatusLightData? value))value;
             statuses.Add((valueCast.position, key, valueCast.value!));
         }
 
         statuses.Sort((a, b) => a.position.CompareTo(b.position));
 
-        _uiSystem.SetUiState((uid, ui), WiresUiKey.Key, new WiresBoundUserInterfaceState(
+        UI.SetUiState((uid, ui), WiresUiKey.Key, new WiresBoundUserInterfaceState(
             clientList.ToArray(),
             statuses.Select(p => new StatusEntry(p.key, p.value)).ToArray(),
             Loc.GetString(wires.BoardName),
             wires.SerialNumber,
             wires.WireSeed));
-    }
-
-    public void OpenUserInterface(EntityUid uid, ICommonSession player)
-    {
-        _uiSystem.OpenUi(uid, WiresUiKey.Key, player);
     }
 
     /// <summary>
@@ -579,7 +614,7 @@ public sealed class WiresSystem : SharedWiresSystem
     ///     Tries to get all the wires on this entity by the wire action type.
     /// </summary>
     /// <returns>Enumerator of all wires in this entity according to the given type.</returns>
-    public IEnumerable<Wire> TryGetWires<T>(EntityUid uid, WiresComponent? wires = null) where T: IWireAction
+    public IEnumerable<Wire> TryGetWires<T>(EntityUid uid, WiresComponent? wires = null) where T : IWireAction
     {
         if (!Resolve(uid, ref wires))
             yield break;
@@ -602,7 +637,7 @@ public sealed class WiresSystem : SharedWiresSystem
 
         if (!args.WiresAccessible)
         {
-            _uiSystem.CloseUi(uid, WiresUiKey.Key);
+            UI.CloseUi(uid, WiresUiKey.Key);
         }
     }
 
@@ -792,7 +827,7 @@ public sealed class WiresSystem : SharedWiresSystem
             return false;
         }
 
-        data = (T) result;
+        data = (T)result;
 
         return true;
     }

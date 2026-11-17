@@ -1,6 +1,3 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
 using Content.Server.Administration.Managers;
 using Content.Server.Database;
 using Content.Server.EUI;
@@ -9,14 +6,17 @@ using Content.Shared.Administration.BanList;
 using Content.Shared.Database;
 using Content.Shared.Eui;
 using Robust.Shared.Network;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Content.Server.Administration.BanList;
 
-public sealed class BanListEui : BaseEui
+public sealed partial class BanListEui : BaseEui
 {
-    [Dependency] private readonly IAdminManager _admins = default!;
-    [Dependency] private readonly IPlayerLocator _playerLocator = default!;
-    [Dependency] private readonly IServerDbManager _db = default!;
+    [Dependency] private IAdminManager _admins = default!;
+    [Dependency] private IPlayerLocator _playerLocator = default!;
+    [Dependency] private IServerDbManager _db = default!;
 
     public BanListEui()
     {
@@ -79,8 +79,8 @@ public sealed class BanListEui : BaseEui
 
             if (_admins.HasAdminFlag(Player, AdminFlags.Pii))
             {
-                ips = [..ban.Addresses.Select(a => (a.address.ToString(), a.cidrMask))];
-                hwids = [..ban.HWIds.Select(h => h.ToString())];
+                ips = [.. ban.Addresses.Select(a => (a.address.ToString(), a.cidrMask))];
+                hwids = [.. ban.HWIds.Select(h => h.ToString())];
             }
 
             list.Add(new SharedBan(

@@ -1,3 +1,5 @@
+using Content.Shared.Database;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,8 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
-using Content.Shared.Database;
-using Microsoft.EntityFrameworkCore;
 
 namespace Content.Server.Database
 {
@@ -49,6 +49,8 @@ namespace Content.Server.Database
         public DbSet<RoleWhitelist> RoleWhitelists { get; set; } = null!;
         public DbSet<BanTemplate> BanTemplate { get; set; } = null!;
         public DbSet<IPIntelCache> IPIntelCache { get; set; } = null!;
+        public DbSet<CustomVoteLog> CustomVoteLog { get; set; } = null!;
+        public DbSet<CustomVoteLogOption> CustomVoteLogOption { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,15 +59,15 @@ namespace Content.Server.Database
                 .IsUnique();
 
             modelBuilder.Entity<Profile>()
-                .HasIndex(p => new {p.Slot, PrefsId = p.PreferenceId})
+                .HasIndex(p => new { p.Slot, PrefsId = p.PreferenceId })
                 .IsUnique();
 
             modelBuilder.Entity<Antag>()
-                .HasIndex(p => new {HumanoidProfileId = p.ProfileId, p.AntagName})
+                .HasIndex(p => new { HumanoidProfileId = p.ProfileId, p.AntagName })
                 .IsUnique();
 
             modelBuilder.Entity<Trait>()
-                .HasIndex(p => new {HumanoidProfileId = p.ProfileId, p.TraitName})
+                .HasIndex(p => new { HumanoidProfileId = p.ProfileId, p.TraitName })
                 .IsUnique();
 
             modelBuilder.Entity<ProfileRoleLoadout>()
@@ -113,15 +115,15 @@ namespace Content.Server.Database
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<AdminFlag>()
-                .HasIndex(f => new {f.Flag, f.AdminId})
+                .HasIndex(f => new { f.Flag, f.AdminId })
                 .IsUnique();
 
             modelBuilder.Entity<AdminRankFlag>()
-                .HasIndex(f => new {f.Flag, f.AdminRankId})
+                .HasIndex(f => new { f.Flag, f.AdminRankId })
                 .IsUnique();
 
             modelBuilder.Entity<AdminLog>()
-                .HasKey(log => new {log.RoundId, log.Id});
+                .HasKey(log => new { log.RoundId, log.Id });
 
             modelBuilder.Entity<AdminLog>()
                 .Property(log => log.Id);
@@ -146,7 +148,7 @@ namespace Content.Server.Database
                 .HasIndex(round => round.StartDate);
 
             modelBuilder.Entity<AdminLogPlayer>()
-                .HasKey(logPlayer => new {logPlayer.RoundId, logPlayer.LogId, logPlayer.PlayerUserId});
+                .HasKey(logPlayer => new { logPlayer.RoundId, logPlayer.LogId, logPlayer.PlayerUserId });
 
             // Ban exemption can't have flags 0 since that wouldn't exempt anything.
             // The row should be removed if setting to 0.
@@ -296,6 +298,7 @@ namespace Content.Server.Database
                 .HasDefaultValue(HwidType.Legacy);
 
             ModelBan.OnModelCreating(modelBuilder);
+            ModelCustomVoteLog.OnModelCreating(modelBuilder);
         }
 
         public virtual IQueryable<AdminLog> SearchLogs(IQueryable<AdminLog> query, string searchText)
@@ -329,6 +332,7 @@ namespace Content.Server.Database
         public string FlavorText { get; set; } = null!;
         public int Age { get; set; }
         public string Sex { get; set; } = null!;
+        public string? Voice { get; set; } = null!; // If null, the voice gets defaulted to the sex associated value
         public string Gender { get; set; } = null!;
         public string Species { get; set; } = null!;
         [Column(TypeName = "jsonb")] public JsonDocument? OrganMarkings { get; set; } = null!;
@@ -346,6 +350,10 @@ namespace Content.Server.Database
 
         public List<ProfileRoleLoadout> Loadouts { get; } = new();
 
+        public string? Alignment { get; set; } = null!;
+        public string? Origin { get; set; } = null!;
+        public string? Motive { get; set; } = null!;
+        public string? TurningPoint { get; set; } = null!;
         [Column("pref_unavailable")] public DbPreferenceUnavailableMode PreferenceUnavailable { get; set; }
 
         public int PreferenceId { get; set; }
@@ -595,6 +603,8 @@ namespace Content.Server.Database
 
         public List<AdminLog> AdminLogs { get; set; } = default!;
 
+        public List<CustomVoteLog> CustomVoteLogs { get; set; } = default!;
+
         [ForeignKey("Server")] public int ServerId { get; set; }
         public Server Server { get; set; } = default!;
     }
@@ -654,7 +664,7 @@ namespace Content.Server.Database
     public enum ServerBanExemptFlags
     {
         // @formatter:off
-        None       = 0,
+        None = 0,
 
         /// <summary>
         /// Ban is a datacenter range, connections usually imply usage of a VPN service.

@@ -286,7 +286,7 @@
     chatsan-word-46: chatsan-replacement-46
     chatsan-word-47: chatsan-replacement-47
     chatsan-word-48: chatsan-replacement-48
-    chatsan-word-49: chatsan-replacement-49
+#    chatsan-word-49: chatsan-replacement-49 # Persistence: we have ATMs
     chatsan-word-50: chatsan-replacement-50
     chatsan-word-51: chatsan-replacement-51
     chatsan-word-52: chatsan-replacement-52
@@ -306,7 +306,6 @@
     chatsan-word-66: chatsan-replacement-66
     chatsan-word-67: chatsan-replacement-67
     chatsan-word-68: chatsan-replacement-68
-    chatsan-word-69: chatsan-replacement-69 # :godo:
 
 - type: accent
   id: liar

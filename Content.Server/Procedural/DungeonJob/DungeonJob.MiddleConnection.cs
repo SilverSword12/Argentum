@@ -1,10 +1,10 @@
-using System.Numerics;
-using System.Threading.Tasks;
 using Content.Shared.Maps;
 using Content.Shared.Procedural;
 using Content.Shared.Procedural.PostGeneration;
-using Content.Shared.Storage;
+using Robust.Shared.Random;
 using Robust.Shared.Utility;
+using System.Numerics;
+using System.Threading.Tasks;
 
 namespace Content.Server.Procedural.DungeonJob;
 
@@ -13,7 +13,7 @@ public sealed partial class DungeonJob
     /// <summary>
     /// <see cref="MiddleConnectionDunGen"/>
     /// </summary>
-    private async Task PostGen(MiddleConnectionDunGen gen, Dungeon dungeon, HashSet<Vector2i> reservedTiles, Random random)
+    private async Task PostGen(MiddleConnectionDunGen gen, Dungeon dungeon, HashSet<Vector2i> reservedTiles, IRobustRandom random)
     {
         // Grab all of the room bounds
         // Then, work out connections between them
@@ -107,7 +107,7 @@ public sealed partial class DungeonJob
                         continue;
 
                     width--;
-                    _maps.SetTile(_gridUid, _grid, node, _tile.GetVariantTile((ContentTileDefinition) tileDef, random));
+                    _maps.SetTile(_gridUid, _grid, node, _tile.GetVariantTile((ContentTileDefinition)tileDef, random));
 
                     if (flankContents != null && nodeDistances.Count - i <= 2)
                     {

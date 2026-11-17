@@ -7,18 +7,8 @@ namespace Content.Shared.Shuttles.Components;
 [Access(typeof(SharedRadarConsoleSystem))]
 public sealed partial class RadarConsoleComponent : Component
 {
-    [ViewVariables(VVAccess.ReadWrite)]
-    public float RangeVV
-    {
-        get => MaxRange;
-        set => IoCManager
-            .Resolve<IEntitySystemManager>()
-            .GetEntitySystem<SharedRadarConsoleSystem>()
-            .SetRange(Owner, value, this);
-    }
-
-    [DataField, AutoNetworkedField]
-    public float MaxRange = 256f;
+    [ViewVariables(VVAccess.ReadWrite), DataField, AutoNetworkedField]
+    public float MaxRange = 1000f;
 
     /// <summary>
     /// If true, the radar will be centered on the entity. If not - on the grid on which it is located.

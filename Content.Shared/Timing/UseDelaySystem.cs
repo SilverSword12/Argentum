@@ -1,13 +1,13 @@
-using System.Diagnostics.CodeAnalysis;
 using Robust.Shared.GameStates;
 using Robust.Shared.Timing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Content.Shared.Timing;
 
-public sealed class UseDelaySystem : EntitySystem
+public sealed partial class UseDelaySystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _gameTiming = default!;
-    [Dependency] private readonly MetaDataSystem _metadata = default!;
+    [Dependency] private IGameTiming _gameTiming = default!;
+    [Dependency] private MetaDataSystem _metadata = default!;
 
     public const string DefaultId = "default";
 
@@ -19,6 +19,13 @@ public sealed class UseDelaySystem : EntitySystem
         SubscribeLocalEvent<UseDelayComponent, EntityUnpausedEvent>(OnUnpaused);
         SubscribeLocalEvent<UseDelayComponent, ComponentGetState>(OnDelayGetState);
         SubscribeLocalEvent<UseDelayComponent, ComponentHandleState>(OnDelayHandleState);
+        SubscribeLocalEvent<UseDelayComponent, ComponentInit>(OnComponentInit);
+    }
+
+    private void OnComponentInit(Entity<UseDelayComponent> ent, ref ComponentInit args)
+    {
+        ResetAllDelays(ent);
+
     }
 
     private void OnDelayHandleState(Entity<UseDelayComponent> ent, ref ComponentHandleState args)

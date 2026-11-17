@@ -9,22 +9,52 @@ shuttle-console-prevent = You are unable to pilot this ship
 
 shuttle-console-display-label = Display
 
+shuttle-console-name = IFF:
 shuttle-console-position = Position:
 shuttle-console-position-value = {$X}, {$Y}
+shuttle-console-sector = Current Sector:
+shuttle-console-sector-value = {$sector}
+shuttle-console-hazard-event = Hazard:
+shuttle-console-hazard-event-none = None
+shuttle-console-hazard-event-single = {$event}
 shuttle-console-orientation = Orientation:
 shuttle-console-orientation-value  = {$angle}
 shuttle-console-linear-velocity = Linear velocity:
 shuttle-console-linear-velocity-value = {$X}, {$Y}
 shuttle-console-angular-velocity = Angular velocity:
 shuttle-console-angular-velocity-value = {$angularVelocity}
+sector-center = Center
+sector-north = North
+sector-northeast = NorthEast
+sector-east = East
+sector-southeast = SouthEast
+sector-south = South
+sector-southwest = SouthWest
+sector-west = West
+sector-northwest = NorthWest
+shuttle-console-damping-label = Inertial Dampener
+shuttle-console-damping-cruise = Cruise
+shuttle-console-damping-normal = Normal
+shuttle-console-damping-anchor = Anchor
+
+shuttle-console-sort-label = Filter
+shuttle-console-sort-none = None
+shuttle-console-sort-ship = Ship
+shuttle-console-sort-station = Station
+shuttle-console-sort-other = Other
 
 shuttle-console-unknown = Unknown
 shuttle-console-iff-label = {$name} ({$distance}m)
 shuttle-console-exclusion = Exclusion area
 
 shuttle-console-nav-settings = Settings
+shuttle-console-nav-legend = Legend
+shuttle-console-nav-other-dock = External Docks
+shuttle-console-nav-cargo-dock = Cargo Docks
+shuttle-console-nav-arrivals-dock = Arrivals Docks
+shuttle-console-nav-status = Status
+shuttle-console-nav-controls = Controls
 shuttle-console-iff-toggle = Show IFF
-shuttle-console-dock-toggle = Show docks
 
 # MAP
 
@@ -38,18 +68,25 @@ shuttle-console-ftl-state-Invalid = Invalid
 
 shuttle-console-map-settings = Settings
 shuttle-console-ftl-button = FTL
-shuttle-console-map-rebuild = Scan for objects
-shuttle-console-map-beacons = Show beacons
+shuttle-console-map-rebuild = Refresh
+shuttle-console-map-beacons = Beacons
 
 shuttle-console-no-signal = No signal
 
 shuttle-console-map-objects = Sector objects
+shuttle-console-map-objects-search = Search
+
+shuttle-console-waypoint = Waypoint
+shuttle-console-waypoint-not-set = Not set
+shuttle-console-waypoint-clear = Clear
+shuttle-console-waypoint-place = Place
 
 # DOCK
 shuttle-console-docked = Docked objects
 
 shuttle-console-view = View
 shuttle-console-undock = Undock
+shuttle-console-undock-all = Undock All
 shuttle-console-dock = Dock
 shuttle-console-docks-label = Docks
 

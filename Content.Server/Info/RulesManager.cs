@@ -1,4 +1,3 @@
-using System.Net;
 using Content.Server.Administration.Logs;
 using Content.Server.Database;
 using Content.Shared.CCVar;
@@ -7,16 +6,17 @@ using Content.Shared.Info;
 using Robust.Server.Player;
 using Robust.Shared.Configuration;
 using Robust.Shared.Network;
+using System.Net;
 
 namespace Content.Server.Info;
 
-public sealed class RulesManager
+public sealed partial class RulesManager
 {
-    [Dependency] private readonly IServerDbManager _dbManager = default!;
-    [Dependency] private readonly INetManager _netManager = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
-    [Dependency] private readonly IAdminLogManager _adminLog = default!;
-    [Dependency] private readonly IPlayerManager _player = default!;
+    [Dependency] private IServerDbManager _dbManager = default!;
+    [Dependency] private INetManager _netManager = default!;
+    [Dependency] private IConfigurationManager _cfg = default!;
+    [Dependency] private IAdminLogManager _adminLog = default!;
+    [Dependency] private IPlayerManager _player = default!;
 
     private static DateTime LastValidReadTime => DateTime.UtcNow - TimeSpan.FromDays(60);
 

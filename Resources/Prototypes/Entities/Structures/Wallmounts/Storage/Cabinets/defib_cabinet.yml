@@ -1,6 +1,6 @@
 # TODO: same as other wallmount cabinets they should use a base structure prototype
 - type: entity
-  parent: BaseWallmountCabinet
+  parent: [ BaseWallmountCabinet, StructureHealthContainerWeak ]
   id: DefibrillatorCabinet
   name: defibrillator cabinet
   description: A small wall mounted cabinet designed to hold a defibrillator.
@@ -24,9 +24,51 @@
         whitelist:
           components:
           - Defibrillator
+  - type: Destructible
+    thresholds:
+    - trigger: !type:DamageTrigger
+        damage: 60
+      behaviors:
+      - !type:EmptyAllContainersBehaviour
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalGlassBreak
+
+- type: entity
+  parent: DefibrillatorCabinet
+  id: DefibrillatorCabinetOpen
+  suffix: Open
+  components:
+  - type: Openable
+    opened: true
   - type: Construction
-    graph: DefibrillatorCabinet
-    node: done
+    graph: DefibrillatorCabinetGraph
+    node: defibrillator_cabinet
+
+- type: entity
+  parent: DefibrillatorCabinet
+  id: DefibrillatorCabinetFilled
+  suffix: Filled
+  components:
+  - type: ContainerFill
+    containers:
+      ItemCabinet:
+      - Defibrillator
+
+- type: entity
+  parent: [DefibrillatorCabinetFilled, DefibrillatorCabinetOpen]
+  id: DefibrillatorCabinetFilledOpen
+  suffix: Filled, Open
+
+- type: entity
+  parent: BaseWallmountGlass
+  id: DefibrillatorCabinetAssembly
+  name: disassembled defibrillator cabinet
+  description: An unfinished defibrillator cabinet.
+  components:
+  - type: Sprite
+    sprite: Structures/Wallmounts/defib_cabinet.rsi
+    state: frame
   - type: Destructible
     thresholds:
     - trigger: !type:DamageTrigger
@@ -43,26 +85,6 @@
       - !type:PlaySoundBehavior
         sound:
           collection: MetalGlassBreak
-
-- type: entity
-  parent: DefibrillatorCabinet
-  id: DefibrillatorCabinetOpen
-  suffix: Open
-  components:
-  - type: Openable
-    opened: true
-
-- type: entity
-  parent: DefibrillatorCabinet
-  id: DefibrillatorCabinetFilled
-  suffix: Filled
-  components:
-  - type: ContainerFill
-    containers:
-      ItemCabinet:
-      - Defibrillator
-
-- type: entity
-  parent: [DefibrillatorCabinetFilled, DefibrillatorCabinetOpen]
-  id: DefibrillatorCabinetFilledOpen
-  suffix: Filled, Open
+  - type: Construction
+    graph: DefibrillatorCabinetGraph
+    node: glass

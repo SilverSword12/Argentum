@@ -1,13 +1,13 @@
+using Content.Server.GhostKick;
 using Content.Shared.Trigger;
 using Content.Shared.Trigger.Components.Effects;
-using Content.Server.GhostKick;
 using Robust.Shared.Player;
 
 namespace Content.Server.Trigger.Systems;
 
-public sealed class GhostKickUserOnTriggerSystem : EntitySystem
+public sealed partial class GhostKickUserOnTriggerSystem : EntitySystem
 {
-    [Dependency] private readonly GhostKickManager _ghostKickManager = default!;
+    [Dependency] private GhostKickManager _ghostKickManager = default!;
 
     public override void Initialize()
     {

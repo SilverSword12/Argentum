@@ -81,7 +81,7 @@ public partial class NavMapControl : MapGridControl
     // Components
     private NavMapComponent? _navMap;
     private MapGridComponent? _grid;
-    private TransformComponent? _xform;
+    protected TransformComponent? Xform;
     private PhysicsComponent? _physics;
     private FixturesComponent? _fixtures;
 
@@ -178,7 +178,7 @@ public partial class NavMapControl : MapGridControl
     {
         EntManager.TryGetComponent(MapUid, out _navMap);
         EntManager.TryGetComponent(MapUid, out _grid);
-        EntManager.TryGetComponent(MapUid, out _xform);
+        EntManager.TryGetComponent(MapUid, out Xform);
         EntManager.TryGetComponent(MapUid, out _physics);
         EntManager.TryGetComponent(MapUid, out _fixtures);
 
@@ -193,6 +193,12 @@ public partial class NavMapControl : MapGridControl
         _recenter.Disabled = false;
     }
 
+    public void ClearTrackedData()
+    {
+        TrackedCoordinates.Clear();
+        TrackedEntities.Clear();
+    }
+
     protected override void KeyBindUp(GUIBoundKeyEventArgs args)
     {
         base.KeyBindUp(args);
@@ -202,7 +208,7 @@ public partial class NavMapControl : MapGridControl
             if (TrackedEntitySelectedAction == null)
                 return;
 
-            if (_xform == null || _physics == null || TrackedEntities.Count == 0)
+            if (Xform == null || _physics == null || TrackedEntities.Count == 0)
                 return;
 
             // If the cursor has moved a significant distance, exit
@@ -215,7 +221,7 @@ public partial class NavMapControl : MapGridControl
 
             // Convert to a world position
             var unscaledPosition = (localPosition - MidPointVector) / MinimapScale;
-            var worldPosition = Vector2.Transform(new Vector2(unscaledPosition.X, -unscaledPosition.Y) + offset, _transformSystem.GetWorldMatrix(_xform));
+            var worldPosition = Vector2.Transform(new Vector2(unscaledPosition.X, -unscaledPosition.Y) + offset, _transformSystem.GetWorldMatrix(Xform));
 
             // Find closest tracked entity in range
             var closestEntity = NetEntity.Invalid;
@@ -271,11 +277,11 @@ public partial class NavMapControl : MapGridControl
         // Get the components necessary for drawing the navmap
         EntManager.TryGetComponent(MapUid, out _navMap);
         EntManager.TryGetComponent(MapUid, out _grid);
-        EntManager.TryGetComponent(MapUid, out _xform);
+        EntManager.TryGetComponent(MapUid, out Xform);
         EntManager.TryGetComponent(MapUid, out _physics);
         EntManager.TryGetComponent(MapUid, out _fixtures);
 
-        if (_navMap == null || _grid == null || _xform == null)
+        if (_navMap == null || _grid == null || Xform == null)
             return;
 
         // Map re-centering
@@ -323,8 +329,8 @@ public partial class NavMapControl : MapGridControl
             {
                 foreach (var gridCoords in regionOverlay.GridCoords)
                 {
-                    var positionTopLeft = ScalePosition(new Vector2(gridCoords.Item1.X, -gridCoords.Item1.Y) - new Vector2(offset.X, -offset.Y));
-                    var positionBottomRight = ScalePosition(new Vector2(gridCoords.Item2.X + _grid.TileSize, -gridCoords.Item2.Y - _grid.TileSize) - new Vector2(offset.X, -offset.Y));
+                    var positionTopLeft = ScalePosition(new Vector2(gridCoords.Item1.X, -gridCoords.Item2.Y - _grid.TileSize) - new Vector2(offset.X, -offset.Y));
+                    var positionBottomRight = ScalePosition(new Vector2(gridCoords.Item2.X + _grid.TileSize, -gridCoords.Item1.Y) - new Vector2(offset.X, -offset.Y));
 
                     var box = new UIBox2(positionTopLeft, positionBottomRight);
                     handle.DrawRect(box, regionOverlay.Color);
@@ -394,7 +400,7 @@ public partial class NavMapControl : MapGridControl
 
                 if (mapPos.MapId != MapId.Nullspace)
                 {
-                    var position = Vector2.Transform(mapPos.Position, _transformSystem.GetInvWorldMatrix(_xform)) - offset;
+                    var position = Vector2.Transform(mapPos.Position, _transformSystem.GetInvWorldMatrix(Xform)) - offset;
                     position = ScalePosition(new Vector2(position.X, -position.Y));
 
                     handle.DrawCircle(position, float.Sqrt(MinimapScale) * 2f, value.Color);
@@ -415,7 +421,7 @@ public partial class NavMapControl : MapGridControl
 
             if (mapPos.MapId != MapId.Nullspace)
             {
-                var position = Vector2.Transform(mapPos.Position, _transformSystem.GetInvWorldMatrix(_xform)) - offset;
+                var position = Vector2.Transform(mapPos.Position, _transformSystem.GetInvWorldMatrix(Xform)) - offset;
                 position = ScalePosition(new Vector2(position.X, -position.Y));
 
                 var scalingCoefficient = MinmapScaleModifier * float.Sqrt(MinimapScale);
@@ -504,10 +510,10 @@ public partial class NavMapControl : MapGridControl
         _vertLines.Clear();
         _vertLinesReversed.Clear();
 
-        const int southMask = (int) AtmosDirection.South << (int) NavMapChunkType.Wall;
-        const int eastMask = (int) AtmosDirection.East << (int) NavMapChunkType.Wall;
-        const int westMask = (int) AtmosDirection.West << (int) NavMapChunkType.Wall;
-        const int northMask = (int) AtmosDirection.North << (int) NavMapChunkType.Wall;
+        const int southMask = (int)AtmosDirection.South << (int)NavMapChunkType.Wall;
+        const int eastMask = (int)AtmosDirection.East << (int)NavMapChunkType.Wall;
+        const int westMask = (int)AtmosDirection.West << (int)NavMapChunkType.Wall;
+        const int northMask = (int)AtmosDirection.North << (int)NavMapChunkType.Wall;
 
         foreach (var (chunkOrigin, chunk) in _navMap.Chunks)
         {
@@ -517,7 +523,7 @@ public partial class NavMapControl : MapGridControl
                 if (tileData == 0)
                     continue;
 
-                tileData >>= (int) NavMapChunkType.Wall;
+                tileData >>= (int)NavMapChunkType.Wall;
 
                 var relativeTile = SharedNavMapSystem.GetTileFromIndex(i);
                 var tile = (chunk.Origin * SharedNavMapSystem.ChunkSize + relativeTile) * _grid.TileSize;
@@ -534,7 +540,7 @@ public partial class NavMapControl : MapGridControl
                 // North edge
                 var neighborData = 0;
                 if (relativeTile.Y != SharedNavMapSystem.ChunkSize - 1)
-                    neighborData = chunk.TileData[i+1];
+                    neighborData = chunk.TileData[i + 1];
                 else if (_navMap.Chunks.TryGetValue(chunkOrigin + Vector2i.Up, out neighborChunk))
                     neighborData = neighborChunk.TileData[i + 1 - SharedNavMapSystem.ChunkSize];
 
@@ -614,7 +620,7 @@ public partial class NavMapControl : MapGridControl
                 if (tileData == 0)
                     continue;
 
-                tileData >>= (int) NavMapChunkType.Airlock;
+                tileData >>= (int)NavMapChunkType.Airlock;
 
                 var relative = SharedNavMapSystem.GetTileFromIndex(i);
                 var tile = (chunk.Origin * SharedNavMapSystem.ChunkSize + relative) * _grid.TileSize;
@@ -651,7 +657,7 @@ public partial class NavMapControl : MapGridControl
 
             // TODO NAVMAP
             // Consider using faster rotation operations, given that these are always 90 degree increments
-            var angle = -((AtmosDirection) dirMask).ToAngle();
+            var angle = -((AtmosDirection)dirMask).ToAngle();
             TileRects.Add((angle.RotateVec(leftTop) + tilePosition, angle.RotateVec(rightBottom) + tilePosition));
         }
     }
@@ -670,7 +676,7 @@ public partial class NavMapControl : MapGridControl
                 continue;
 
             var tilePosition = new Vector2(tile.X + 0.5f, -tile.Y - 0.5f);
-            var angle = -((AtmosDirection) dirMask).ToAngle();
+            var angle = -((AtmosDirection)dirMask).ToAngle();
             TileRects.Add((angle.RotateVec(leftTop) + tilePosition, angle.RotateVec(rightBottom) + tilePosition));
             TileLines.Add((angle.RotateVec(centreTop) + tilePosition, angle.RotateVec(centreBottom) + tilePosition));
         }

@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Server.Administration;
 using Content.Server.Ghost.Roles.Components;
 using Content.Server.Ghost.Roles.Raffles;
@@ -7,14 +6,15 @@ using Content.Shared.Ghost.Roles.Raffles;
 using Content.Shared.Mind.Components;
 using Robust.Shared.Console;
 using Robust.Shared.Prototypes;
+using System.Linq;
 
 namespace Content.Server.Ghost.Roles
 {
     [AdminCommand(AdminFlags.Admin)]
-    public sealed class MakeRaffledGhostRoleCommand : IConsoleCommand
+    public sealed partial class MakeRaffledGhostRoleCommand : IConsoleCommand
     {
-        [Dependency] private readonly IPrototypeManager _protoManager = default!;
-        [Dependency] private readonly IEntityManager _entManager = default!;
+        [Dependency] private IPrototypeManager _protoManager = default!;
+        [Dependency] private IEntityManager _entManager = default!;
 
         public string Command => "makeghostroleraffled";
         public string Description => "Turns an entity into a raffled ghost role.";

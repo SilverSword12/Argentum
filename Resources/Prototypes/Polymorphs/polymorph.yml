@@ -45,7 +45,7 @@
     transferName: true
     transferDamage: true
     revertOnCrit: false
-    revertOnDeath: false
+    revertOnDeath: true
     polymorphSound: !type:SoundPathSpecifier
       path: /Audio/Magic/forcewall.ogg
     exitPolymorphSound: !type:SoundPathSpecifier
@@ -75,7 +75,7 @@
     transferName: false
     transferDamage: false
     revertOnCrit: false
-    revertOnDeath: false
+    revertOnDeath: true
     polymorphSound: !type:SoundPathSpecifier
       path: /Audio/Magic/forcewall.ogg
     exitPolymorphSound: !type:SoundPathSpecifier
@@ -112,7 +112,7 @@
     inventory: Transfer
     transferName: true
     revertOnCrit: false
-    revertOnDeath: false
+    revertOnDeath: true
 
 - type: polymorph
   id: BreadMorph
@@ -144,7 +144,7 @@
     inventory: Drop
     transferName: true
     revertOnCrit: false
-    revertOnDeath: false
+    revertOnDeath: true
     allowRepeatedMorphs: false
 
 # this is the monkey polymorph for artifact.
@@ -199,6 +199,7 @@
   id: WizardSpider
   configuration:
     entity: MobGiantSpiderWizard #Not angry so ghosts can't just take over the wizard
+    revertConfirmationPopup: false
     transferName: true
     inventory: None
     revertOnDeath: true
@@ -240,6 +241,7 @@
     transferName: false
     inventory: None
     forced: false
+    revertConfirmationPopup: false
     revertOnDeath: true
     allowRepeatedMorphs: false
     polymorphSound: /Audio/Magic/ethereal_enter.ogg

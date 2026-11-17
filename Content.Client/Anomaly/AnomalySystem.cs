@@ -1,5 +1,7 @@
-﻿using System.Numerics;
+using System.Numerics;
+using Content.Client.Anomaly.UI;
 using Content.Client.Gravity;
+using Content.Client.Items;
 using Content.Shared.Anomaly;
 using Content.Shared.Anomaly.Components;
 using Robust.Client.GameObjects;
@@ -9,9 +11,9 @@ namespace Content.Client.Anomaly;
 
 public sealed partial class AnomalySystem : SharedAnomalySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly FloatingVisualizerSystem _floating = default!;
-    [Dependency] private readonly SpriteSystem _sprite = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private FloatingVisualizerSystem _floating = default!;
+    [Dependency] private SpriteSystem _sprite = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -23,6 +25,8 @@ public sealed partial class AnomalySystem : SharedAnomalySystem
         SubscribeLocalEvent<AnomalyComponent, AnimationCompletedEvent>(OnAnimationComplete);
 
         SubscribeLocalEvent<AnomalySupercriticalComponent, ComponentShutdown>(OnShutdown);
+
+        Subs.ItemStatus<CorePoweredThrowerComponent>(entity => new AnomalyStatusControl(entity));
     }
 
     private void OnStartup(EntityUid uid, AnomalyComponent component, ComponentStartup args)
@@ -67,7 +71,7 @@ public sealed partial class AnomalySystem : SharedAnomalySystem
 
         while (query.MoveNext(out var uid, out var anomaly, out var super, out var sprite))
         {
-            var completion = 1f - (float) ((super.EndTime - _timing.CurTime) / anomaly.SupercriticalDuration);
+            var completion = 1f - (float)((super.EndTime - _timing.CurTime) / anomaly.SupercriticalDuration);
             var scale = completion * (super.MaxScaleAmount - 1f) + 1f;
             _sprite.SetScale((uid, sprite), new Vector2(scale, scale));
 

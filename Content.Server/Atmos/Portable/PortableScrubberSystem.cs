@@ -1,35 +1,33 @@
+using Content.Server.Administration.Logs;
+using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Piping.Unary.EntitySystems;
+using Content.Server.Audio;
+using Content.Server.NodeContainer.EntitySystems;
+using Content.Server.NodeContainer.NodeGroups;
+using Content.Server.NodeContainer.Nodes;
+using Content.Shared.Atmos;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Piping.Unary.Components;
 using Content.Shared.Atmos.Visuals;
-using Content.Shared.Examine;
-using Content.Shared.Destructible;
-using Content.Server.Atmos.Piping.Components;
-using Content.Server.Atmos.EntitySystems;
-using Content.Server.Power.Components;
-using Content.Server.NodeContainer;
-using Robust.Server.GameObjects;
-using Content.Server.NodeContainer.Nodes;
-using Content.Server.NodeContainer.NodeGroups;
-using Content.Server.Audio;
-using Content.Server.Administration.Logs;
-using Content.Server.NodeContainer.EntitySystems;
-using Content.Shared.Atmos;
 using Content.Shared.Database;
+using Content.Shared.Destructible;
+using Content.Shared.Examine;
 using Content.Shared.Power;
+using Robust.Server.GameObjects;
 
 namespace Content.Server.Atmos.Portable
 {
-    public sealed class PortableScrubberSystem : EntitySystem
+    public sealed partial class PortableScrubberSystem : EntitySystem
     {
-        [Dependency] private readonly GasVentScrubberSystem _scrubberSystem = default!;
-        [Dependency] private readonly GasCanisterSystem _canisterSystem = default!;
-        [Dependency] private readonly GasPortableSystem _gasPortableSystem = default!;
-        [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-        [Dependency] private readonly TransformSystem _transformSystem = default!;
-        [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly AmbientSoundSystem _ambientSound = default!;
-        [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-        [Dependency] private readonly NodeContainerSystem _nodeContainer = default!;
+        [Dependency] private GasVentScrubberSystem _scrubberSystem = default!;
+        [Dependency] private GasCanisterSystem _canisterSystem = default!;
+        [Dependency] private GasPortableSystem _gasPortableSystem = default!;
+        [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+        [Dependency] private TransformSystem _transformSystem = default!;
+        [Dependency] private IAdminLogManager _adminLogger = default!;
+        [Dependency] private AmbientSoundSystem _ambientSound = default!;
+        [Dependency] private SharedAppearanceSystem _appearance = default!;
+        [Dependency] private NodeContainerSystem _nodeContainer = default!;
 
         public override void Initialize()
         {
@@ -59,7 +57,7 @@ namespace Content.Server.Atmos.Portable
                 && portableNode.ConnectionsEnabled)
             {
                 _atmosphereSystem.React(component.Air, portableNode);
-                if (portableNode.NodeGroup is PipeNet {NodeCount: > 1} net)
+                if (portableNode.NodeGroup is PipeNet { NodeCount: > 1 } net)
                     _canisterSystem.MixContainerWithPipeNet(component.Air, net.Air);
             }
 
@@ -69,7 +67,7 @@ namespace Content.Server.Atmos.Portable
                 return;
             }
 
-            if (args.Grid is not {} grid)
+            if (args.Grid is not { } grid)
                 return;
 
             var position = _transformSystem.GetGridTilePositionOrDefault(uid);
@@ -137,7 +135,7 @@ namespace Content.Server.Atmos.Portable
 
         private bool Scrub(float timeDelta, PortableScrubberComponent scrubber, GasMixture? tile)
         {
-            return _scrubberSystem.Scrub(timeDelta, scrubber.TransferRate * _atmosphereSystem.PumpSpeedup(), ScrubberPumpDirection.Scrubbing, scrubber.FilterGases, tile, scrubber.Air);
+            return _scrubberSystem.Scrub(timeDelta, scrubber.TransferRate * _atmosphereSystem.PumpSpeedup(), ScrubberPumpDirection.Scrubbing, scrubber.FilterGases, new(), tile, scrubber.Air); // Persistence: Add new ()
         }
 
         private void UpdateAppearance(EntityUid uid, bool isFull, bool isRunning)

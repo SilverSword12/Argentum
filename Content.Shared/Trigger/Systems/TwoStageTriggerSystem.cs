@@ -1,12 +1,12 @@
-using Robust.Shared.Timing;
 using Content.Shared.Trigger.Components;
+using Robust.Shared.Timing;
 
 namespace Content.Shared.Trigger.Systems;
 
-public sealed class TwoStageTriggerSystem : EntitySystem
+public sealed partial class TwoStageTriggerSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly TriggerSystem _triggerSystem = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private TriggerSystem _triggerSystem = default!;
 
     public override void Initialize()
     {

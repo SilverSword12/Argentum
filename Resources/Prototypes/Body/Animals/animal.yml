@@ -6,13 +6,13 @@
     metabolizerTypes: [ Animal ]
 
 - type: entity
-  parent: OrganBase
+  parent: OrganBaseOrganic
   id: OrganAnimal
   abstract: true
   suffix: Animal
 
 - type: entity
-  parent: OrganAnimal
+  parent: [ OrganAnimal, SolutionBiomassMiniscule ] # Persistence: Add SolutionBiomassMiniscule
   id: OrganAnimalInternal
   abstract: true
   components:

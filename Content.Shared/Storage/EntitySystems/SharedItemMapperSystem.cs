@@ -1,8 +1,8 @@
-using System.Linq;
 using Content.Shared.Storage.Components;
 using Content.Shared.Whitelist;
 using JetBrains.Annotations;
 using Robust.Shared.Containers;
+using System.Linq;
 
 namespace Content.Shared.Storage.EntitySystems;
 
@@ -12,11 +12,11 @@ namespace Content.Shared.Storage.EntitySystems;
 /// if its tags/component, and overall quantity match <see cref="ItemMapperComponent.MapLayers"/>.
 /// </summary>
 [UsedImplicitly]
-public abstract class SharedItemMapperSystem : EntitySystem
+public abstract partial class SharedItemMapperSystem : EntitySystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private EntityWhitelistSystem _whitelistSystem = default!;
 
     /// <inheritdoc />
     public override void Initialize()

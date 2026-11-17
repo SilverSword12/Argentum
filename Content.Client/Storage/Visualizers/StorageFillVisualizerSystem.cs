@@ -1,10 +1,9 @@
-using Content.Shared.Storage;
 using Content.Shared.Storage.Components;
 using Robust.Client.GameObjects;
 
 namespace Content.Client.Storage.Visualizers;
 
-public sealed class StorageFillVisualizerSystem : VisualizerSystem<StorageFillVisualizerComponent>
+public sealed partial class StorageFillVisualizerSystem : VisualizerSystem<StorageFillVisualizerComponent>
 {
     protected override void OnAppearanceChange(EntityUid uid, StorageFillVisualizerComponent component, ref AppearanceChangeEvent args)
     {

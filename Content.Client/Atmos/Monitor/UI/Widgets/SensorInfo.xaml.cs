@@ -14,8 +14,8 @@ namespace Content.Client.Atmos.Monitor.UI.Widgets;
 [GenerateTypedNameReferences]
 public sealed partial class SensorInfo : BoxContainer
 {
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-    [Dependency] private readonly IEntityManager _entMan = default!;
+    [Dependency] private IPrototypeManager _prototypeManager = default!;
+    [Dependency] private IEntityManager _entMan = default!;
 
     public Action<string, AtmosMonitorThresholdType, AtmosAlarmThreshold, Gas?>? OnThresholdUpdate;
     public event Action<AtmosSensorData>? SensorDataCopied;
@@ -27,7 +27,7 @@ public sealed partial class SensorInfo : BoxContainer
     private Dictionary<Gas, RichTextLabel> _gasLabels = new();
     private Button _copySettings => CCopySettings;
 
-    public SensorInfo(AtmosSensorData data, string address)
+    public SensorInfo(AtmosSensorData data, string address, string name)
     {
         IoCManager.InjectDependencies(this);
         var atmosphereSystem = _entMan.System<SharedAtmosphereSystem>();
@@ -35,8 +35,8 @@ public sealed partial class SensorInfo : BoxContainer
         RobustXamlLoader.Load(this);
 
         _address = address;
-
-        SensorAddress.Title = Loc.GetString("air-alarm-ui-window-listing-title", ("address", _address), ("state", data.AlarmState));
+        var nameOrAddr = name == "" ? address : name;
+        SensorAddress.Title = Loc.GetString("air-alarm-ui-window-listing-title", ("address", nameOrAddr), ("state", data.AlarmState));
 
         AlarmStateLabel.SetMarkup(Loc.GetString("air-alarm-ui-window-alarm-state-indicator",
                     ("color", AirAlarmWindow.ColorForAlarm(data.AlarmState)),
@@ -58,15 +58,20 @@ public sealed partial class SensorInfo : BoxContainer
             ProtoId<GasPrototype> gasProtoId = atmosphereSystem.GetGas(gas);
             var gasName = _prototypeManager.Index(gasProtoId).Name;
 
+            if (!data.GasThresholds.TryGetValue(gas, out var gasThreshold))
+            {
+                gasThreshold = new Content.Shared.Atmos.Monitor.AtmosAlarmThreshold();
+            }
+
             label.SetMarkup(Loc.GetString("air-alarm-ui-gases-indicator",
                 ("gas", Loc.GetString(gasName)),
-                ("color", AirAlarmWindow.ColorForThreshold(fractionGas, data.GasThresholds[gas])),
+                ("color", AirAlarmWindow.ColorForThreshold(fractionGas, gasThreshold)),
                 ("amount", $"{amount:0.####}"),
                 ("percentage", $"{(100 * fractionGas):0.##}")));
             GasContainer.AddChild(label);
             _gasLabels.Add(gas, label);
 
-            var threshold = data.GasThresholds[gas];
+            var threshold = data.GasThresholds.TryGetValue(gas, out var thr) ? thr : new Content.Shared.Atmos.Monitor.AtmosAlarmThreshold();
             var gasThresholdControl = new ThresholdControl(Loc.GetString($"air-alarm-ui-thresholds-gas-title"), threshold, AtmosMonitorThresholdType.Gas, gas, 100);
             gasThresholdControl.Margin = new Thickness(20, 2, 2, 2);
             gasThresholdControl.ThresholdDataChanged += (type, alarmThreshold, arg3) =>
@@ -106,7 +111,8 @@ public sealed partial class SensorInfo : BoxContainer
         IoCManager.InjectDependencies(this);
         var atmosphereSystem = _entMan.System<SharedAtmosphereSystem>();
 
-        SensorAddress.Title = Loc.GetString("air-alarm-ui-window-listing-title", ("address", _address), ("state", data.AlarmState));
+        var nameOrAddr = data.Name == "" ? _address : data.Name;
+        SensorAddress.Title = Loc.GetString("air-alarm-ui-window-listing-title", ("address", nameOrAddr), ("state", data.AlarmState));
 
         AlarmStateLabel.SetMarkup(Loc.GetString("air-alarm-ui-window-alarm-state-indicator",
                     ("color", AirAlarmWindow.ColorForAlarm(data.AlarmState)),
@@ -132,9 +138,14 @@ public sealed partial class SensorInfo : BoxContainer
             ProtoId<GasPrototype> gasProtoId = atmosphereSystem.GetGas(gas);
             var gasName = _prototypeManager.Index(gasProtoId).Name;
 
+            if (!data.GasThresholds.TryGetValue(gas, out var gasThreshold))
+            {
+                gasThreshold = new Content.Shared.Atmos.Monitor.AtmosAlarmThreshold();
+            }
+
             label.SetMarkup(Loc.GetString("air-alarm-ui-gases-indicator",
                 ("gas", Loc.GetString(gasName)),
-                ("color", AirAlarmWindow.ColorForThreshold(fractionGas, data.GasThresholds[gas])),
+                ("color", AirAlarmWindow.ColorForThreshold(fractionGas, gasThreshold)),
                 ("amount", $"{amount:0.####}"),
                 ("percentage", $"{(100 * fractionGas):0.##}")));
         }
@@ -152,4 +163,4 @@ public sealed partial class SensorInfo : BoxContainer
         }
     }
 
- }
+}

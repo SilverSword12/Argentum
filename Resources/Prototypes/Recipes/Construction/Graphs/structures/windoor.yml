@@ -12,14 +12,6 @@
       - material: Steel
         amount: 4
         doAfter: 2
-    - to: assemblySecure
-      completed:
-      - !type:SetAnchor
-        value: false
-      steps:
-      - material: Plasteel
-        amount: 4
-        doAfter: 2
 
     - to: assemblyClockwork
       completed:
@@ -63,6 +55,15 @@
         amount: 5
         doAfter: 1
 
+    #to phoron
+    - to: phglass
+      conditions:
+      - !type:EntityAnchored {}
+      steps:
+      - material: PhoronGlass
+        amount: 5
+        doAfter: 1
+
     #back to start
     - to: start
       conditions:
@@ -77,7 +78,7 @@
       - tool: Welding
         doAfter: 2
 
-  #normal windoor node
+  #region normal windoor node
   - node: glass
     entity: WindoorAssembly
     edges:
@@ -151,7 +152,16 @@
       - tool: Anchoring
         doAfter: 1
 
-  #plasma windoor node
+    - to: medSecurityUnfinished
+      conditions:
+      - !type:WirePanel {}
+      steps:
+      - material: Steel
+        amount: 2
+        doAfter: 2
+
+  #endregion
+  #region plasma windoor node
   - node: pglass
     entity: WindoorAssemblyPlasma
     edges:
@@ -225,7 +235,16 @@
       - tool: Anchoring
         doAfter: 1
 
-  #uranium windoor node
+    - to: medSecurityUnfinished
+      conditions:
+      - !type:WirePanel {}
+      steps:
+      - material: Steel
+        amount: 2
+        doAfter: 2
+
+  #endregion
+  #region uranium windoor node
   - node: uglass
     entity: WindoorAssemblyUranium
     edges:
@@ -299,118 +318,66 @@
       - tool: Anchoring
         doAfter: 1
 
-  #secure windoor nodes
-  - node: assemblySecure
-    entity: WindoorAssemblySecure
-    actions:
-    - !type:SnapToGrid { }
-    - !type:SetAnchor { }
+  #phoron windoor nodes
+  - node: phglass
+    entity: WindoorAssemblyPhoron
     edges:
-    #to secure
-    - to: glassSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - material: ReinforcedGlass
-        amount: 5
-        doAfter: 1
-
-    #to secure plasma
-    - to: pglassSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - material: ReinforcedPlasmaGlass
-        amount: 5
-        doAfter: 1
-
-    #to secure uranium
-    - to: uglassSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - material: ReinforcedUraniumGlass
-        amount: 5
-        doAfter: 1
-
-    #back to start
-    - to: start
-      conditions:
-      - !type:EntityAnchored
-        anchored: false
-      completed:
-      - !type:SpawnPrototype
-        prototype: SheetPlasteel1
-        amount: 4
-      - !type:DeleteEntity { }
-      steps:
-      - tool: Welding
-        doAfter: 10
-
-  #secure node
-  - node: glassSecure
-    entity: WindoorAssemblySecure
-    edges:
-    - to: wiredSecure
+    - to: phwired
       conditions:
       - !type:EntityAnchored { }
       steps:
       - material: Cable
         amount: 5
         doAfter: 1
-    - to: assemblySecure
+    - to: assembly
       conditions:
       - !type:EntityAnchored
         anchored: false
       completed:
       - !type:SpawnPrototype
-        prototype: SheetRGlass1
+        prototype: SheetPhoronGlass1
         amount: 5
       steps:
       - tool: Screwing
-        doAfter: 4
+        doAfter: 2
 
-  - node: wiredSecure
-    entity: WindoorAssemblySecure
+  - node: phwired
+    entity: WindoorAssemblyPhoron
     edges:
-    - to: electronicsSecure
+    - to: phelectronics
       conditions:
-      - !type:EntityAnchored { }
+      - !type:EntityAnchored {}
       steps:
-      - component: DoorElectronics
+      - tag: DoorElectronics
         store: board
-        name: construction-graph-component-door-electronics-circuit-board
+        name: construction-graph-tag-door-electronics-circuit-board
         icon:
           sprite: "Objects/Misc/module.rsi"
           state: "door_electronics"
         doAfter: 1
-    - to: glassSecure
+    - to: phglass
       completed:
       - !type:SpawnPrototype
         prototype: CableApcStack1
         amount: 5
       steps:
       - tool: Cutting
-        doAfter: 3
+        doAfter: 1
 
-  - node: electronicsSecure
-    entity: WindoorAssemblySecure
+  - node: phelectronics
+    entity: WindoorAssemblyPhoron
     edges:
-    - to: windoorSecure
+    - to: phwindoor
       conditions:
-      - !type:EntityAnchored { }
+      - !type:EntityAnchored {}
       steps:
       - tool: Screwing
-        doAfter: 4
+        doAfter: 2
 
-  - node: windoorSecure
-    entity: WindoorSecure
-    doNotReplaceInheritingEntities: true
-    actions:
-    - !type:SetWiresPanelSecurity
-      wiresAccessible: true
+  - node: phwindoor
+    entity: WindoorPhoron
     edges:
-    - to: wiredSecure
+    - to: phwired
       conditions:
       - !type:EntityAnchored {}
       - !type:DoorBolted
@@ -423,15 +390,150 @@
         emptyAtUser: true
       steps:
       - tool: Anchoring
-        doAfter: 4
+        doAfter: 1
 
-    - to: medSecurityUnfinished
-      conditions:
-      - !type:WirePanel {}
-      steps:
-      - material: Steel
-        amount: 2
-        doAfter: 2
+  #secure windoor nodes
+#  - node: assemblySecure
+#    entity: WindoorAssemblySecure
+#    actions:
+#    - !type:SnapToGrid { }
+#    - !type:SetAnchor { }
+#    edges:
+#    #to secure
+#    - to: glassSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: ReinforcedGlass
+#        amount: 5
+#        doAfter: 1
+#
+#    #to secure plasma
+#    - to: pglassSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: ReinforcedPlasmaGlass
+#        amount: 5
+#        doAfter: 1
+#
+#    #to secure uranium
+#    - to: uglassSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: ReinforcedUraniumGlass
+#        amount: 5
+#        doAfter: 1
+#
+#    #to secure phoron
+#    - to: phglassSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: ReinforcedPhoronGlass
+#        amount: 5
+#        doAfter: 1
+#
+#    #back to start
+#    - to: start
+#      conditions:
+#      - !type:EntityAnchored
+#        anchored: false
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: SheetPlasteel1
+#        amount: 4
+#      - !type:DeleteEntity { }
+#      steps:
+#      - tool: Welding
+#        doAfter: 10
+#
+#  #secure node
+#  - node: glassSecure
+#    entity: WindoorAssemblySecure
+#    edges:
+#    - to: wiredSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: Cable
+#        amount: 5
+#        doAfter: 1
+#    - to: assemblySecure
+#      conditions:
+#      - !type:EntityAnchored
+#        anchored: false
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: SheetRGlass1
+#        amount: 5
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: wiredSecure
+#    entity: WindoorAssemblySecure
+#    edges:
+#    - to: electronicsSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - component: DoorElectronics
+#        store: board
+#        name: construction-graph-component-door-electronics-circuit-board
+#        icon:
+#          sprite: "Objects/Misc/module.rsi"
+#          state: "door_electronics"
+#        doAfter: 1
+#    - to: glassSecure
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: CableApcStack1
+#        amount: 5
+#      steps:
+#      - tool: Cutting
+#        doAfter: 3
+#
+#  - node: electronicsSecure
+#    entity: WindoorAssemblySecure
+#    edges:
+#    - to: windoorSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: windoorSecure
+#    entity: WindoorSecure
+#    doNotReplaceInheritingEntities: true
+#    actions:
+#    - !type:SetWiresPanelSecurity
+#      wiresAccessible: true
+#    edges:
+#    - to: wiredSecure
+#      conditions:
+#      - !type:EntityAnchored {}
+#      - !type:DoorBolted
+#        value: false
+#      - !type:WirePanel {}
+#      - !type:AllWiresCut
+#      completed:
+#      - !type:EmptyAllContainers
+#        pickup: true
+#        emptyAtUser: true
+#      steps:
+#      - tool: Anchoring
+#        doAfter: 4
+#
+#    - to: medSecurityUnfinished
+#      conditions:
+#      - !type:WirePanel {}
+#      steps:
+#      - material: Steel
+#        amount: 2
+#        doAfter: 2
 
 #Clockwork
   - node: assemblyClockwork
@@ -534,161 +636,240 @@
         doAfter: 4
 
   #secure plasma node
-  - node: pglassSecure
-    entity: WindoorAssemblySecurePlasma
-    edges:
-    - to: pwiredSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - material: Cable
-        amount: 5
-        doAfter: 1
-
-    - to: assemblySecure
-      conditions:
-      - !type:EntityAnchored
-        anchored: false
-      completed:
-      - !type:SpawnPrototype
-        prototype: SheetRPGlass1
-        amount: 5
-      steps:
-      - tool: Screwing
-        doAfter: 4
-
-  - node: pwiredSecure
-    entity: WindoorAssemblySecurePlasma
-    edges:
-    - to: pelectronicsSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - tag: DoorElectronics
-        store: board
-        name: construction-graph-tag-door-electronics-circuit-board
-        icon:
-          sprite: "Objects/Misc/module.rsi"
-          state: "door_electronics"
-        doAfter: 1
-    - to: pglassSecure
-      completed:
-      - !type:SpawnPrototype
-        prototype: CableApcStack1
-        amount: 5
-      steps:
-      - tool: Cutting
-        doAfter: 3
-
-  - node: pelectronicsSecure
-    entity: WindoorAssemblySecurePlasma
-    edges:
-    - to: pwindoorSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - tool: Screwing
-        doAfter: 4
-
-  - node: pwindoorSecure
-    entity: WindoorSecurePlasma
-    doNotReplaceInheritingEntities: true
-    actions:
-    - !type:SetWiresPanelSecurity
-      wiresAccessible: true
-    edges:
-    - to: pwiredSecure
-      conditions:
-      - !type:EntityAnchored {}
-      - !type:DoorBolted
-        value: false
-      - !type:WirePanel {}
-      - !type:AllWiresCut
-      completed:
-      - !type:EmptyAllContainers
-        pickup: true
-        emptyAtUser: true
-      steps:
-      - tool: Anchoring
-        doAfter: 4
+#  - node: pglassSecure
+#    entity: WindoorAssemblySecurePlasma
+#    edges:
+#    - to: pwiredSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: Cable
+#        amount: 5
+#        doAfter: 1
+#
+#    - to: assemblySecure
+#      conditions:
+#      - !type:EntityAnchored
+#        anchored: false
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: SheetRPGlass1
+#        amount: 5
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: pwiredSecure
+#    entity: WindoorAssemblySecurePlasma
+#    edges:
+#    - to: pelectronicsSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tag: DoorElectronics
+#        store: board
+#        name: construction-graph-tag-door-electronics-circuit-board
+#        icon:
+#          sprite: "Objects/Misc/module.rsi"
+#          state: "door_electronics"
+#        doAfter: 1
+#    - to: pglassSecure
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: CableApcStack1
+#        amount: 5
+#      steps:
+#      - tool: Cutting
+#        doAfter: 3
+#
+#  - node: pelectronicsSecure
+#    entity: WindoorAssemblySecurePlasma
+#    edges:
+#    - to: pwindoorSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: pwindoorSecure
+#    entity: WindoorPlasma
+#    doNotReplaceInheritingEntities: true
+#    actions:
+#    - !type:SetWiresPanelSecurity
+#      wiresAccessible: true
+#    edges:
+#    - to: pwiredSecure
+#      conditions:
+#      - !type:EntityAnchored {}
+#      - !type:DoorBolted
+#        value: false
+#      - !type:WirePanel {}
+#      - !type:AllWiresCut
+#      completed:
+#      - !type:EmptyAllContainers
+#        pickup: true
+#        emptyAtUser: true
+#      steps:
+#      - tool: Anchoring
+#        doAfter: 4
 
   #secure Uranium node
-  - node: uglassSecure
-    entity: WindoorAssemblySecureUranium
-    edges:
-    - to: uwiredSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - material: Cable
-        amount: 5
-        doAfter: 1
-    - to: assemblySecure
-      conditions:
-      - !type:EntityAnchored
-        anchored: false
-      completed:
-      - !type:SpawnPrototype
-        prototype: SheetRUGlass1
-        amount: 5
-      steps:
-      - tool: Screwing
-        doAfter: 4
+#  - node: uglassSecure
+#    entity: WindoorAssemblySecureUranium
+#    edges:
+#    - to: uwiredSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: Cable
+#        amount: 5
+#        doAfter: 1
+#    - to: assemblySecure
+#      conditions:
+#      - !type:EntityAnchored
+#        anchored: false
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: SheetRUGlass1
+#        amount: 5
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: uwiredSecure
+#    entity: WindoorAssemblySecureUranium
+#    edges:
+#    - to: uelectronicsSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tag: DoorElectronics
+#        store: board
+#        name: construction-graph-tag-door-electronics-circuit-board
+#        icon:
+#          sprite: "Objects/Misc/module.rsi"
+#          state: "door_electronics"
+#        doAfter: 1
+#    - to: uglassSecure
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: CableApcStack1
+#        amount: 5
+#      steps:
+#      - tool: Cutting
+#        doAfter: 3
+#
+#  - node: uelectronicsSecure
+#    entity: WindoorAssemblySecureUranium
+#    edges:
+#    - to: uwindoorSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: uwindoorSecure
+#    entity: WindoorUranium
+#    doNotReplaceInheritingEntities: true
+#    actions:
+#    - !type:SetWiresPanelSecurity
+#      wiresAccessible: true
+#    edges:
+#    - to: uwiredSecure
+#      conditions:
+#      - !type:EntityAnchored {}
+#      - !type:DoorBolted
+#        value: false
+#      - !type:WirePanel {}
+#      - !type:AllWiresCut
+#      completed:
+#      - !type:EmptyAllContainers
+#        pickup: true
+#        emptyAtUser: true
+#      steps:
+#      - tool: Anchoring
+#        doAfter: 4
 
-  - node: uwiredSecure
-    entity: WindoorAssemblySecureUranium
-    edges:
-    - to: uelectronicsSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - tag: DoorElectronics
-        store: board
-        name: construction-graph-tag-door-electronics-circuit-board
-        icon:
-          sprite: "Objects/Misc/module.rsi"
-          state: "door_electronics"
-        doAfter: 1
-    - to: uglassSecure
-      completed:
-      - !type:SpawnPrototype
-        prototype: CableApcStack1
-        amount: 5
-      steps:
-      - tool: Cutting
-        doAfter: 3
-
-  - node: uelectronicsSecure
-    entity: WindoorAssemblySecureUranium
-    edges:
-    - to: uwindoorSecure
-      conditions:
-      - !type:EntityAnchored { }
-      steps:
-      - tool: Screwing
-        doAfter: 4
-
-  - node: uwindoorSecure
-    entity: WindoorSecureUranium
-    doNotReplaceInheritingEntities: true
-    actions:
-    - !type:SetWiresPanelSecurity
-      wiresAccessible: true
-    edges:
-    - to: uwiredSecure
-      conditions:
-      - !type:EntityAnchored {}
-      - !type:DoorBolted
-        value: false
-      - !type:WirePanel {}
-      - !type:AllWiresCut
-      completed:
-      - !type:EmptyAllContainers
-        pickup: true
-        emptyAtUser: true
-      steps:
-      - tool: Anchoring
-        doAfter: 4
+#secure phoron node
+#  - node: phglassSecure
+#    entity: WindoorAssemblySecurePhoron
+#    edges:
+#    - to: phwiredSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - material: Cable
+#        amount: 5
+#        doAfter: 1
+#
+#    - to: assemblySecure
+#      conditions:
+#      - !type:EntityAnchored
+#        anchored: false
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: SheetRPhoronGlass1
+#        amount: 5
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: phwiredSecure
+#    entity: WindoorAssemblySecurePhoron
+#    edges:
+#    - to: phelectronicsSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tag: DoorElectronics
+#        store: board
+#        name: construction-graph-tag-door-electronics-circuit-board
+#        icon:
+#          sprite: "Objects/Misc/module.rsi"
+#          state: "door_electronics"
+#        doAfter: 1
+#    - to: phglassSecure
+#      completed:
+#      - !type:SpawnPrototype
+#        prototype: CableApcStack1
+#        amount: 5
+#      steps:
+#      - tool: Cutting
+#        doAfter: 3
+#
+#  - node: phelectronicsSecure
+#    entity: WindoorAssemblySecurePhoron
+#    edges:
+#    - to: phwindoorSecure
+#      conditions:
+#      - !type:EntityAnchored { }
+#      steps:
+#      - tool: Screwing
+#        doAfter: 4
+#
+#  - node: phwindoorSecure
+#    entity: WindoorPhoronSecure
+#    doNotReplaceInheritingEntities: true
+#    actions:
+#    - !type:SetWiresPanelSecurity
+#      wiresAccessible: true
+#    edges:
+#    - to: phwiredSecure
+#      conditions:
+#      - !type:EntityAnchored {}
+#      - !type:DoorBolted
+#        value: false
+#      - !type:WirePanel {}
+#      - !type:AllWiresCut
+#      completed:
+#      - !type:EmptyAllContainers
+#        pickup: true
+#        emptyAtUser: true
+#      steps:
+#      - tool: Anchoring
+#        doAfter: 4
 
 #Security Panels
   - node: medSecurityUnfinished
@@ -697,7 +878,7 @@
       examine: wires-panel-component-on-examine-security-level1
       wiresAccessible: false
     edges:
-    - to: windoorSecure
+    - to: windoor
       completed:
       - !type:GivePrototype
         prototype: SheetSteel1
@@ -705,12 +886,12 @@
       conditions:
       - !type:WirePanel {}
       - !type:HasTag
-        tag: SecureWindoor
+        tag: Windoor
       steps:
       - tool: Prying
         doAfter: 4
 
-    - to: pwindoorSecure
+    - to: pwindoor
       completed:
       - !type:GivePrototype
         prototype: SheetSteel1
@@ -718,12 +899,12 @@
       conditions:
       - !type:WirePanel {}
       - !type:HasTag
-        tag: SecurePlasmaWindoor
+        tag: WindoorPlasma
       steps:
       - tool: Prying
         doAfter: 4
 
-    - to: uwindoorSecure
+    - to: uwindoor
       completed:
       - !type:GivePrototype
         prototype: SheetSteel1
@@ -731,7 +912,7 @@
       conditions:
       - !type:WirePanel {}
       - !type:HasTag
-        tag: SecureUraniumWindoor
+        tag: WindoorUranium
       steps:
       - tool: Prying
         doAfter: 4
@@ -755,3 +936,5 @@
       steps:
       - tool: Welding
         doAfter: 10
+
+  #endregion

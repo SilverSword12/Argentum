@@ -1,11 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using Content.Shared.Access.Components;
+using Content.Shared.CrewAccesses.Components;
+using Content.Shared.CrewAssignments.Components;
+using Content.Shared.CrewRecords.Components;
 using Content.Shared.DeviceLinking.Events;
 using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
-using Content.Shared.GameTicking;
+// using Content.Shared.GameTicking;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.IdentityManagement;
 using Content.Shared.Inventory;
@@ -13,28 +13,34 @@ using Content.Shared.Localizations;
 using Content.Shared.Lock;
 using Content.Shared.NameIdentifier;
 using Content.Shared.PDA;
+using Content.Shared.Station;
+using Content.Shared.Station.Components;
 using Content.Shared.StationRecords;
 using Content.Shared.Tag;
-using Robust.Shared.Containers;
 using Robust.Shared.Collections;
+using Robust.Shared.Containers;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
-using Robust.Shared.Timing;
+using Robust.Shared.Serialization;
+// using Robust.Shared.Timing;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using Content.Shared.StationRecords.Components;
+using Content.Shared.StationRecords.Systems;
 
 namespace Content.Shared.Access.Systems;
 
-public sealed class AccessReaderSystem : EntitySystem
+public sealed partial class AccessReaderSystem : EntitySystem
 {
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly InventorySystem _inventorySystem = default!;
-    [Dependency] private readonly IGameTiming _gameTiming = default!;
-    [Dependency] private readonly EmagSystem _emag = default!;
-    [Dependency] private readonly TagSystem _tag = default!;
-    [Dependency] private readonly SharedGameTicker _gameTicker = default!;
-    [Dependency] private readonly SharedHandsSystem _handsSystem = default!;
-    [Dependency] private readonly SharedContainerSystem _containerSystem = default!;
-    [Dependency] private readonly SharedStationRecordsSystem _recordsSystem = default!;
-
+    [Dependency] private InventorySystem _inventorySystem = default!;
+    // [Dependency] private IGameTiming _gameTiming = default!;
+    [Dependency] private EmagSystem _emag = default!;
+    // [Dependency] private SharedGameTicker _gameTicker = default!;
+    [Dependency] private SharedHandsSystem _handsSystem = default!;
+    [Dependency] private SharedContainerSystem _containerSystem = default!;
+    [Dependency] private StationRecordsSystem _recordsSystem = default!;
+    [Dependency] private SharedStationSystem _station = default!;
     private static readonly ProtoId<TagPrototype> PreventAccessLoggingTag = "PreventAccessLogging";
 
     public override void Initialize()
@@ -47,59 +53,94 @@ public sealed class AccessReaderSystem : EntitySystem
         SubscribeLocalEvent<AccessReaderComponent, AccessReaderConfigurationAttemptEvent>(OnConfigurationAttempt);
         SubscribeLocalEvent<AccessReaderComponent, FindAvailableLocksEvent>(OnFindAvailableLocks);
         SubscribeLocalEvent<AccessReaderComponent, CheckUserHasLockAccessEvent>(OnCheckLockAccess);
-
+        SubscribeLocalEvent<AccessReaderComponent, SetupAccessList>(OnSetupAccessList);
         SubscribeLocalEvent<AccessReaderComponent, ComponentGetState>(OnGetState);
         SubscribeLocalEvent<AccessReaderComponent, ComponentHandleState>(OnHandleState);
+
+        Subs.SubscribeWithRelay<ShowAccessReaderSettingsComponent, ShowAccessReaderSettingsEvent>(OnAccessRead); // Moffstation
     }
+
+    // Moffstation - Begin - Access reader by event
+    private void OnAccessRead(Entity<ShowAccessReaderSettingsComponent> entity, ref ShowAccessReaderSettingsEvent args)
+    {
+        args.CanShowSettings = true;
+    }
+    // Moffstation - End
 
     private void OnExamined(Entity<AccessReaderComponent> ent, ref ExaminedEvent args)
     {
-        if (!GetMainAccessReader(ent, out var mainAccessReader))
-            return;
+        return;
+        //if (!GetMainAccessReader(ent, out var mainAccessReader))
+        //    return;
 
-        mainAccessReader.Value.Comp.AccessListsOriginal ??= new(mainAccessReader.Value.Comp.AccessLists);
+        //mainAccessReader.Value.Comp.AccessListsOriginal ??= new(mainAccessReader.Value.Comp.AccessLists);
 
-        var accessHasBeenModified = mainAccessReader.Value.Comp.AccessLists.Count != mainAccessReader.Value.Comp.AccessListsOriginal.Count;
+        //var accessHasBeenModified = mainAccessReader.Value.Comp.AccessLists.Count != mainAccessReader.Value.Comp.AccessListsOriginal.Count;
 
-        if (!accessHasBeenModified)
+        //if (!accessHasBeenModified)
+        //{
+        //    foreach (var accessSubgroup in mainAccessReader.Value.Comp.AccessLists)
+        //    {
+        //        if (!mainAccessReader.Value.Comp.AccessListsOriginal.Any(y => y.SetEquals(accessSubgroup)))
+        //        {
+        //            accessHasBeenModified = true;
+        //            break;
+        //        }
+        //    }
+        //}
+
+        /*var examiner = args.Examiner;
+        var ev = new ShowAccessReaderSettingsEvent();
+        RaiseLocalEvent(examiner, ref ev);
+        var canSeeAccessModification = accessHasBeenModified && ev.CanShowSettings;*/
+
+        //if (canSeeAccessModification)
+        //{
+        //    var localizedCurrentNames = GetLocalizedAccessNames(mainAccessReader.Value.Comp.AccessLists);
+        //    var accessesFormatted = ContentLocalizationManager.FormatListToOr(localizedCurrentNames);
+        //    var currentSettingsMessage = localizedCurrentNames.Count > 0
+        //        ? Loc.GetString("access-reader-access-settings-modified-message", ("access", accessesFormatted))
+        //        : Loc.GetString("access-reader-access-settings-removed-message");
+
+        //    args.PushMarkup(currentSettingsMessage);
+
+        //    return;
+        //}
+
+        //var localizedOriginalNames = GetLocalizedAccessNames(mainAccessReader.Value.Comp.AccessListsOriginal);
+
+        //// If the string list is empty either there were no access restrictions or the localized names were invalid
+        //if (localizedOriginalNames.Count == 0)
+        //    return;
+
+        //var originalAccessesFormatted = ContentLocalizationManager.FormatListToOr(localizedOriginalNames);
+        //var originalSettingsMessage = Loc.GetString(mainAccessReader.Value.Comp.ExaminationText, ("access", originalAccessesFormatted));
+        //args.PushMarkup(originalSettingsMessage);
+    }
+
+    private void OnMapInit(EntityUid uid, AccessReaderComponent component, ref MapInitEvent args)
+    {
+        List<string> accesses = new();
+        if (component.AccessNames.Count == 0)
         {
-            foreach (var accessSubgroup in mainAccessReader.Value.Comp.AccessLists)
+            foreach (var thing in component.AccessLists)
             {
-                if (!mainAccessReader.Value.Comp.AccessListsOriginal.Any(y => y.SetEquals(accessSubgroup)))
+                foreach (var access in thing)
                 {
-                    accessHasBeenModified = true;
-                    break;
+                    accesses.Add(access.Id);
                 }
             }
+            if (accesses.Count > 0)
+            {
+                var ev = new SetupAccessList(accesses);
+                RaiseLocalEvent(uid, ev);
+            }
         }
-
-        var examiner = args.Examiner;
-        var canSeeAccessModification = accessHasBeenModified &&
-                                       (HasComp<ShowAccessReaderSettingsComponent>(examiner) ||
-                                        _inventorySystem.TryGetInventoryEntity<ShowAccessReaderSettingsComponent>(examiner, out _));
-
-        if (canSeeAccessModification)
-        {
-            var localizedCurrentNames = GetLocalizedAccessNames(mainAccessReader.Value.Comp.AccessLists);
-            var accessesFormatted = ContentLocalizationManager.FormatListToOr(localizedCurrentNames);
-            var currentSettingsMessage = localizedCurrentNames.Count > 0
-                ? Loc.GetString("access-reader-access-settings-modified-message", ("access", accessesFormatted))
-                : Loc.GetString("access-reader-access-settings-removed-message");
-
-            args.PushMarkup(currentSettingsMessage);
-
-            return;
-        }
-
-        var localizedOriginalNames = GetLocalizedAccessNames(mainAccessReader.Value.Comp.AccessListsOriginal);
-
-        // If the string list is empty either there were no access restrictions or the localized names were invalid
-        if (localizedOriginalNames.Count == 0)
-            return;
-
-        var originalAccessesFormatted = ContentLocalizationManager.FormatListToOr(localizedOriginalNames);
-        var originalSettingsMessage = Loc.GetString(mainAccessReader.Value.Comp.ExaminationText, ("access", originalAccessesFormatted));
-        args.PushMarkup(originalSettingsMessage);
+    }
+    private void OnSetupAccessList(EntityUid uid, AccessReaderComponent component, SetupAccessList args)
+    {
+        component.AccessNames = args.AccessList;
+        Dirty(uid, component);
     }
 
     private void OnGetState(EntityUid uid, AccessReaderComponent component, ref ComponentGetState args)
@@ -111,9 +152,11 @@ public sealed class AccessReaderSystem : EntitySystem
             component.AccessListsOriginal,
             _recordsSystem.Convert(component.AccessKeys),
             component.AccessLog,
-            component.AccessLogLimit);
+            component.AccessLogLimit,
+            component.AccessNames,
+            component.PersonalAccessNames,
+            component.PersonalAccessMode);
     }
-
     private void OnHandleState(EntityUid uid, AccessReaderComponent component, ref ComponentHandleState args)
     {
         if (args.Current is not AccessReaderComponentState state)
@@ -134,6 +177,9 @@ public sealed class AccessReaderSystem : EntitySystem
         component.DenyTags = new(state.DenyTags);
         component.AccessLog = new(state.AccessLog);
         component.AccessLogLimit = state.AccessLogLimit;
+        component.AccessNames = state.AccessNames;
+        component.PersonalAccessNames = state.PersonalAccessNames;
+        component.PersonalAccessMode = state.PersonalAccessMode;
     }
 
     private void OnLinkAttempt(EntityUid uid, AccessReaderComponent component, LinkAttemptEvent args)
@@ -188,6 +234,34 @@ public sealed class AccessReaderSystem : EntitySystem
             args.HasAccess |= LockTypes.Access;
     }
 
+
+    public string? GetIdName(EntityUid user)
+    {
+        string? actorName = null;
+        var accessSources = FindPotentialAccessItems(user);
+        foreach (var source in accessSources)
+        {
+            if (TryComp<IdCardComponent>(source, out var idComp))
+            {
+                if (idComp.FullName != null && idComp.FullName.Length > 0)
+                    actorName = idComp.FullName;
+            }
+            else if (TryComp<PdaComponent>(source, out var pdaComp))
+            {
+                if (pdaComp != null && pdaComp.ContainedId != null)
+                {
+                    if (TryComp<IdCardComponent>(pdaComp.ContainedId, out var idComp2))
+                    {
+                        if (idComp2.FullName != null && idComp2.FullName.Length > 0)
+                            actorName = idComp2.FullName;
+                    }
+                }
+            }
+        }
+        return actorName;
+    }
+
+
     /// <summary>
     /// Searches the source for access tags
     /// then compares it with the all targets accesses to see if it is allowed.
@@ -202,18 +276,181 @@ public sealed class AccessReaderSystem : EntitySystem
 
         if (!reader.Enabled)
             return true;
+        var originalReader = reader;
+        GetMainAccessReader(target, out var readerTrue);
+        if (readerTrue != null)
+        {
+            reader = readerTrue.Value.Comp;
+            target = readerTrue.Value.Owner;
+        }
+        if (!reader.Enabled)
+            return true;
+        if (reader.PersonalAccessMode)
+        {
+            if (reader.PersonalAccessNames.Count < 1)
+            {
+                LogAccess((originalReader.Owner, originalReader), user);
+                return true;
 
+            }
+            string? actorName = null;
+            var accessSources = FindPotentialAccessItems(user);
+            foreach (var source in accessSources)
+            {
+                if (TryComp<IdCardComponent>(source, out var idComp))
+                {
+                    if (idComp.FullName != null && idComp.FullName.Length > 0)
+                        actorName = idComp.FullName;
+                }
+                else if (TryComp<PdaComponent>(source, out var pdaComp))
+                {
+                    if (pdaComp != null && pdaComp.ContainedId != null)
+                    {
+                        if (TryComp<IdCardComponent>(pdaComp.ContainedId, out var idComp2))
+                        {
+                            if (idComp2.FullName != null && idComp2.FullName.Length > 0)
+                                actorName = idComp2.FullName;
+                        }
+                    }
+                }
+            }
+            if (actorName != null)
+            {
+                if (!reader.PersonalAccessNames.Contains(actorName))
+                {
+                    return false;
+                }
+                LogAccess((originalReader.Owner, originalReader), user);
+                return true;
+            }
+        }
+        else
+        {
+            var station = _station.GetOwningStation(target);
+            if (station == null)
+            {
+                LogAccess((originalReader.Owner, originalReader), user);
+                return true;
+            }
+            if (reader.AccessNames.Count < 1)
+            {
+                LogAccess((originalReader.Owner, originalReader), user);
+                return true;
+            }
+
+            var accesses = _station.GetValidAccesses(reader.AccessNames, station.Value);
+            if (accesses.Count < 1)
+            {
+                LogAccess((originalReader.Owner, originalReader), user);
+                return true;
+            }
+            string? actorName = null;
+            var accessSources = FindPotentialAccessItems(user);
+            foreach (var source in accessSources)
+            {
+                if (TryComp<IdCardComponent>(source, out var idComp))
+                {
+                    if (idComp.FullName != null && idComp.FullName.Length > 0)
+                        actorName = idComp.FullName;
+                }
+                else if (TryComp<PdaComponent>(source, out var pdaComp))
+                {
+                    if (pdaComp != null && pdaComp.ContainedId != null)
+                    {
+                        if (TryComp<IdCardComponent>(pdaComp.ContainedId, out var idComp2))
+                        {
+                            if (idComp2.FullName != null && idComp2.FullName.Length > 0)
+                                actorName = idComp2.FullName;
+                        }
+                    }
+                }
+            }
+            if (actorName != null)
+            {
+
+                if (TryComp(station, out StationDataComponent? sD))
+                {
+                    if (sD.Owners.Contains(actorName))
+                    {
+                        LogAccess((originalReader.Owner, originalReader), user);
+                        return true;
+                    }
+                }
+
+                if (!TryComp(station, out CrewRecordsComponent? crewRecords))
+                {
+                    crewRecords = null;
+                    return false;
+                }
+                if (crewRecords == null) return true;
+                crewRecords.TryGetRecord(actorName, out var record);
+
+                if (!TryComp(station, out CrewAssignmentsComponent? stationData))
+                {
+                    LogAccess((originalReader.Owner, originalReader), user);
+                    return true;
+                }
+                if (!TryComp(station, out CrewAccessesComponent? crewAccesses))
+                {
+                    LogAccess((originalReader.Owner, originalReader), user);
+                    return true;
+                }
+                if (record == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    if (stationData != null)
+                    {
+                        if (!stationData.TryGetAssignment(record.AssignmentID, out var assignment) || assignment == null) return false;
+                        foreach (var access1 in accesses)
+                        {
+                            if (assignment.AccessIDs.Contains(access1))
+                            {
+                                LogAccess((originalReader.Owner, originalReader), user);
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public bool CanSpend(EntityUid user, EntityUid target, AccessReaderComponent? reader = null, int toSpend = 0)
+    {
+        string? actorName = null;
         var accessSources = FindPotentialAccessItems(user);
-        var access = FindAccessTags(user, accessSources);
-        FindStationRecordKeys(user, out var stationKeys, accessSources);
+        var station = _station.GetOwningStation(target);
+        foreach (var source in accessSources)
+        {
+            if (TryComp<IdCardComponent>(source, out var idComp))
+            {
+                if (idComp.FullName != null && idComp.FullName.Length > 0)
+                    actorName = idComp.FullName;
+            }
+            else if (TryComp<PdaComponent>(source, out var pdaComp))
+            {
+                if (pdaComp != null && pdaComp.ContainedId != null)
+                {
+                    if (TryComp<IdCardComponent>(pdaComp.ContainedId, out var idComp2))
+                    {
+                        if (idComp2.FullName != null && idComp2.FullName.Length > 0)
+                            actorName = idComp2.FullName;
+                    }
+                }
+            }
+        }
+        if (actorName != null && station != null)
+        {
 
-        if (!IsAllowed(access, stationKeys, target, reader))
-            return false;
-
-        if (!_tag.HasTag(user, PreventAccessLoggingTag))
-            LogAccess((target, reader), user);
-
-        return true;
+            return _station.CanSpend(actorName, station.Value, toSpend);
+        }
+        return false;
     }
 
     /// <summary>
@@ -379,6 +616,99 @@ public sealed class AccessReaderSystem : EntitySystem
 
         return (ICollection<ProtoId<AccessLevelPrototype>>?)tags ?? Array.Empty<ProtoId<AccessLevelPrototype>>();
     }
+    public ICollection<int> FindAccessTagsAssignments(EntityUid targetUID, EntityUid owningStationUID)
+    {
+        HashSet<EntityUid>? items = null;
+        HashSet<int>? ids = null;
+        // var owned = false;
+
+        //owning person redundant for now but couldnt find an altentive function and maybe it could possible be used with personalacces
+        _station.GetOwning(owningStationUID, out var station, out var owningPerson);
+        if (!TryComp<CrewAssignmentsComponent>(owningStationUID, out var crewAssignments)) return (ICollection<int>?)ids ?? Array.Empty<int>();
+        if (!TryComp<CrewRecordsComponent>(owningStationUID, out var crewRecords)) return (ICollection<int>?)ids ?? Array.Empty<int>();
+
+        items ??= FindPotentialAccessItems(targetUID);
+
+        foreach (var ent in items)
+        {
+            if (TryComp<IdCardComponent>(ent, out var idComp))
+            {
+                if (!crewRecords.TryGetRecord(idComp.FullName ?? "", out var record) || record == null) continue;
+                if (crewAssignments.TryGetAssignment(record.AssignmentID, out var assignment) && assignment != null)
+                {
+                    if (ids == null) ids = new HashSet<int>();
+                    ids.Add(record.AssignmentID);
+                }
+            }
+            else if (TryComp<PdaComponent>(ent, out var pdaComp))
+            {
+                if (pdaComp != null && pdaComp.ContainedId != null)
+                {
+                    if (TryComp<IdCardComponent>(pdaComp.ContainedId, out var idComp2))
+                    {
+                        if (!crewRecords.TryGetRecord(idComp2.FullName ?? "", out var record) || record == null) continue;
+                        if (crewAssignments.TryGetAssignment(record.AssignmentID, out var assignment) && assignment != null)
+                        {
+                            if (ids == null) ids = new HashSet<int>();
+                            ids.Add(record.AssignmentID);
+                        }
+                    }
+                }
+            }
+        }
+
+        return (ICollection<int>?)ids ?? Array.Empty<int>();
+    }
+
+    public string GetAssignmentNameFromId(EntityUid entityUID, int assignmentId)
+    {
+        string assignmentName = "Invalid";
+        var stationUID = _station.GetOwningStation(entityUID);
+        if (!TryComp<CrewAssignmentsComponent>(stationUID, out var crewAssignments)) return assignmentName;
+
+
+        crewAssignments.TryGetAssignment(assignmentId, out var assignment);
+        if (assignment == null) return assignmentName;
+        assignmentName = assignment.Name;
+
+        return assignmentName;
+    }
+
+    public ICollection<string> FindAccessTagsNames(EntityUid targetUID)
+    {
+        HashSet<EntityUid>? items = null;
+        HashSet<string>? names = null;
+
+        items ??= FindPotentialAccessItems(targetUID);
+
+        foreach (var ent in items)
+        {
+            if (TryComp<IdCardComponent>(ent, out var idComp))
+            {
+                if (idComp.FullName != null)
+                {
+                    if (names == null) names = new HashSet<string>();
+                    names.Add(idComp.FullName);
+                }
+            }
+            else if (TryComp<PdaComponent>(ent, out var pdaComp))
+            {
+                if (pdaComp != null && pdaComp.ContainedId != null)
+                {
+                    if (TryComp<IdCardComponent>(pdaComp.ContainedId, out var idComp2))
+                    {
+                        if (idComp2.FullName != null)
+                        {
+                            if (names == null) names = new HashSet<string>();
+                            names.Add(idComp2.FullName);
+                        }
+                    }
+                }
+            }
+        }
+
+        return (ICollection<string>?)names ?? Array.Empty<string>();
+    }
 
     /// <summary>
     /// Finds any station record keys on an entity.
@@ -470,6 +800,47 @@ public sealed class AccessReaderSystem : EntitySystem
         if (CanConfigureAccessReader(ent))
         {
             SetAccesses(ent, accesses);
+        }
+    }
+
+    public void TryChangeMode(Entity<AccessReaderComponent> ent)
+    {
+        if (CanConfigureAccessReader(ent))
+        {
+            ent.Comp.PersonalAccessMode = !ent.Comp.PersonalAccessMode;
+            Dirty(ent);
+        }
+    }
+    public void TryAddPersonalAccess(Entity<AccessReaderComponent> ent, string access)
+    {
+        if (CanConfigureAccessReader(ent))
+        {
+            if (ent.Comp.PersonalAccessNames.Contains(access)) return;
+            ent.Comp.PersonalAccessNames.Add(access);
+            Dirty(ent);
+        }
+    }
+    public void TryTogglePersonalAccess(Entity<AccessReaderComponent> ent, string access)
+    {
+        if (CanConfigureAccessReader(ent))
+        {
+            ent.Comp.PersonalAccessNames.Remove(access);
+            Dirty(ent);
+        }
+    }
+    public void TryToggleAccess(Entity<AccessReaderComponent> ent, string access)
+    {
+        if (CanConfigureAccessReader(ent))
+        {
+            if (ent.Comp.AccessNames.Contains(access))
+            {
+                ent.Comp.AccessNames.Remove(access);
+            }
+            else
+            {
+                ent.Comp.AccessNames.Add(access);
+            }
+            Dirty(ent);
         }
     }
 
@@ -864,7 +1235,7 @@ public sealed class AccessReaderSystem : EntitySystem
     private bool FindAccessTagsItem(EntityUid uid, out HashSet<ProtoId<AccessLevelPrototype>> tags)
     {
         tags = new();
-        var ev = new GetAccessTagsEvent(tags, _prototype);
+        var ev = new GetAccessTagsEvent(tags, ProtoMan);
         RaiseLocalEvent(uid, ref ev);
 
         return tags.Count != 0;
@@ -940,7 +1311,7 @@ public sealed class AccessReaderSystem : EntitySystem
                 ent.Comp.AccessLog.Dequeue();
         }
 
-        var stationTime = accessTime ?? _gameTiming.CurTime.Subtract(_gameTicker.RoundStartTimeSpan);
+        var stationTime = DateTime.Now;
         ent.Comp.AccessLog.Enqueue(new AccessRecord(stationTime, name));
 
         Dirty(ent);
@@ -961,7 +1332,7 @@ public sealed class AccessReaderSystem : EntitySystem
             {
                 var accessName = Loc.GetString("access-reader-unknown-id");
 
-                if (_prototype.Resolve(access, out var accessProto) && !string.IsNullOrWhiteSpace(accessProto.Name))
+                if (ProtoMan.Resolve(access, out var accessProto) && !string.IsNullOrWhiteSpace(accessProto.Name))
                     accessName = Loc.GetString(accessProto.Name);
 
                 sb.Append(Loc.GetString("access-reader-access-label", ("access", accessName)));
@@ -980,3 +1351,12 @@ public sealed class AccessReaderSystem : EntitySystem
         return localizedNames;
     }
 }
+
+// Moffstation - Begin - Access reader with events
+[ByRefEvent, Serializable, NetSerializable]
+public sealed partial class ShowAccessReaderSettingsEvent() : EntityEventArgs, IInventoryRelayEvent
+{
+    public bool CanShowSettings;
+    public SlotFlags TargetSlots => SlotFlags.WITHOUT_POCKET;
+}
+// Moffstation - End

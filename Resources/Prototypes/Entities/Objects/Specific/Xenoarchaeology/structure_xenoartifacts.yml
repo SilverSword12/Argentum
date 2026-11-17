@@ -1,9 +1,8 @@
-﻿- type: entity
+- type: entity
   parent: [BaseStructureDynamic, BaseXenoArtifact]
   id: BaseXenoArtifactStructure
   name: artifact
   abstract: true
-  noSpawn: true
   components:
   # Visual
   - type: Sprite
@@ -42,11 +41,29 @@
         - MachineMask
 
 - type: entity
+  id: DummyArtifactStructure
+  parent: BaseXenoArtifactStructure
+  name: artifact
+  suffix: Debug
+  components:
+  - type: XenoArtifact
+    isGenerationRequired: false
+
+- type: entity
   parent: BaseXenoArtifactStructure
   id: ComplexXenoArtifact
   components:
   - type: XenoArtifact
     nodeCount:
-      min: 9
+      min: 13
+      max: 26
+    segmentSize:
+      min: 8
       max: 13
+    nodesPerSegmentLayer:
+      min: 1
+      max: 4
+    scatterPerLayer:
+      min: 0
+      max: 4
 

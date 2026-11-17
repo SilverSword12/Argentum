@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Client.IoC;
 using Content.Client.Items;
 using Content.Client.Resources;
@@ -9,6 +8,7 @@ using Robust.Client.Animations;
 using Robust.Client.Graphics;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
+using System.Numerics;
 
 namespace Content.Client.Weapons.Ranged.Systems;
 
@@ -155,6 +155,30 @@ public sealed partial class GunSystem
 
             _bullets.Capacity = max;
             _bullets.Count = count;
+        }
+    }
+
+    public sealed class CustomIconStatusControl : Control
+    {
+        private readonly CustomBulletRenderer _customBulletRenderer;
+
+        public CustomIconStatusControl(Texture loadedSprite, Texture spentTexture, int numberOfRows)
+        {
+            MinHeight = 15;
+            HorizontalExpand = true;
+            VerticalAlignment = VAlignment.Center;
+
+            AddChild(_customBulletRenderer = new CustomBulletRenderer(loadedSprite, spentTexture, numberOfRows)
+            {
+                HorizontalAlignment = HAlignment.Right,
+                VerticalAlignment = VAlignment.Bottom,
+            });
+        }
+
+        public void Update(int count, int capacity)
+        {
+            _customBulletRenderer.Capacity = capacity;
+            _customBulletRenderer.Count = count;
         }
     }
 

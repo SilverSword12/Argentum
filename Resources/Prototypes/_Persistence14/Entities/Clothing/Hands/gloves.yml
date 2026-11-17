@@ -1,0 +1,42 @@
+- type: entity
+  parent: [ClothingHandsBase, BaseCommandContraband]
+  id: ClothingHandsGlovesExec
+  name: executive gloves
+  description: Regal red gloves with gold trims. A rare case of function and fashion.
+  components:
+  - type: Sprite
+    sprite: _Persistence14/Clothing/Hands/Gloves/exec.rsi
+  - type: Clothing
+    sprite: _Persistence14/Clothing/Hands/Gloves/exec.rsi
+  - type: Insulated
+  - type: Fiber
+    fiberMaterial: fibers-durathread
+    fiberColor: fibers-regal-red
+  - type: FingerprintMask
+
+- type: entity
+  parent: [ClothingHandsBase, BaseCommandContraband]
+  id: ClothingHandsGlovesNCC
+  name: nexus central command gloves
+  description: Gorgeous purple gloves with moonlit silver trim. Fit for command.
+  components:
+  - type: Sprite
+    sprite: _Persistence14/Clothing/Hands/Gloves/ncc.rsi
+  - type: Clothing
+    sprite: _Persistence14/Clothing/Hands/Gloves/ncc.rsi
+  - type: Insulated
+  - type: Fiber
+    fiberMaterial: fibers-durathread
+    fiberColor: fibers-purple
+  - type: FingerprintMask
+
+- type: entity
+  parent: ClothingHandsButcherable
+  id: ClothingHandsGlovesThreshPriest
+  name: threshold's embrace long gloves
+  description: WIP
+  components:
+  - type: Sprite
+    sprite: _Persistence14/Clothing/Hands/Gloves/threshpriest.rsi
+  - type: Clothing
+    sprite: _Persistence14/Clothing/Hands/Gloves/threshpriest.rsi

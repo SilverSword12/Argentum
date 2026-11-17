@@ -1,3 +1,4 @@
+using System.Numerics;
 using Robust.Shared.GameStates;
 using Robust.Shared.Serialization;
 
@@ -10,11 +11,22 @@ namespace Content.Shared.Shuttles.Components
     public abstract partial class SharedShuttleConsoleComponent : Component
     {
         public static string DiskSlotName = "disk_slot";
+
+        [ViewVariables(VVAccess.ReadWrite)]
+        public Vector2? Waypoint = null;
     }
 
     [Serializable, NetSerializable]
     public enum ShuttleConsoleUiKey : byte
     {
         Key,
+    }
+
+    [Serializable, NetSerializable]
+    public enum ShuttleDampingMode : byte
+    {
+        Cruise,
+        Normal,
+        Anchor,
     }
 }

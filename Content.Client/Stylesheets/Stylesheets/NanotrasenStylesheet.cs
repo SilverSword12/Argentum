@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Content.Client.Stylesheets.Fonts;
 using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface;
@@ -8,8 +8,7 @@ using static Robust.Client.UserInterface.StylesheetHelpers;
 
 namespace Content.Client.Stylesheets.Stylesheets;
 
-[Virtual]
-public partial class NanotrasenStylesheet : CommonStylesheet
+public sealed partial class NanotrasenStylesheet : CommonStylesheet
 {
     public override string StylesheetName => "Nanotrasen";
 

@@ -10,13 +10,16 @@
   - type: Item
     size: Small
     storedRotation: -90
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 0
+      Glass: 100
 
 - type: entity
   parent: [ClothingEyesBase, BaseFoldable]
   id: ClothingHeadEyeBaseFlippable
   abstract: true
   components:
-  - type: Appearance
   - type: FlippableClothingVisuals
   - type: Foldable
     canFoldInsideContainer: true

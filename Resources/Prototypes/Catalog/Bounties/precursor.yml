@@ -1,0 +1,21 @@
+- type: cargoBounty
+  id: BountyPrecursorSpaceDrugs
+  reward: 10000
+  description: bounty-description-artifact
+  group: PrecursorBounty
+  successXP: -200
+  idPrefix: PREC-
+  condition:
+    reagent: SpaceDrugs
+    quantity: 250
+
+- type: cargoBounty
+  id: BountyPrecursorDesoxyephedrine
+  reward: 10000
+  description: bounty-description-artifact
+  group: PrecursorBounty
+  successXP: -200
+  idPrefix: PREC-
+  condition:
+    reagent: Desoxyephedrine
+    quantity: 200

@@ -1,4 +1,3 @@
-using Content.Server.Power.Components;
 using Content.Server.Power.EntitySystems;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.EntitySystems;
@@ -7,7 +6,7 @@ using Content.Shared.Power;
 namespace Content.Server.Chemistry.EntitySystems;
 
 /// <inheritdoc/>
-public sealed class SolutionContainerMixerSystem : SharedSolutionContainerMixerSystem
+public sealed partial class SolutionContainerMixerSystem : SharedSolutionContainerMixerSystem
 {
     /// <inheritdoc/>
     public override void Initialize()

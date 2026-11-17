@@ -1,16 +1,16 @@
 using Content.Shared.ActionBlocker;
+using Content.Shared.Emoting;
 using Content.Shared.Hands;
 using Content.Shared.Interaction.Events;
 using Content.Shared.Item;
-using Content.Shared.Emoting;
 using Content.Shared.Movement.Events;
 
 namespace Content.Shared.Puppet;
 
 // TODO deduplicate with BlockMovementComponent
-public abstract class SharedVentriloquistPuppetSystem : EntitySystem
+public abstract partial class SharedVentriloquistPuppetSystem : EntitySystem
 {
-    [Dependency] private readonly ActionBlockerSystem _blocker = default!;
+    [Dependency] private ActionBlockerSystem _blocker = default!;
 
     public override void Initialize()
     {

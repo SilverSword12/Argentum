@@ -1,5 +1,5 @@
-using System.Numerics;
 using Content.Server.Administration.Logs;
+using Content.Server.Singularity.Components;
 using Content.Server.Singularity.Events;
 using Content.Shared.Database;
 using Content.Shared.Mind.Components;
@@ -15,6 +15,7 @@ using Robust.Shared.Physics.Events;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using System.Numerics;
 
 namespace Content.Server.Singularity.EntitySystems;
 
@@ -22,29 +23,27 @@ namespace Content.Server.Singularity.EntitySystems;
 /// The entity system primarily responsible for managing <see cref="EventHorizonComponent"/>s.
 /// Handles their consumption of entities.
 /// </summary>
-public sealed class EventHorizonSystem : SharedEventHorizonSystem
+public sealed partial class EventHorizonSystem : SharedEventHorizonSystem
 {
     #region Dependencies
-    [Dependency] private readonly EntityLookupSystem _lookup = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IMapManager _mapMan = default!;
-    [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-    [Dependency] private readonly SharedContainerSystem _containerSystem = default!;
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] private readonly SharedTransformSystem _xformSystem = default!;
-    [Dependency] private readonly SharedMapSystem _mapSystem = default!;
-    [Dependency] private readonly TagSystem _tagSystem = default!;
+    [Dependency] private EntityLookupSystem _lookup = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IAdminLogManager _adminLogger = default!;
+    [Dependency] private SharedContainerSystem _containerSystem = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private SharedTransformSystem _xformSystem = default!;
+    [Dependency] private SharedMapSystem _mapSystem = default!;
+    [Dependency] private TagSystem _tagSystem = default!;
+    [Dependency] private WhiteHoleSystem _whiteHole = default!;
+
+    [Dependency] private EntityQuery<PhysicsComponent> _physicsQuery = default!;
     #endregion Dependencies
 
     private static readonly ProtoId<TagPrototype> HighRiskItemTag = "HighRiskItem";
 
-    private EntityQuery<PhysicsComponent> _physicsQuery;
-
     public override void Initialize()
     {
         base.Initialize();
-
-        _physicsQuery = GetEntityQuery<PhysicsComponent>();
 
         SubscribeLocalEvent<MapGridComponent, EventHorizonAttemptConsumeEntityEvent>(PreventConsume);
         SubscribeLocalEvent<StationDataComponent, EventHorizonAttemptConsumeEntityEvent>(PreventConsume);
@@ -128,9 +127,30 @@ public sealed class EventHorizonSystem : SharedEventHorizonSystem
         if (EntityManager.IsQueuedForDeletion(morsel)) // already handled, and we're substepping
             return;
 
+        // If this is a mind entity, redirect to white hole as before
         if (HasComp<MindContainerComponent>(morsel)
-            || _tagSystem.HasTag(morsel, HighRiskItemTag)
-            || HasComp<ContainmentFieldGeneratorComponent>(morsel))
+            && _whiteHole.TrySendMindEntityToLinkedWhiteHole(hungry, morsel))
+        {
+            _adminLogger.Add(LogType.EntityDelete, LogImpact.High,
+                $"{ToPrettyString(morsel):player} entered the event horizon of {ToPrettyString(hungry)} and was redirected through the linked white hole");
+
+            // Only notify the singularity side so energy/effects still update.
+            // Do not raise consumed events on the redirected entity, as that path can consume body containers (organs).
+            var teleported = new EntityConsumedByEventHorizonEvent(morsel, hungry, eventHorizon, outerContainer);
+            RaiseLocalEvent(hungry, ref teleported);
+            return;
+        }
+
+        // Only delete entities with the Structure tag, or entities with SinguloFoodComponent (regardless of tag)
+        var isSinguloFood = HasComp<SinguloFoodComponent>(morsel);
+        var structureTag = "Structure";
+        var isStructure = _tagSystem.HasTag(morsel, structureTag);
+
+        if (!isSinguloFood && !isStructure)
+            return;
+
+        // For logging, keep HighRiskItem and ContainmentFieldGeneratorComponent as high impact
+        if (_tagSystem.HasTag(morsel, HighRiskItemTag) || HasComp<ContainmentFieldGeneratorComponent>(morsel))
         {
             _adminLogger.Add(LogType.EntityDelete, LogImpact.High, $"{ToPrettyString(morsel):player} entered the event horizon of {ToPrettyString(hungry)} and was deleted");
         }
@@ -312,7 +332,7 @@ public sealed class EventHorizonSystem : SharedEventHorizonSystem
         var box = Box2.CenteredAround(mapPos.Position, new Vector2(range, range));
         var circle = new Circle(mapPos.Position, range);
         var grids = new List<Entity<MapGridComponent>>();
-        _mapMan.FindGridsIntersecting(mapPos.MapId, box, ref grids);
+        _mapSystem.FindGridsIntersecting(mapPos.MapId, box, ref grids);
 
         foreach (var grid in grids)
         {

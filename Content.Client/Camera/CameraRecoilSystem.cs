@@ -1,13 +1,13 @@
-using System.Numerics;
 using Content.Shared.Camera;
 using Content.Shared.CCVar;
 using Robust.Shared.Configuration;
+using System.Numerics;
 
 namespace Content.Client.Camera;
 
-public sealed class CameraRecoilSystem : SharedCameraRecoilSystem
+public sealed partial class CameraRecoilSystem : SharedCameraRecoilSystem
 {
-    [Dependency] private readonly IConfigurationManager _configManager = default!;
+    [Dependency] private IConfigurationManager _configManager = default!;
 
     private float _intensity;
 

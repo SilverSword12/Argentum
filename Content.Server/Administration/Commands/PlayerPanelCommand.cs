@@ -1,19 +1,19 @@
-using System.Linq;
 using Content.Server.EUI;
 using Content.Shared.Administration;
 using Robust.Server.Player;
 using Robust.Shared.Console;
+using System.Linq;
 
 namespace Content.Server.Administration.Commands;
 
 [AdminCommand(AdminFlags.Admin)]
-public sealed class PlayerPanelCommand : LocalizedCommands
+public sealed partial class PlayerPanelCommand : LocalizedCommands
 {
-    [Dependency] private readonly IPlayerLocator _locator = default!;
-    [Dependency] private readonly EuiManager _euis = default!;
-    [Dependency] private readonly IPlayerManager _players = default!;
+    [Dependency] private IPlayerLocator _locator = default!;
+    [Dependency] private EuiManager _euis = default!;
+    [Dependency] private IPlayerManager _players = default!;
 
-    public override string Command => "playerpanel";
+    public override string Command => AdminCommandSyntax.NamePlayerPanel;
 
     public override async void Execute(IConsoleShell shell, string argStr, string[] args)
     {

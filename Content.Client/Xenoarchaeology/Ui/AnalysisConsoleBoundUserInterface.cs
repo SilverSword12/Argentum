@@ -1,7 +1,7 @@
 using Content.Shared.Research.Components;
 using Content.Shared.Xenoarchaeology.Equipment.Components;
-using Robust.Client.UserInterface;
 using JetBrains.Annotations;
+using Robust.Client.UserInterface;
 
 namespace Content.Client.Xenoarchaeology.Ui;
 
@@ -26,13 +26,17 @@ public sealed class AnalysisConsoleBoundUserInterface(EntityUid owner, Enum uiKe
         _consoleMenu.OnClose += Close;
         _consoleMenu.OpenCentered();
 
-        _consoleMenu.OnServerSelectionButtonPressed += () =>
-        {
-            SendMessage(new ConsoleServerSelectionMessage());
-        };
+        //_consoleMenu.OnServerSelectionButtonPressed += () =>
+        //{
+        //    SendMessage(new ConsoleServerSelectionMessage());
+        //};
         _consoleMenu.OnExtractButtonPressed += () =>
         {
             SendMessage(new AnalysisConsoleExtractButtonPressedMessage());
+        };
+        _consoleMenu.OnCycleArtifactPressed += forward =>
+        {
+            SendMessage(new AnalysisConsoleCycleArtifactMessage(forward));
         };
     }
 

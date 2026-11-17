@@ -1,6 +1,6 @@
-using System.Linq;
 using Content.Client.CharacterInfo;
 using Content.Client.Gameplay;
+using Content.Client.Lobby.UI.Roles;
 using Content.Client.Stylesheets;
 using Content.Client.UserInterface.Controls;
 using Content.Client.UserInterface.Systems.Character.Controls;
@@ -19,20 +19,20 @@ using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Input.Binding;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using System.Linq;
 using static Content.Client.CharacterInfo.CharacterInfoSystem;
 using static Robust.Client.UserInterface.Controls.BaseButton;
 
 namespace Content.Client.UserInterface.Systems.Character;
 
 [UsedImplicitly]
-public sealed class CharacterUIController : UIController, IOnStateEntered<GameplayState>, IOnStateExited<GameplayState>, IOnSystemChanged<CharacterInfoSystem>
+public sealed partial class CharacterUIController : UIController, IOnStateEntered<GameplayState>, IOnStateExited<GameplayState>, IOnSystemChanged<CharacterInfoSystem>
 {
-    [Dependency] private readonly IEntityManager _ent = default!;
-    [Dependency] private readonly IPlayerManager _player = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private IEntityManager _ent = default!;
+    [Dependency] private IPlayerManager _player = default!;
+    [Dependency] private IPrototypeManager _prototypeManager = default!;
 
     [UISystemDependency] private readonly CharacterInfoSystem _characterInfo = default!;
-    [UISystemDependency] private readonly SpriteSystem _sprite = default!;
 
     public override void Initialize()
     {
@@ -53,6 +53,7 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
 
         _window.OnClose += DeactivateButton;
         _window.OnOpen += ActivateButton;
+        _window.DetailExaminableSubmitButton.OnPressed += OnDetailExaminableSubmit;
 
         CommandBinds.Builder
             .Bind(ContentKeyFunctions.OpenCharacterMenu,
@@ -64,6 +65,9 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
     {
         if (_window != null)
         {
+            _window.OnClose -= DeactivateButton;
+            _window.OnOpen -= ActivateButton;
+            _window.DetailExaminableSubmitButton.OnPressed -= OnDetailExaminableSubmit;
             _window.Close();
             _window = null;
         }
@@ -130,73 +134,34 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
             return;
         }
 
-        var (entity, job, objectives, briefing, entityName) = data;
+        var entity = data.Entity;
+        var job = data.Job;
+        var faction = data.Faction;
+        var bankBal = data.BankBal;
+        var objectives = data.Objectives;
+        var briefing = data.Briefing;
+        var detailExaminable = data.DetailExaminable;
+        var entityName = data.EntityName;
 
         _window.SpriteView.SetEntity(entity);
-
+        _window.TraitsBox.RemoveAllChildren();
+        foreach (var trait in data.Traits)
+        {
+            var traitProto = _prototypeManager.Index(trait);
+            TraitPreferenceSelector traitBar = new(traitProto);
+            traitBar.Checkbox.Disabled = true;
+            traitBar.Checkbox.Pressed = true;
+            _window.TraitsBox.AddChild(traitBar);
+        }
         UpdateRoleType();
-
         _window.NameLabel.Text = entityName;
-        _window.SubText.Text = job;
-        _window.Objectives.RemoveAllChildren();
-        _window.ObjectivesLabel.Visible = objectives.Any();
-
-        foreach (var (groupId, conditions) in objectives)
+        _window.SubText.Text = (faction != null) ? job + " | " + faction : job; // If off-duty don't show faction
+        _window.SubTextBankBal.Text = bankBal;
+        if (detailExaminable != null)
         {
-            var objectiveControl = new CharacterObjectiveControl
-            {
-                Orientation = BoxContainer.LayoutOrientation.Vertical,
-                Modulate = Color.Gray
-            };
-
-
-            var objectiveText = new FormattedMessage();
-            objectiveText.TryAddMarkup(groupId, out _);
-
-            var objectiveLabel = new RichTextLabel
-            {
-                StyleClasses = { StyleClass.TooltipTitle }
-            };
-            objectiveLabel.SetMessage(objectiveText);
-
-            objectiveControl.AddChild(objectiveLabel);
-
-            foreach (var condition in conditions)
-            {
-                var conditionControl = new ObjectiveConditionsControl();
-                conditionControl.ProgressTexture.Texture = _sprite.Frame0(condition.Icon);
-                conditionControl.ProgressTexture.Progress = condition.Progress;
-                var titleMessage = new FormattedMessage();
-                var descriptionMessage = new FormattedMessage();
-                titleMessage.AddText(condition.Title);
-                descriptionMessage.AddText(condition.Description);
-
-                conditionControl.Title.SetMessage(titleMessage);
-                conditionControl.Description.SetMessage(descriptionMessage);
-
-                objectiveControl.AddChild(conditionControl);
-            }
-
-            _window.Objectives.AddChild(objectiveControl);
+            _window.DetailExaminableTextEdit.TextRope = new Rope.Leaf(detailExaminable);
         }
 
-        if (briefing != null)
-        {
-            var briefingControl = new ObjectiveBriefingControl();
-            var text = new FormattedMessage();
-            text.PushColor(Color.Yellow);
-            text.AddText(briefing);
-            briefingControl.Label.SetMessage(text);
-            _window.Objectives.AddChild(briefingControl);
-        }
-
-        var controls = _characterInfo.GetCharacterInfoControls(entity);
-        foreach (var control in controls)
-        {
-            _window.Objectives.AddChild(control);
-        }
-
-        _window.RolePlaceholder.Visible = briefing == null && !controls.Any() && !objectives.Any();
     }
 
     private void OnRoleTypeChanged(MindRoleTypeChangedEvent ev, EntitySessionEventArgs _)
@@ -254,5 +219,14 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
             _characterInfo.RequestCharacterInfo();
             _window.Open();
         }
+    }
+
+    private void OnDetailExaminableSubmit(ButtonEventArgs args)
+    {
+        if (_window == null)
+            return;
+
+        var text = Rope.Collapse(_window.DetailExaminableTextEdit.TextRope).Trim();
+        _characterInfo.UpdateDetailExaminable(text);
     }
 }

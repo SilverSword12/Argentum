@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
 using Content.Shared.Procedural;
 using Content.Shared.Procedural.PostGeneration;
 using Robust.Shared.Random;
+using System.Threading.Tasks;
 
 namespace Content.Server.Procedural.DungeonJob;
 
@@ -10,7 +10,7 @@ public sealed partial class DungeonJob
     /// <summary>
     /// <see cref="CornerClutterDunGen"/>
     /// </summary>
-    private async Task PostGen(CornerClutterDunGen gen, Dungeon dungeon, HashSet<Vector2i> reservedTiles, Random random)
+    private async Task PostGen(CornerClutterDunGen gen, Dungeon dungeon, HashSet<Vector2i> reservedTiles, IRobustRandom random)
     {
         var contentsTable = _prototype.Index(gen.Contents);
 
@@ -27,13 +27,13 @@ public sealed partial class DungeonJob
             // If at least 2 adjacent tiles are blocked consider it a corner
             for (var i = 0; i < 4; i++)
             {
-                var dir = (Direction) (i * 2);
+                var dir = (Direction)(i * 2);
                 blocked = HasWall(tile + dir.ToIntVec());
 
                 if (!blocked)
                     continue;
 
-                var nextDir = (Direction) ((i + 1) * 2 % 8);
+                var nextDir = (Direction)((i + 1) * 2 % 8);
                 blocked = HasWall(tile + nextDir.ToIntVec());
 
                 if (!blocked)

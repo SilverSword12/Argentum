@@ -1,8 +1,8 @@
+using Content.Shared.Cargo.Prototypes;
 using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
-using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype;
 
 namespace Content.Shared.Cargo.Components;
 
@@ -12,8 +12,8 @@ public sealed partial class CargoBountyConsoleComponent : Component
     /// <summary>
     /// The id of the label entity spawned by the print label button.
     /// </summary>
-    [DataField("bountyLabelId", customTypeSerializer: typeof(PrototypeIdSerializer<EntityPrototype>))]
-    public string BountyLabelId = "PaperCargoBountyManifest";
+    [DataField]
+    public EntProtoId BountyLabelId = "PaperCargoBountyManifest";
 
     /// <summary>
     /// The time at which the console will be able to print a label again.
@@ -24,25 +24,25 @@ public sealed partial class CargoBountyConsoleComponent : Component
     /// <summary>
     /// The time between prints.
     /// </summary>
-    [DataField("printDelay")]
+    [DataField]
     public TimeSpan PrintDelay = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// The sound made when printing occurs
     /// </summary>
-    [DataField("printSound")]
+    [DataField]
     public SoundSpecifier PrintSound = new SoundPathSpecifier("/Audio/Machines/printer.ogg");
 
     /// <summary>
     /// The sound made when the bounty is skipped.
     /// </summary>
-    [DataField("skipSound")]
+    [DataField]
     public SoundSpecifier SkipSound = new SoundPathSpecifier("/Audio/Effects/Cargo/ping.ogg");
 
     /// <summary>
     /// The sound made when bounty skipping is denied due to lacking access.
     /// </summary>
-    [DataField("denySound")]
+    [DataField]
     public SoundSpecifier DenySound = new SoundPathSpecifier("/Audio/Effects/Cargo/buzz_two.ogg");
 
     /// <summary>
@@ -56,22 +56,51 @@ public sealed partial class CargoBountyConsoleComponent : Component
     /// </summary>
     [DataField]
     public TimeSpan DenySoundDelay = TimeSpan.FromSeconds(2);
+
+    [DataField]
+    public int SelectedTradeGrid = 0;
 }
 
 [NetSerializable, Serializable]
 public sealed class CargoBountyConsoleState : BoundUserInterfaceState
 {
-    public List<CargoBountyData> Bounties;
+    public Dictionary<ProtoId<CargoBountyGroupPrototype>, List<CargoBountyData>> Bounties;
     public List<CargoBountyHistoryData> History;
     public TimeSpan UntilNextSkip;
-
-    public CargoBountyConsoleState(List<CargoBountyData> bounties, List<CargoBountyHistoryData> history, TimeSpan untilNextSkip)
+    public Dictionary<int, string> PossibleTrades;
+    public int? SelectedTrade;
+    public int TaxRate;
+    public int Exp;
+    public int DemotionExp;
+    public int PromotionExp;
+    public string ILevelTitle;
+    public string Owner;
+    public CargoBountyConsoleState(Dictionary<ProtoId<CargoBountyGroupPrototype>, List<CargoBountyData>> bounties, List<CargoBountyHistoryData> history, TimeSpan untilNextSkip, Dictionary<int, string> possibletrades, int? selectedTrade, int tax, int exp, int demotionExp, int promotionExp, string iLevelTitle, string owner)
     {
         Bounties = bounties;
         History = history;
         UntilNextSkip = untilNextSkip;
+        PossibleTrades = possibletrades;
+        SelectedTrade = selectedTrade;
+        Exp = exp;
+        DemotionExp = demotionExp;
+        PromotionExp = promotionExp;
+        ILevelTitle = iLevelTitle;
+        Owner = owner;
+        TaxRate = tax;
     }
 }
+[Serializable, NetSerializable]
+public sealed class BountyRumorBountiesMessage : BoundUserInterfaceMessage
+{
+    public List<CargoBountyData> RumorBounties;
+
+    public BountyRumorBountiesMessage(List<CargoBountyData> rumorBounties)
+    {
+        RumorBounties = rumorBounties;
+    }
+}
+
 
 [Serializable, NetSerializable]
 public sealed class BountyPrintLabelMessage : BoundUserInterfaceMessage
@@ -83,6 +112,18 @@ public sealed class BountyPrintLabelMessage : BoundUserInterfaceMessage
         BountyId = bountyId;
     }
 }
+
+[Serializable, NetSerializable]
+public sealed class BountyPrintRumorLabelMessage : BoundUserInterfaceMessage
+{
+    public string BountyId;
+
+    public BountyPrintRumorLabelMessage(string bountyId)
+    {
+        BountyId = bountyId;
+    }
+}
+
 
 [Serializable, NetSerializable]
 public sealed class BountySkipMessage : BoundUserInterfaceMessage

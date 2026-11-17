@@ -21,9 +21,9 @@
   - AnomalyLocatorWide
   - HoloprojectorField
   - SignallerAdvanced
-  - DeviceQuantumSpinInverter
   - DeviceDesynchronizer
   - ClothingBackpackHarmpack
+  - TeleporterChipBlank
 
 - type: latheRecipePack
   id: ScienceClothing
@@ -82,7 +82,13 @@
   - AnomalySynchronizerCircuitboard
   - APECircuitboard
   - ArtifactAnalyzerMachineCircuitboard
+  - ArtifactAnalyzerAdvancedMachineCircuitboard
   - ArtifactCrusherMachineCircuitboard
+  - StationTeleportersControlCircuitboard
+  - StationTeleporterMachineCircuitboard
+  - RoboticsConsoleCircuitboard
+  - ResearchComputerCircuitboard
+  - ResearchAndDevelopmentServerMachineCircuitboard
 
 - type: latheRecipePack
   id: CameraBoards
@@ -112,5 +118,7 @@
   - ShuttleConsoleCircuitboard
   - RadarConsoleCircuitboard
   - ThrusterMachineCircuitboard
+  - ThrusterWallmountCircuitboard
   - GyroscopeMachineCircuitboard
+  - GyroscopeFloorMachineCircuitboard
   - MiniGravityGeneratorCircuitboard

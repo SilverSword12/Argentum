@@ -1,7 +1,7 @@
-using System.IO;
 using Lidgren.Network;
 using Robust.Shared.Network;
 using Robust.Shared.Serialization;
+using System.IO;
 
 namespace Content.Shared.Preferences
 {
@@ -19,6 +19,7 @@ namespace Content.Shared.Preferences
         {
             Slot = buffer.ReadInt32();
             var length = buffer.ReadVariableInt32();
+            buffer.AssertAtLeastSize(length);
             using var stream = new MemoryStream(length);
             buffer.ReadAlignedMemory(stream, length);
             Profile = serializer.Deserialize<HumanoidCharacterProfile>(stream);
@@ -30,7 +31,7 @@ namespace Content.Shared.Preferences
             using (var stream = new MemoryStream())
             {
                 serializer.Serialize(stream, Profile);
-                buffer.WriteVariableInt32((int) stream.Length);
+                buffer.WriteVariableInt32((int)stream.Length);
                 stream.TryGetBuffer(out var segment);
                 buffer.Write(segment);
             }

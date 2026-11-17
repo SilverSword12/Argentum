@@ -2,6 +2,7 @@ using Content.Client.Cargo.UI;
 using Content.Shared.Cargo.Components;
 using JetBrains.Annotations;
 using Robust.Client.UserInterface;
+using Robust.Client.UserInterface.Controls;
 
 namespace Content.Client.Cargo.BUI;
 
@@ -26,10 +27,22 @@ public sealed class CargoBountyConsoleBoundUserInterface : BoundUserInterface
             SendMessage(new BountyPrintLabelMessage(id));
         };
 
+        _menu.OnRumorLabelButtonPressed += id =>
+        {
+            SendMessage(new BountyPrintRumorLabelMessage(id));
+        };
+
         _menu.OnSkipButtonPressed += id =>
         {
             SendMessage(new BountySkipMessage(id));
         };
+
+        _menu.PossibleTrades.OnItemSelected += OnPossibleTradeSelected;
+    }
+
+    private void OnPossibleTradeSelected(OptionButton.ItemSelectedEventArgs args)
+    {
+        SendMessage(new CargoConsoleSelectTradeMessage(args.Id));
     }
 
     protected override void UpdateState(BoundUserInterfaceState message)
@@ -39,6 +52,13 @@ public sealed class CargoBountyConsoleBoundUserInterface : BoundUserInterface
         if (message is not CargoBountyConsoleState state)
             return;
 
-        _menu?.UpdateEntries(state.Bounties, state.History, state.UntilNextSkip);
+        _menu?.UpdateEntries(state.Bounties, state.History, state.UntilNextSkip, state);
+    }
+    protected override void ReceiveMessage(BoundUserInterfaceMessage message)
+    {
+        base.ReceiveMessage(message);
+        if (_menu == null) return;
+        if (message is not BountyRumorBountiesMessage rumormsg) return;
+        _menu.UpdateRumor(rumormsg);
     }
 }

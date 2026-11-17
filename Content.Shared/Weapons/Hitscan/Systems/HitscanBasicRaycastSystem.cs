@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Damage.Components;
 using Content.Shared.Database;
@@ -11,23 +10,22 @@ using Robust.Shared.Physics;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
+using System.Numerics;
 
 namespace Content.Shared.Weapons.Hitscan.Systems;
 
-public sealed class HitscanBasicRaycastSystem : EntitySystem
+public sealed partial class HitscanBasicRaycastSystem : EntitySystem
 {
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly ISharedAdminLogManager _log = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private ISharedAdminLogManager _log = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
 
-    private EntityQuery<HitscanBasicVisualsComponent> _visualsQuery;
+    [Dependency] private EntityQuery<HitscanBasicVisualsComponent> _visualsQuery = default!;
 
     public override void Initialize()
     {
         base.Initialize();
-
-        _visualsQuery = GetEntityQuery<HitscanBasicVisualsComponent>();
 
         SubscribeLocalEvent<HitscanBasicRaycastComponent, HitscanTraceEvent>(OnHitscanFired);
     }
@@ -36,7 +34,7 @@ public sealed class HitscanBasicRaycastSystem : EntitySystem
     {
         var shooter = args.Shooter ?? args.Gun;
         var mapCords = _transform.ToMapCoordinates(args.FromCoordinates);
-        var ray = new CollisionRay(mapCords.Position, args.ShotDirection, (int) ent.Comp.CollisionMask);
+        var ray = new CollisionRay(mapCords.Position, args.ShotDirection, (int)ent.Comp.CollisionMask);
         var rayCastResults = _physics.IntersectRay(mapCords.MapId, ray, ent.Comp.MaxDistance, shooter, false);
 
         var target = args.Target;
@@ -67,6 +65,7 @@ public sealed class HitscanBasicRaycastSystem : EntitySystem
         {
             ShotDirection = args.ShotDirection,
             Gun = args.Gun,
+            Hitscan = ent.Owner,
             Shooter = args.Shooter,
             HitEntity = result?.HitEntity,
         };
@@ -79,6 +78,12 @@ public sealed class HitscanBasicRaycastSystem : EntitySystem
 
         var hitEvent = new HitscanRaycastFiredEvent { Data = data };
         RaiseLocalEvent(ent, ref hitEvent);
+
+        if (data.HitEntity != null)
+        {
+            var strikeEvent = new HitscanRaycastStrikeEvent { Data = data };
+            RaiseLocalEvent(data.HitEntity.Value, ref strikeEvent);
+        }
     }
 
     /// <summary>

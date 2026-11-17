@@ -1,4 +1,6 @@
-﻿using Robust.Shared.Serialization;
+using Content.Shared._Persistence14.PersistentIdentifier;
+using Content.Shared._Persistence14.PersistentIdentifier.Reference;
+using Robust.Shared.Serialization;
 
 namespace Content.Shared.Research.Components
 {
@@ -8,13 +10,10 @@ namespace Content.Shared.Research.Components
     [RegisterComponent]
     public sealed partial class ResearchClientComponent : Component
     {
-        public bool ConnectedToServer => Server != null;
-
         /// <summary>
-        /// The server the client is connected to
+        /// The server the client is connected to.
         /// </summary>
-        [ViewVariables(VVAccess.ReadOnly)]
-        public EntityUid? Server { get; set; }
+        public PersistentEntityReference Server = PersistentIdentifierSystem.EmptyId;
     }
 
     /// <summary>

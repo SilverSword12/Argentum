@@ -1,0 +1,34 @@
+# Tier 1
+
+- type: technology
+  id: ModularHudFrames
+  name: research-technology-modular-hud-frames
+  icon:
+    sprite: _Moffstation/Clothing/Eyes/Hud/visor.rsi
+    state: colorful-icon
+  discipline: Arsenal
+  tier: 1
+  cost: 3000 # Price changed for Persistence14
+  recipeUnlocks:
+    ClothingEyesModularHudVisor: 2
+    ClothingEyesModularHudGoggles: 2
+    ClothingEyesModularHudGlasses: 2
+    ClothingEyesModularHudSunglasses: 2
+    ClothingEyesModularHudCheapSunglasses: 2
+    ClothingEyesModularHudJamjars: 2
+    ClothingEyesModularHudPatch: 2
+
+# Tier 2
+
+- type: technology
+  id: ModularHudModulesArsenalT2
+  name: research-technology-modular-hud-modules-arsenal-t2
+  icon:
+    entity: HudModuleFlashImmunity
+  discipline: Arsenal
+  tier: 2
+  cost: 10000 # Price changed for Persistence14
+  technologyPrerequisites:
+  - ModularHudFrames
+  recipeUnlocks:
+    HudModuleFlashImmunity: 2

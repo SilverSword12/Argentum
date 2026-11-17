@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
@@ -16,8 +16,8 @@ namespace Content.Shared.Construction.Prototypes
         [IdDataField]
         public string ID { get; private set; } = default!;
 
-        [DataField("start")]
-        public string? Start { get; private set; }
+        [DataField]
+        public string? Start { get; private set; } = "start";
 
         [DataField("graph", priority: 0)]
         private List<ConstructionGraphNode> _graph = new();
@@ -56,7 +56,7 @@ namespace Content.Shared.Construction.Prototypes
 
         public string[]? PathId(string startNode, string finishNode)
         {
-            if (Path(startNode, finishNode) is not {} path)
+            if (Path(startNode, finishNode) is not { } path)
                 return null;
 
             var nodes = new string[path.Length];
@@ -135,7 +135,7 @@ namespace Content.Shared.Construction.Prototypes
                 foreach (var edge in current.Edges)
                 {
                     var edgeNode = _nodes[edge.Target];
-                    if(cameFrom.ContainsKey(edgeNode)) continue;
+                    if (cameFrom.ContainsKey(edgeNode)) continue;
                     frontier.Enqueue(edgeNode);
                     cameFrom[edgeNode] = current;
                 }

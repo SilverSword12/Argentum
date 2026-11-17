@@ -1,13 +1,15 @@
 using Content.Shared.Destructible;
-using Robust.Shared.Audio.Systems;
 using Robust.Shared.Audio;
+using Robust.Shared.Audio.Systems;
 using Robust.Shared.Network;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Random;
+using Robust.Shared.Prototypes; // Persistence 14: NoGibTag
+using Content.Shared.Tag; // Persistence 14: NoGibTag
 
 namespace Content.Shared.Gibbing;
 
-public sealed class GibbingSystem : EntitySystem
+public sealed partial class GibbingSystem : EntitySystem
 {
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
@@ -15,12 +17,18 @@ public sealed class GibbingSystem : EntitySystem
     [Dependency] private readonly SharedDestructibleSystem _destructible = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly TagSystem _tag = default!; // Persistence 14: NoGibTag
 
     private static readonly SoundSpecifier? GibSound = new SoundCollectionSpecifier("gib", AudioParams.Default.WithVariation(0.025f));
+    private static readonly ProtoId<TagPrototype> NoGibTag = "NoGib"; // Persistence 14: NoGibTag
 
     /// <summary>
-    /// Gibs an entity.
+    /// Attempts to gib an entity.
     /// </summary>
+    /// <remarks>
+    /// <see cref="SharedDestructibleSystem.DestroyEntity" /> gets the final say on if an entity ends up deleted.
+    /// If you want to intercept gibbing, intercept <see cref="DestructionAttemptEvent" />
+    /// </remarks>
     /// <param name="ent">The entity to gib.</param>
     /// <param name="dropGiblets">Whether or not to drop giblets.</param>
     /// <param name="user">The user gibbing the entity, if any.</param>
@@ -32,6 +40,9 @@ public sealed class GibbingSystem : EntitySystem
         // BodySystem handles prediction rather poorly and causes client-sided bugs when we gib on the client
         // This guard can be removed once it is gone and replaced by a prediction-safe system.
         if (!_net.IsServer)
+            return new();
+
+        if (_tag.HasTag(ent, NoGibTag)) // Persistence 14: NoGibTag
             return new();
 
         if (!_destructible.DestroyEntity(ent))

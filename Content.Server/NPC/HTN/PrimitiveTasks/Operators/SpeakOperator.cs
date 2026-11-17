@@ -1,22 +1,22 @@
 using Content.Server.Chat.Systems;
-using Robust.Shared.Timing;
 using Content.Shared.Chat;
 using Content.Shared.Dataset;
 using Content.Shared.Random.Helpers;
 using JetBrains.Annotations;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using Robust.Shared.Timing;
 using static Content.Server.NPC.HTN.PrimitiveTasks.Operators.SpeakOperator.SpeakOperatorSpeech;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 
 public sealed partial class SpeakOperator : HTNOperator
 {
-    [Dependency] private readonly IEntityManager _entMan = default!;
-    [Dependency] private readonly IGameTiming _gameTiming = default!;
+    [Dependency] private IEntityManager _entMan = default!;
+    [Dependency] private IGameTiming _gameTiming = default!;
     private ChatSystem _chat = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     [DataField(required: true)]
     public SpeakOperatorSpeech Speech;

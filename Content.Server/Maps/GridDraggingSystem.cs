@@ -1,18 +1,18 @@
 using Content.Shared.Maps;
 using Robust.Server.Console;
-using Robust.Shared.Utility;
 using Robust.Shared.Physics.Components;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Player;
+using Robust.Shared.Utility;
 
 namespace Content.Server.Maps;
 
 /// <inheritdoc />
-public sealed class GridDraggingSystem : SharedGridDraggingSystem
+public sealed partial class GridDraggingSystem : SharedGridDraggingSystem
 {
-    [Dependency] private readonly IConGroupController _admin = default!;
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] private readonly SharedTransformSystem _transformSystem = default!;
+    [Dependency] private IConGroupController _admin = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private SharedTransformSystem _transformSystem = default!;
 
     private readonly HashSet<ICommonSession> _draggers = new();
 

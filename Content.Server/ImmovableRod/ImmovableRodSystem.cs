@@ -1,6 +1,7 @@
 using Content.Server.Destructible;
 using Content.Server.Polymorph.Components;
 using Content.Server.Popups;
+using Content.Shared._Persistence14.PersistentIdentifier;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Body;
 using Content.Shared.Damage.Systems;
@@ -18,9 +19,9 @@ using Robust.Shared.Random;
 
 namespace Content.Server.ImmovableRod;
 
-public sealed class ImmovableRodSystem : EntitySystem
+public sealed partial class ImmovableRodSystem : EntitySystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     [Dependency] private readonly GibbingSystem _gibbing = default!;
     [Dependency] private readonly PopupSystem _popup = default!;
@@ -66,7 +67,6 @@ public sealed class ImmovableRodSystem : EntitySystem
             _physics.SetFriction(uid, phys, 0f);
             _physics.SetBodyStatus(uid, phys, BodyStatus.InAir);
 
-            var xform = Transform(uid);
             var (worldPos, worldRot) = _transform.GetWorldPositionRotation(uid);
             var vel = worldRot.ToWorldVec() * component.MaxSpeed;
 
@@ -80,7 +80,7 @@ public sealed class ImmovableRodSystem : EntitySystem
             }
 
             _physics.ApplyLinearImpulse(uid, vel, body: phys);
-            xform.LocalRotation = (vel - worldPos).ToWorldAngle() + MathHelper.PiOver2;
+            _transform.SetLocalRotationNoLerp(uid, (vel - worldPos).ToWorldAngle() + MathHelper.PiOver2);
         }
     }
 
@@ -108,32 +108,32 @@ public sealed class ImmovableRodSystem : EntitySystem
             return;
         }
 
-        // dont delete/hurt self if polymoprhed into a rod
+        // Don't delete/hurt self if polymorphed into a rod
         if (TryComp<PolymorphedEntityComponent>(uid, out var polymorphed))
         {
-            if (polymorphed.Parent == ent)
-                return;
+            return;
         }
 
         // gib or damage em
         if (HasComp<BodyComponent>(ent))
         {
             component.MobCount++;
-            _popup.PopupEntity(Loc.GetString("immovable-rod-penetrated-mob", ("rod", uid), ("mob", ent)), uid, PopupType.LargeCaution);
 
-            if (!component.ShouldGib)
+            var coords = Transform(uid).Coordinates;
+
+            _adminLogger.Add(LogType.Gib, LogImpact.Medium, $"Entity {ToPrettyString(uid)} hit {ToPrettyString(ent)} at X:{coords.X} Y:{coords.Y}");
+
+            if (!component.ShouldGib || !_destructible.DestroyEntity(ent))
             {
-                if (component.Damage == null)
+                if (component.Damage is null)
                     return;
 
                 _damageable.TryChangeDamage(ent, component.Damage, ignoreResistances: true);
                 return;
             }
 
-            var coords = Transform(uid).Coordinates;
-            _adminLogger.Add(LogType.Gib, LogImpact.Low, $"Entity {ToPrettyString(uid)} gibbed {ToPrettyString(ent)} at X:{coords.X} Y:{coords.Y}");
-
             _gibbing.Gib(ent);
+            _popup.PopupEntity(Loc.GetString("immovable-rod-penetrated-mob", ("rod", uid), ("mob", ent)), uid, PopupType.LargeCaution);
             return;
         }
 

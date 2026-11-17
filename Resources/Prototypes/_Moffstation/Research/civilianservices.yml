@@ -1,0 +1,49 @@
+# Tier 1
+
+- type: technology
+  id: ModularHudModulesCivilianT1
+  name: research-technology-modular-hud-modules-civilian-t1
+  icon:
+    entity: HudModuleVisionCorrection
+  discipline: CivilianServices
+  tier: 1
+  cost: 600 # Price changed for Persistence14
+  technologyPrerequisites:
+  - ModularHudFrames
+  recipeUnlocks:
+    HudModuleShowContrabandDetails: 2
+    HudModuleVisionCorrection: 2
+
+# Tier 2
+
+- type: technology
+  id: ModularHudModulesCivilianT2Security
+  name: research-technology-modular-hud-modules-civilian-t2-security
+  icon:
+    entity: HudModuleShowCriminalRecordIcons
+  discipline: CivilianServices
+  tier: 2
+  cost: 8750 # Price changed for Persistence14
+  technologyPrerequisites:
+  - ModularHudFrames
+  - ModularHudModulesCivilianT1
+  recipeUnlocks:
+    HudModuleShowJobIcons: 2
+    HudModuleShowMindShieldIcons: 2
+    HudModuleShowCriminalRecordIcons: 2
+
+- type: technology
+  id: ModularHudModulesCivilianT2Medical
+  name: research-technology-modular-hud-modules-civilian-t2-medical
+  icon:
+    entity: HudModuleShowMedicalIcons
+  discipline: CivilianServices
+  tier: 2
+  cost: 8750 # Price changed for Persistence14
+  technologyPrerequisites:
+  - ModularHudFrames
+  - ModularHudModulesCivilianT1
+  recipeUnlocks:
+    HudModuleShowMedicalIcons: 2
+    HudModuleShowHungerIcons: 2
+    HudModuleShowThirstIcons: 2

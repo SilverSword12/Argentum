@@ -1,8 +1,8 @@
+using Content.Shared.Station;
 using JetBrains.Annotations;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 using System.Diagnostics;
-using Content.Shared.Station;
 
 namespace Content.Shared.Maps;
 
@@ -64,6 +64,7 @@ public sealed partial class GameMapPrototype : IPrototype
             ID = ID,
             MapName = MapName,
             MapPath = mapPath,
+            JobWeights = JobWeights,
             _stations = _stations
         };
 #pragma warning restore RA0039

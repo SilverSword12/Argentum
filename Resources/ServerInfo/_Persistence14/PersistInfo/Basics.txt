@@ -1,0 +1,3 @@
+Welcome to Persistence SS14!
+
+In Persistence SS14 the game world and characters are saved and loaded and so the round never ends, nothing is ever reset and the world is built up continously.

@@ -18,11 +18,9 @@ public sealed partial class VoiceMaskNameChangeWindow : FancyWindow
     private List<(string, string)> _verbs = new();
 
     private string? _verb;
-
     public VoiceMaskNameChangeWindow()
     {
         RobustXamlLoader.Load(this);
-
         NameSelectorSet.OnPressed += _ =>
         {
             OnNameChange?.Invoke(NameSelector.Text);
@@ -30,7 +28,7 @@ public sealed partial class VoiceMaskNameChangeWindow : FancyWindow
 
         SpeechVerbSelector.OnItemSelected += args =>
         {
-            OnVerbChange?.Invoke((string?) args.Button.GetItemMetadata(args.Id));
+            OnVerbChange?.Invoke((string?)args.Button.GetItemMetadata(args.Id));
             SpeechVerbSelector.SelectId(args.Id);
         };
 
@@ -62,20 +60,20 @@ public sealed partial class VoiceMaskNameChangeWindow : FancyWindow
     {
         var id = SpeechVerbSelector.ItemCount;
         SpeechVerbSelector.AddItem(name);
-        if (verb is {} metadata)
+        if (verb is { } metadata)
             SpeechVerbSelector.SetItemMetadata(id, metadata);
 
         if (verb == _verb)
             SpeechVerbSelector.SelectId(id);
     }
 
-    public void UpdateState(string name, string? verb, bool active, bool accentHide)
+    public void UpdateState(string name, string? verb, bool active, bool accentHide, LocId titleText)
     {
         NameSelector.Text = name;
         _verb = verb;
         ToggleButton.Pressed = active;
         ToggleAccentButton.Pressed = accentHide;
-
+        Title = Loc.GetString(titleText);
         for (int id = 0; id < SpeechVerbSelector.ItemCount; id++)
         {
             if (string.Equals(verb, SpeechVerbSelector.GetItemMetadata(id)))

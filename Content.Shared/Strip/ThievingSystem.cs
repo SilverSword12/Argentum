@@ -1,13 +1,12 @@
 using Content.Shared.Alert;
 using Content.Shared.Inventory;
 using Content.Shared.Strip.Components;
-using Robust.Shared.GameStates;
 
 namespace Content.Shared.Strip;
 
 public sealed partial class ThievingSystem : EntitySystem
 {
-    [Dependency] private readonly AlertsSystem _alertsSystem = default!;
+    [Dependency] private AlertsSystem _alertsSystem = default!;
 
     public override void Initialize()
     {

@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.IntegrationTests.Tests.Interaction;
 using Content.Server.VendingMachines;
 using Content.Shared.Damage;
@@ -8,6 +7,7 @@ using Content.Shared.Damage.Systems;
 using Content.Shared.FixedPoint;
 using Content.Shared.VendingMachines;
 using Robust.Shared.Prototypes;
+using System.Linq;
 
 namespace Content.IntegrationTests.Tests.Vending;
 
@@ -57,10 +57,11 @@ public sealed class VendingInteractionTest : InteractionTest
 
 - type: entity
   id: {VendingMachineProtoId}
-  parent: VendingMachine
+  parent: BaseVendingMachine
   components:
   - type: VendingMachine
     pack: InteractionTestVendingInventory
+  - type: VendingMachineEject
     ejectDelay: 0 # no delay to speed up tests
   - type: Sprite
     sprite: error.rsi

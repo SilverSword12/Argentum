@@ -18,6 +18,7 @@ namespace Content.Shared.Preferences
         public override void ReadFromBuffer(NetIncomingMessage buffer, IRobustSerializer serializer)
         {
             var length = buffer.ReadVariableInt32();
+            buffer.AssertAtLeastSize(length);
 
             using (var stream = new MemoryStream())
             {
@@ -26,6 +27,7 @@ namespace Content.Shared.Preferences
             }
 
             length = buffer.ReadVariableInt32();
+            buffer.AssertAtLeastSize(length);
             using (var stream = new MemoryStream())
             {
                 buffer.ReadAlignedMemory(stream, length);
@@ -38,7 +40,7 @@ namespace Content.Shared.Preferences
             using (var stream = new MemoryStream())
             {
                 serializer.SerializeDirect(stream, Preferences);
-                buffer.WriteVariableInt32((int) stream.Length);
+                buffer.WriteVariableInt32((int)stream.Length);
                 stream.TryGetBuffer(out var segment);
                 buffer.Write(segment);
             }
@@ -46,7 +48,7 @@ namespace Content.Shared.Preferences
             using (var stream = new MemoryStream())
             {
                 serializer.SerializeDirect(stream, Settings);
-                buffer.WriteVariableInt32((int) stream.Length);
+                buffer.WriteVariableInt32((int)stream.Length);
                 stream.TryGetBuffer(out var segment);
                 buffer.Write(segment);
             }

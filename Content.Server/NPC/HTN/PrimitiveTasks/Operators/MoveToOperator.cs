@@ -1,11 +1,12 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.NPC.Components;
 using Content.Server.NPC.Pathfinding;
 using Content.Server.NPC.Systems;
+using Content.Shared.Movement.Components;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics.Components;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 
@@ -14,7 +15,7 @@ namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 /// </summary>
 public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdown
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
+    [Dependency] private IEntityManager _entManager = default!;
     private NPCSteeringSystem _steering = default!;
     private PathfindingSystem _pathfind = default!;
     private SharedTransformSystem _transform = default!;
@@ -85,10 +86,13 @@ public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdow
             !_entManager.TryGetComponent<PhysicsComponent>(owner, out var body))
             return (false, null);
 
-        if (!_entManager.TryGetComponent<MapGridComponent>(xform.GridUid, out var ownerGrid) ||
-            !_entManager.TryGetComponent<MapGridComponent>(_transform.GetGrid(targetCoordinates), out var targetGrid))
+        if (!_entManager.TryGetComponent<MovementIgnoreGravityComponent>(owner, out var ignoreGrav))
         {
-            return (false, null);
+            if (!_entManager.TryGetComponent<MapGridComponent>(xform.GridUid, out var ownerGrid) ||
+                !_entManager.TryGetComponent<MapGridComponent>(_transform.GetGrid(targetCoordinates), out var targetGrid))
+            {
+                return (false, null);
+            }
         }
 
         var range = blackboard.GetValueOrDefault<float>(RangeKey, _entManager);

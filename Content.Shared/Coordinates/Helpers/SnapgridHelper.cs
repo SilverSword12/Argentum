@@ -1,14 +1,14 @@
-using System.Numerics;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
+using System.Numerics;
 
 namespace Content.Shared.Coordinates.Helpers
 {
     public static class SnapgridHelper
     {
-        public static EntityCoordinates SnapToGrid(this EntityCoordinates coordinates, IEntityManager? entMan = null, IMapManager? mapManager = null)
+        public static EntityCoordinates SnapToGrid(this EntityCoordinates coordinates, IEntityManager? entMan = null)
         {
-            IoCManager.Resolve(ref entMan, ref mapManager);
+            IoCManager.Resolve(ref entMan);
             var xformSys = entMan.System<SharedTransformSystem>();
 
             var gridId = xformSys.GetGrid(coordinates.EntityId);

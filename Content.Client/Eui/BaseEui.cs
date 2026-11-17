@@ -1,12 +1,11 @@
-﻿using Content.Shared.Eui;
-using Robust.Shared.IoC;
+using Content.Shared.Eui;
 using Robust.Shared.Network;
 
 namespace Content.Client.Eui
 {
-    public abstract class BaseEui
+    public abstract partial class BaseEui
     {
-        [Dependency] private readonly IClientNetManager _netManager = default!;
+        [Dependency] private IClientNetManager _netManager = default!;
 
         public EuiManager Manager { get; private set; } = default!;
         public uint Id { get; private set; }
@@ -53,7 +52,7 @@ namespace Content.Client.Eui
         /// <summary>
         ///     Send a message to the server-side implementation.
         /// </summary>
-        protected void SendMessage(EuiMessageBase msg)
+        public void SendMessage(EuiMessageBase msg)
         {
             var netMsg = new MsgEuiMessage();
             netMsg.Id = Id;

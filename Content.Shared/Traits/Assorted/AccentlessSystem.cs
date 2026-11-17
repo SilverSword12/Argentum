@@ -1,11 +1,9 @@
-using Robust.Shared.Serialization.Manager;
-
 namespace Content.Shared.Traits.Assorted;
 
 /// <summary>
 /// This handles removing accents when using the accentless trait.
 /// </summary>
-public sealed class AccentlessSystem : EntitySystem
+public sealed partial class AccentlessSystem : EntitySystem
 {
     /// <inheritdoc/>
     public override void Initialize()

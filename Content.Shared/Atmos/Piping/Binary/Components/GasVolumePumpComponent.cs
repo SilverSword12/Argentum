@@ -1,3 +1,4 @@
+using Content.Shared.Guidebook;
 using Robust.Shared.GameStates;
 
 namespace Content.Shared.Atmos.Piping.Binary.Components;
@@ -7,6 +8,9 @@ public sealed partial class GasVolumePumpComponent : Component
 {
     [DataField, AutoNetworkedField]
     public bool Enabled = true;
+
+    [DataField]
+    public bool DesiredEnabled = false;
 
     [DataField]
     public bool Blocked = false;
@@ -33,6 +37,7 @@ public sealed partial class GasVolumePumpComponent : Component
     public float LowerThreshold = 0.01f;
 
     [DataField]
+    [GuidebookData]
     public float HigherThreshold = DefaultHigherThreshold;
 
     public static readonly float DefaultHigherThreshold = 2 * Atmospherics.MaxOutputPressure;

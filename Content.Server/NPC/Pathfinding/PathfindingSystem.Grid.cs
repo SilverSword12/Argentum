@@ -1,16 +1,17 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Shared.NPC;
 using Content.Shared.Physics;
 using Robust.Shared.Collections;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics;
+using Robust.Shared.Physics.Dynamics;
 using Robust.Shared.Physics.Events;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.NPC.Pathfinding;
 
@@ -20,8 +21,8 @@ public sealed partial class PathfindingSystem
 
     // What relevant collision groups we track for pathfinding.
     // Stuff like chairs have collision but aren't relevant for mobs.
-    public const int PathfindingCollisionMask = (int) CollisionGroup.MobMask;
-    public const int PathfindingCollisionLayer = (int) CollisionGroup.MobLayer;
+    public const int PathfindingCollisionMask = (int)CollisionGroup.MobMask;
+    public const int PathfindingCollisionLayer = (int)CollisionGroup.MobLayer;
 
     /// <summary>
     ///     If true, UpdateGrid() will not process grids.
@@ -96,7 +97,7 @@ public sealed partial class PathfindingSystem
             // TODO: Dump all this shit and just do it live it's probably fast enough.
             if (comp.DirtyChunks.Count == 0 ||
                 curTime < comp.NextUpdate ||
-                !_gridQuery.TryGetComponent(uid, out var mapGridComp))
+                !_mapGridQuery.TryGetComponent(uid, out var mapGridComp))
             {
                 continue;
             }
@@ -272,7 +273,7 @@ public sealed partial class PathfindingSystem
     {
         if (!_fixturesQuery.TryGetComponent(ev.Sender, out var fixtures) ||
             !IsBodyRelevant(fixtures) ||
-            _gridQuery.HasComponent(ev.Sender))
+            _mapGridQuery.HasComponent(ev.Sender))
         {
             return;
         }
@@ -351,8 +352,8 @@ public sealed partial class PathfindingSystem
         foreach (var corner in corners)
         {
             var sampledPoint = new Vector2i(
-                (int) Math.Floor((corner.X) / ChunkSize),
-                (int) Math.Floor((corner.Y) / ChunkSize));
+                (int)Math.Floor((corner.X) / ChunkSize),
+                (int)Math.Floor((corner.Y) / ChunkSize));
 
             chunks.Add(sampledPoint);
         }
@@ -384,27 +385,29 @@ public sealed partial class PathfindingSystem
 
     private byte GetIndex(int x, int y)
     {
-        return (byte) (x * ChunkSize + y);
+        return (byte)(x * ChunkSize + y);
     }
 
     private Vector2i GetOrigin(Vector2 localPos)
     {
-        return new Vector2i((int) Math.Floor(localPos.X / ChunkSize), (int) Math.Floor(localPos.Y / ChunkSize));
+        return new Vector2i((int)Math.Floor(localPos.X / ChunkSize), (int)Math.Floor(localPos.Y / ChunkSize));
     }
 
     private Vector2i GetOrigin(EntityCoordinates coordinates, EntityUid gridUid)
     {
         var localPos = Vector2.Transform(_transform.ToMapCoordinates(coordinates).Position, _transform.GetInvWorldMatrix(gridUid));
-        return new Vector2i((int) Math.Floor(localPos.X / ChunkSize), (int) Math.Floor(localPos.Y / ChunkSize));
+        return new Vector2i((int)Math.Floor(localPos.X / ChunkSize), (int)Math.Floor(localPos.Y / ChunkSize));
     }
 
     private void BuildBreadcrumbs(GridPathfindingChunk chunk, Entity<MapGridComponent> grid)
     {
-        var sw = new Stopwatch();
-        sw.Start();
+        //var sw = new Stopwatch();
+        //sw.Start();
         var points = chunk.Points;
         var gridOrigin = chunk.Origin * ChunkSize;
-        var tileEntities = new ValueList<EntityUid>();
+        var tileEntities = new ValueList<Entity<FixturesComponent>>();
+        var fixtureList = new ValueList<(EntityUid, TransformComponent, ValueList<Fixture>)>();
+
         var chunkPolys = chunk.BufferPolygons;
 
         for (var i = 0; i < chunkPolys.Length; i++)
@@ -441,7 +444,7 @@ public sealed partial class PathfindingSystem
                         continue;
                     }
 
-                    var xform = _xformQuery.GetComponent(ent);
+                    var xform = Transform(ent);
 
                     if (xform.ParentUid != grid.Owner ||
                         _maps.LocalToTile(grid.Owner, grid.Comp, xform.Coordinates) != tilePos)
@@ -449,7 +452,24 @@ public sealed partial class PathfindingSystem
                         continue;
                     }
 
-                    tileEntities.Add(ent);
+                    tileEntities.Add((ent, fixtures));
+                }
+
+                // Cache fixtures list so we resolve everything once.
+                fixtureList.Clear();
+                foreach (var ent in tileEntities)
+                {
+                    if(!TryComp(ent, out TransformComponent? xform))
+                        continue;
+
+                    var entFixtures = new ValueList<Fixture>();
+                    foreach (var fixture in ent.Comp.Fixtures.Values)
+                    {
+                        if (fixture.Hard)
+                            entFixtures.Add(fixture);
+                    }
+
+                    fixtureList.Add((ent.Owner, xform, entFixtures));
                 }
 
                 for (var subX = 0; subX < SubStep; subX++)
@@ -460,23 +480,17 @@ public sealed partial class PathfindingSystem
                         var yOffset = y * SubStep + subY;
 
                         // Subtile
-                        var localPos = new Vector2(StepOffset + gridOrigin.X + x + (float) subX / SubStep, StepOffset + gridOrigin.Y + y + (float) subY / SubStep);
+                        var localPos = new Vector2(StepOffset + gridOrigin.X + x + (float)subX / SubStep, StepOffset + gridOrigin.Y + y + (float)subY / SubStep);
                         var collisionMask = 0x0;
                         var collisionLayer = 0x0;
                         var damage = 0f;
 
-                        foreach (var ent in tileEntities)
+                        foreach (var (ent, xform, fixtures) in fixtureList)
                         {
-                            if (!_fixturesQuery.TryGetComponent(ent, out var fixtures))
-                                continue;
-
                             var colliding = false;
-
-                            foreach (var fixture in fixtures.Fixtures.Values)
+                            foreach (var fixture in fixtures)
                             {
-                                // Don't need to re-do it.
-                                if (!fixture.Hard ||
-                                    (collisionMask & fixture.CollisionMask) == fixture.CollisionMask &&
+                                if ((collisionMask & fixture.CollisionMask) == fixture.CollisionMask &&
                                     (collisionLayer & fixture.CollisionLayer) == fixture.CollisionLayer)
                                 {
                                     continue;
@@ -491,10 +505,10 @@ public sealed partial class PathfindingSystem
                                         continue;
 
                                     intersects = true;
+                                    break;
                                 }
 
-                                if (!intersects ||
-                                    !_xformQuery.TryGetComponent(ent, out var xform))
+                                if (!intersects)
                                 {
                                     continue;
                                 }
@@ -513,7 +527,7 @@ public sealed partial class PathfindingSystem
                             if (!colliding)
                                 continue;
 
-                            if (_accessQuery.HasComponent(ent))
+                            if (_accessReaderQuery.HasComponent(ent))
                             {
                                 flags |= PathfindingBreadcrumbFlag.Access;
                             }
@@ -618,8 +632,8 @@ public sealed partial class PathfindingSystem
 
                 foreach (var poly in tilePolys)
                 {
-                    var box = new Box2((Vector2) poly.BottomLeft / SubStep + polyOffset,
-                        (Vector2) (poly.TopRight + Vector2i.One) / SubStep + polyOffset);
+                    var box = new Box2((Vector2)poly.BottomLeft / SubStep + polyOffset,
+                        (Vector2)(poly.TopRight + Vector2i.One) / SubStep + polyOffset);
                     var polyData = points[x * SubStep + poly.Left, y * SubStep + poly.Bottom].Data;
 
                     var neighbors = new HashSet<PathPoly>();
@@ -730,7 +744,7 @@ public sealed partial class PathfindingSystem
                     var enlarged = poly.Box.Enlarged(StepOffset);
 
                     // Shouldn't need to wraparound as previous neighbors would've handled us.
-                    for (var j = (byte) (i + 1); j < tile.Count; j++)
+                    for (var j = (byte)(i + 1); j < tile.Count; j++)
                     {
                         var neighbor = tile[j];
                         var enlargedNeighbor = neighbor.Box.Enlarged(StepOffset);

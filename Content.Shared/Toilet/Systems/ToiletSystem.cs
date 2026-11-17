@@ -1,11 +1,11 @@
 using Content.Shared.Buckle.Components;
 using Content.Shared.Interaction;
-using Content.Shared.Verbs;
 using Content.Shared.Plunger.Components;
+using Content.Shared.Toilet.Components;
+using Content.Shared.Verbs;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Random;
 using Robust.Shared.Utility;
-using Content.Shared.Toilet.Components;
 
 namespace Content.Shared.Toilet.Systems;
 
@@ -13,11 +13,11 @@ namespace Content.Shared.Toilet.Systems;
 /// Handles sprite changes for both toilet seat up and down as well as for lid
 /// open and closed.
 /// </summary>
-public sealed class ToiletSystem : EntitySystem
+public sealed partial class ToiletSystem : EntitySystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
 
     public override void Initialize()
     {

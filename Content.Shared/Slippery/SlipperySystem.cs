@@ -13,35 +13,31 @@ using JetBrains.Annotations;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
 using Robust.Shared.Physics.Components;
-using Robust.Shared.Physics.Systems;
 using Robust.Shared.Physics.Events;
+using Robust.Shared.Physics.Systems;
 
 namespace Content.Shared.Slippery;
 
 [UsedImplicitly]
-public sealed class SlipperySystem : EntitySystem
+public sealed partial class SlipperySystem : EntitySystem
 {
-    [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
-    [Dependency] private readonly MovementModStatusSystem _movementMod = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedStunSystem _stun = default!;
-    [Dependency] private readonly StatusEffectsSystem _status = default!;
-    [Dependency] private readonly SharedStaminaSystem _stamina = default!;
-    [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-    [Dependency] private readonly SpeedModifierContactsSystem _speedModifier = default!;
+    [Dependency] private ISharedAdminLogManager _adminLogger = default!;
+    [Dependency] private MovementModStatusSystem _movementMod = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedStunSystem _stun = default!;
+    [Dependency] private StatusEffectsSystem _status = default!;
+    [Dependency] private SharedStaminaSystem _stamina = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private SpeedModifierContactsSystem _speedModifier = default!;
 
-    private EntityQuery<KnockedDownComponent> _knockedDownQuery;
-    private EntityQuery<PhysicsComponent> _physicsQuery;
-    private EntityQuery<SlidingComponent> _slidingQuery;
+    [Dependency] private EntityQuery<KnockedDownComponent> _knockedDownQuery = default!;
+    [Dependency] private EntityQuery<PhysicsComponent> _physicsQuery = default!;
+    [Dependency] private EntityQuery<SlidingComponent> _slidingQuery = default!;
 
     public override void Initialize()
     {
         base.Initialize();
-
-        _knockedDownQuery = GetEntityQuery<KnockedDownComponent>();
-        _physicsQuery = GetEntityQuery<PhysicsComponent>();
-        _slidingQuery = GetEntityQuery<SlidingComponent>();
 
         SubscribeLocalEvent<SlipperyComponent, StepTriggerAttemptEvent>(HandleAttemptCollide);
         SubscribeLocalEvent<SlipperyComponent, StepTriggeredOffEvent>(HandleStepTrigger);
@@ -184,7 +180,7 @@ public sealed class SlipAttemptEvent : EntityEventArgs, IInventoryRelayEvent
 /// </summary>
 /// <param name="Cancelled">If the slip should be cancelled</param>
 [ByRefEvent]
-public record struct SlipCausingAttemptEvent (bool Cancelled);
+public record struct SlipCausingAttemptEvent(bool Cancelled);
 
 /// Raised on an entity that CAUSED some other entity to slip (e.g., the banana peel).
 /// <param name="Slipped">The entity being slipped</param>

@@ -23,8 +23,8 @@ namespace Content.Client.Chemistry.UI
     [GenerateTypedNameReferences]
     public sealed partial class ChemMasterWindow : FancyWindow
     {
-        [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-        [Dependency] private readonly IEntityManager _entityManager = default!;
+        [Dependency] private IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IEntityManager _entityManager = default!;
 
         private readonly SpriteSystem _sprite;
 
@@ -32,6 +32,9 @@ namespace Content.Client.Chemistry.UI
         public readonly Button[] PillTypeButtons;
 
         private const string PillsRsiPath = "/Textures/Objects/Specific/Chemistry/pills.rsi";
+
+        private List<ReagentItem> _bufferReagents = [];
+        private ChemMasterSortingType _sortType;
 
         /// <summary>
         /// Create and initialize the chem master UI client-side. Creates the basic layout,
@@ -93,6 +96,8 @@ namespace Content.Client.Chemistry.UI
 
             Tabs.SetTabTitle(0, Loc.GetString("chem-master-window-input-tab"));
             Tabs.SetTabTitle(1, Loc.GetString("chem-master-window-output-tab"));
+
+            SearchBar.OnTextChanged += _ => FilterBufferReagents();
         }
 
         private ReagentButton MakeReagentButton(string text, ChemMasterReagentAmount amount, ReagentId id, bool isBuffer, string styleClass)
@@ -118,10 +123,10 @@ namespace Content.Client.Chemistry.UI
                 ("10", ChemMasterReagentAmount.U10, StyleClass.ButtonOpenBoth),
                 ("15", ChemMasterReagentAmount.U15, StyleClass.ButtonOpenBoth),
                 ("20", ChemMasterReagentAmount.U20, StyleClass.ButtonOpenBoth),
-                ("25", ChemMasterReagentAmount.U25, StyleClass.ButtonOpenBoth),
                 ("30", ChemMasterReagentAmount.U30, StyleClass.ButtonOpenBoth),
-                ("50", ChemMasterReagentAmount.U50, StyleClass.ButtonOpenBoth),
-                ("100", ChemMasterReagentAmount.U100, StyleClass.ButtonOpenBoth),
+                ("40", ChemMasterReagentAmount.U40, StyleClass.ButtonOpenBoth),
+                ("60", ChemMasterReagentAmount.U60, StyleClass.ButtonOpenBoth),
+                ("120", ChemMasterReagentAmount.U120, StyleClass.ButtonOpenBoth),
                 (Loc.GetString("chem-master-window-buffer-all-amount"), ChemMasterReagentAmount.All, StyleClass.ButtonOpenLeft),
             };
 
@@ -224,11 +229,11 @@ namespace Content.Client.Chemistry.UI
                 return "";
 
             var reagent = (state.DrawSource switch
-                {
-                    ChemMasterDrawSource.Internal => state.BufferReagents,
-                    ChemMasterDrawSource.External => state.InputContainerInfo.Reagents ?? [],
-                    _ => throw new($"Chemmaster {state.OutputContainerInfo} draw source is not set"),
-                }).MinBy(r => r.Quantity)
+            {
+                ChemMasterDrawSource.Internal => state.BufferReagents,
+                ChemMasterDrawSource.External => state.InputContainerInfo.Reagents ?? [],
+                _ => throw new($"Chemmaster {state.OutputContainerInfo} draw source is not set"),
+            }).MinBy(r => r.Quantity)
                 .Reagent;
             _prototypeManager.TryIndex(reagent.Prototype, out ReagentPrototype? proto);
             return proto?.LocalizedName ?? "";
@@ -246,8 +251,6 @@ namespace Content.Client.Chemistry.UI
             BuildContainerUI(InputContainerInfo, state.InputContainerInfo, true);
             BuildContainerUI(OutputContainerInfo, state.OutputContainerInfo, false);
 
-            BufferInfo.Children.Clear();
-
             // This has to happen here due to people possibly
             // setting sorting before putting any chemicals
             BufferSortButton.Text = state.SortingType switch
@@ -261,7 +264,55 @@ namespace Content.Client.Chemistry.UI
             OutputBufferDraw.Pressed = state.DrawSource == ChemMasterDrawSource.Internal;
             OutputBeakerDraw.Pressed = state.DrawSource == ChemMasterDrawSource.External;
 
-            if (!state.BufferReagents.Any())
+            // This sets up the needed data for sorting later in a list
+            // Its done this way to not repeat having to use same code twice (once for sorting
+            // and once for displaying)
+            _bufferReagents.Clear();
+            foreach (var (reagent, quantity) in state.BufferReagents)
+            {
+                var reagentId = reagent;
+                _prototypeManager.TryIndex(reagentId.Prototype, out ReagentPrototype? proto);
+                var name = proto?.LocalizedName ?? Loc.GetString("chem-master-window-unknown-reagent-text");
+                var reagentColor = proto?.SubstanceColor ?? default(Color);
+                _bufferReagents.Add(new ReagentItem(reagentId, name, reagentColor, quantity));
+            }
+
+            _sortType = state.SortingType;
+
+            FilterBufferReagents();
+        }
+
+        private void FilterBufferReagents()
+        {
+            //Filter by search bar, if there is any input
+            var sortedReagents = SearchBar.Text.Trim().Length > 0
+                ? _bufferReagents.Where(x => x.Name.Contains(SearchBar.Text.Trim(), StringComparison.InvariantCultureIgnoreCase)).ToList()
+                : _bufferReagents;
+
+            // We sort here since we need sorted list to be filled first.
+            // You can easily add any new params you need to it.
+            switch (_sortType)
+            {
+                case ChemMasterSortingType.Alphabetical:
+                    sortedReagents = sortedReagents.OrderBy(x => x.Name).ToList();
+                    break;
+
+                case ChemMasterSortingType.Quantity:
+                    sortedReagents = sortedReagents.OrderByDescending(x => x.Quantity).ToList();
+                    break;
+                case ChemMasterSortingType.Latest:
+                    sortedReagents = Enumerable.Reverse(sortedReagents).ToList();
+                    break;
+
+                case ChemMasterSortingType.None:
+                default:
+                    // This case is pointless but it is there for readability
+                    break;
+            }
+
+            BufferInfo.Children.Clear();
+
+            if (!sortedReagents.Any())
             {
                 BufferInfo.Children.Add(new Label { Text = Loc.GetString("chem-master-window-buffer-empty-text") });
 
@@ -278,50 +329,16 @@ namespace Content.Client.Chemistry.UI
             bufferHBox.AddChild(bufferLabel);
             var bufferVol = new Label
             {
-                Text = $"{state.BufferCurrentVolume}u",
+                Text = $"{_bufferReagents.Sum(x => x.Quantity.Int())}u",
                 StyleClasses = { StyleClass.LabelWeak }
             };
             bufferHBox.AddChild(bufferVol);
 
-            // This sets up the needed data for sorting later in a list
-            // Its done this way to not repeat having to use same code twice (once for sorting
-            // and once for displaying)
-            var reagentList = new List<(ReagentId reagentId, string name, Color color, FixedPoint2 quantity)>();
-            foreach (var (reagent, quantity) in state.BufferReagents)
-            {
-                var reagentId = reagent;
-                _prototypeManager.TryIndex(reagentId.Prototype, out ReagentPrototype? proto);
-                var name = proto?.LocalizedName ?? Loc.GetString("chem-master-window-unknown-reagent-text");
-                var reagentColor = proto?.SubstanceColor ?? default(Color);
-                reagentList.Add(new (reagentId, name, reagentColor, quantity));
-            }
-
-            // We sort here since we need sorted list to be filled first.
-            // You can easily add any new params you need to it.
-            switch (state.SortingType)
-            {
-                case ChemMasterSortingType.Alphabetical:
-                    reagentList = reagentList.OrderBy(x => x.name).ToList();
-                    break;
-
-                case ChemMasterSortingType.Quantity:
-                    reagentList = reagentList.OrderByDescending(x => x.quantity).ToList();
-                    break;
-                case ChemMasterSortingType.Latest:
-                    reagentList = Enumerable.Reverse(reagentList).ToList();
-                    break;
-
-                case ChemMasterSortingType.None:
-                default:
-                    // This case is pointless but it is there for readability
-                    break;
-            }
-
             // initialises rowCount to allow for striped rows
             var rowCount = 0;
-            foreach (var reagent in reagentList)
+            foreach (var reagent in sortedReagents)
             {
-                BufferInfo.Children.Add(BuildReagentRow(reagent.color, rowCount++, reagent.name, reagent.reagentId, reagent.quantity, true, true));
+                BufferInfo.Children.Add(BuildReagentRow(reagent.Color, rowCount++, reagent.Name, reagent.ReagentId, reagent.Quantity, true, true));
             }
         }
 
@@ -386,7 +403,7 @@ namespace Content.Client.Chemistry.UI
             var rowColor1 = Color.FromHex("#1B1B1E");
             var rowColor2 = Color.FromHex("#202025");
             var currentRowColor = (rowCount % 2 == 1) ? rowColor1 : rowColor2;
-            if ((reagentColor == default(Color))|(!addReagentButtons))
+            if ((reagentColor == default(Color)) | (!addReagentButtons))
             {
                 reagentColor = currentRowColor;
             }
@@ -463,4 +480,6 @@ namespace Content.Client.Chemistry.UI
             IsBuffer = isBuffer;
         }
     }
+
+    public sealed record ReagentItem(ReagentId ReagentId, string Name, Color Color, FixedPoint2 Quantity);
 }

@@ -1,4 +1,5 @@
 using System.Linq;
+using Content.IntegrationTests.Fixtures;
 using Content.Server.Destructible;
 using Content.Server.Destructible.Thresholds;
 using Content.Server.Destructible.Thresholds.Behaviors;
@@ -6,10 +7,10 @@ using Content.Shared.Damage;
 using Content.Shared.Damage.Components;
 using Content.Shared.Damage.Prototypes;
 using Content.Shared.Damage.Systems;
-using Content.Shared.FixedPoint;
-using Robust.Shared.Audio.Systems;
 using Content.Shared.Destructible;
 using Content.Shared.Destructible.Thresholds.Triggers;
+using Content.Shared.FixedPoint;
+using Robust.Shared.Audio.Systems;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 using static Content.IntegrationTests.Tests.Destructible.DestructibleTestPrototypes;
@@ -19,12 +20,12 @@ namespace Content.IntegrationTests.Tests.Destructible
     [TestFixture]
     [TestOf(typeof(DestructibleComponent))]
     [TestOf(typeof(DamageThreshold))]
-    public sealed class DestructibleThresholdActivationTest
+    public sealed class DestructibleThresholdActivationTest : GameTest
     {
         [Test]
         public async Task Test()
         {
-            await using var pair = await PoolManager.GetServerClient();
+            var pair = Pair;
             var server = pair.Server;
 
             var sEntityManager = server.ResolveDependency<IEntityManager>();
@@ -289,7 +290,6 @@ namespace Content.IntegrationTests.Tests.Destructible
                     Assert.That(sTestThresholdListenerSystem.ThresholdsReached, Is.Empty);
                 });
             });
-            await pair.CleanReturnAsync();
         }
     }
 }

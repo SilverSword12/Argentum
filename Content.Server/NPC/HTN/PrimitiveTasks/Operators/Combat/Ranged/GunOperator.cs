@@ -1,16 +1,16 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.NPC.Components;
 using Content.Shared.CombatMode;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Robust.Shared.Audio;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators.Combat.Ranged;
 
 public sealed partial class GunOperator : HTNOperator, IHtnConditionalShutdown
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
+    [Dependency] private IEntityManager _entManager = default!;
 
     [DataField("shutdownState")]
     public HTNPlanState ShutdownState { get; private set; } = HTNPlanState.TaskFinished;

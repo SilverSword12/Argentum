@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Client.GameTicking.Managers;
 using Content.Client.Lobby;
 using Content.Shared.Audio.Events;
@@ -12,15 +11,16 @@ using Robust.Shared.Audio.Systems;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Client.Audio;
 
 // Part of ContentAudioSystem that is responsible for lobby music playing/stopping and round-end sound-effect.
 public sealed partial class ContentAudioSystem
 {
-    [Dependency] private readonly IBaseClient _client = default!;
-    [Dependency] private readonly ClientGameTicker _gameTicker = default!;
-    [Dependency] private readonly IResourceCache _resourceCache = default!;
+    [Dependency] private IBaseClient _client = default!;
+    [Dependency] private ClientGameTicker _gameTicker = default!;
+    [Dependency] private IResourceCache _resourceCache = default!;
 
     private readonly AudioParams _lobbySoundtrackParams = new(-5f, 1, 0, 0, 0, false, 0f);
     private readonly AudioParams _roundEndSoundEffectParams = new(-5f, 1, 0, 0, 0, false, 0f);
@@ -182,7 +182,7 @@ public sealed partial class ContentAudioSystem
             soundtrackFilename,
             Filter.Local(),
             false,
-            _lobbySoundtrackParams.WithVolume(_lobbySoundtrackParams.Volume + SharedAudioSystem.GainToVolume(_configManager.GetCVar(CCVars.LobbyMusicVolume)))
+            _lobbySoundtrackParams.AddVolume(_lobbySoundtrackParams.Volume + SharedAudioSystem.GainToVolume(_configManager.GetCVar(CCVars.LobbyMusicVolume)))
         );
         if (playResult == null)
         {
@@ -227,7 +227,7 @@ public sealed partial class ContentAudioSystem
             file,
             Filter.Local(),
             false,
-            _roundEndSoundEffectParams.WithVolume(_roundEndSoundEffectParams.Volume + SharedAudioSystem.GainToVolume(_configManager.GetCVar(CCVars.LobbyMusicVolume)))
+            _roundEndSoundEffectParams.AddVolume(_roundEndSoundEffectParams.Volume + SharedAudioSystem.GainToVolume(_configManager.GetCVar(CCVars.LobbyMusicVolume)))
         )?.Entity;
     }
 

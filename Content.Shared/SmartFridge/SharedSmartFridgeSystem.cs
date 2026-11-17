@@ -9,20 +9,21 @@ using Content.Shared.Verbs;
 using Content.Shared.Whitelist;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
+using Robust.Shared.Map.Events;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
 
 namespace Content.Shared.SmartFridge;
 
-public abstract class SharedSmartFridgeSystem : EntitySystem
+public abstract partial class SharedSmartFridgeSystem : EntitySystem
 {
-    [Dependency] private readonly AccessReaderSystem _accessReader = default!;
-    [Dependency] private readonly EntityWhitelistSystem _whitelist = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly SharedHandsSystem _hands = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
+    [Dependency] private AccessReaderSystem _accessReader = default!;
+    [Dependency] private EntityWhitelistSystem _whitelist = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
 
     public override void Initialize()
     {
@@ -31,12 +32,13 @@ public abstract class SharedSmartFridgeSystem : EntitySystem
         SubscribeLocalEvent<SmartFridgeComponent, InteractUsingEvent>(OnInteractUsing, after: [typeof(AnchorableSystem)]);
         SubscribeLocalEvent<SmartFridgeComponent, EntInsertedIntoContainerMessage>(OnItemInserted);
         SubscribeLocalEvent<SmartFridgeComponent, EntRemovedFromContainerMessage>(OnItemRemoved);
+        SubscribeLocalEvent<SmartFridgeComponent, ComponentInit>(OnCompInit);
         SubscribeLocalEvent<SmartFridgeComponent, AfterAutoHandleStateEvent>((ent, ref _) => UpdateUI(ent));
 
         SubscribeLocalEvent<SmartFridgeComponent, GetVerbsEvent<AlternativeVerb>>(OnGetAltVerb);
         SubscribeLocalEvent<SmartFridgeComponent, GetDumpableVerbEvent>(OnGetDumpableVerb);
         SubscribeLocalEvent<SmartFridgeComponent, DumpEvent>(OnDump);
-
+        SubscribeLocalEvent<BeforeSerializationEvent>(OnMapSave);
         Subs.BuiEvents<SmartFridgeComponent>(SmartFridgeUiKey.Key,
             sub =>
             {
@@ -45,6 +47,32 @@ public abstract class SharedSmartFridgeSystem : EntitySystem
             });
     }
 
+    private void OnCompInit(Entity<SmartFridgeComponent> ent, ref ComponentInit args)
+    {
+        if (ent.Comp.ContainedEntriesCopy.Count > 0)
+        {
+            foreach (var kv in ent.Comp.ContainedEntriesCopy)
+            {
+                ent.Comp.ContainedEntries.Add(new SmartFridgeEntry(kv.Key), kv.Value);
+            }
+            Dirty(ent);
+        }
+
+    }
+    private void OnMapSave(BeforeSerializationEvent ev)
+    {
+        var query = EntityQueryEnumerator<SmartFridgeComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            comp.ContainedEntriesCopy = new();
+            foreach (var kv in comp.ContainedEntries)
+            {
+                comp.ContainedEntriesCopy.Add(kv.Key.Name, kv.Value);
+            }
+        }
+
+
+    }
     private bool DoInsert(Entity<SmartFridgeComponent> ent, EntityUid user, IEnumerable<EntityUid> usedItems, bool playSound)
     {
         if (!_container.TryGetContainer(ent, ent.Comp.Container, out var container))
@@ -99,6 +127,9 @@ public abstract class SharedSmartFridgeSystem : EntitySystem
 
     private void OnItemRemoved(Entity<SmartFridgeComponent> ent, ref EntRemovedFromContainerMessage args)
     {
+        if (args.Container.ID != ent.Comp.Container  || _timing.ApplyingState)
+            return;
+
         var key = new SmartFridgeEntry(Identity.Name(args.Entity, EntityManager));
 
         if (ent.Comp.ContainedEntries.TryGetValue(key, out var contained))
@@ -115,23 +146,20 @@ public abstract class SharedSmartFridgeSystem : EntitySystem
         if (_accessReader.IsAllowed(user, machine))
             return true;
 
-        _popup.PopupPredicted(Loc.GetString("smart-fridge-component-try-eject-access-denied"), machine, user);
         _audio.PlayPredicted(machine.Comp.SoundDeny, machine, user);
+        _popup.PopupEntity(Loc.GetString("smart-fridge-component-try-eject-access-denied"), machine, user);
         return false;
     }
 
     private void OnDispenseItem(Entity<SmartFridgeComponent> ent, ref SmartFridgeDispenseItemMessage args)
     {
-        if (!_timing.IsFirstTimePredicted)
-            return;
-
         if (!Allowed(ent, args.Actor))
             return;
 
         if (!ent.Comp.ContainedEntries.TryGetValue(args.Entry, out var contained))
         {
             _audio.PlayPredicted(ent.Comp.SoundDeny, ent, args.Actor);
-            _popup.PopupPredicted(Loc.GetString("smart-fridge-component-try-eject-unknown-entry"), ent, args.Actor);
+            _popup.PopupEntity(Loc.GetString("smart-fridge-component-try-eject-unknown-entry"), ent, args.Actor);
             return;
         }
 
@@ -148,7 +176,7 @@ public abstract class SharedSmartFridgeSystem : EntitySystem
         }
 
         _audio.PlayPredicted(ent.Comp.SoundDeny, ent, args.Actor);
-        _popup.PopupPredicted(Loc.GetString("smart-fridge-component-try-eject-out-of-stock"), ent, args.Actor);
+        _popup.PopupEntity(Loc.GetString("smart-fridge-component-try-eject-out-of-stock"), ent, args.Actor);
     }
 
     private void OnGetAltVerb(Entity<SmartFridgeComponent> ent, ref GetVerbsEvent<AlternativeVerb> args)

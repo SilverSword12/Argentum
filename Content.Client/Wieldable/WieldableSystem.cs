@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Client.Movement.Components;
 using Content.Client.Movement.Systems;
 using Content.Shared.Camera;
@@ -7,13 +6,14 @@ using Content.Shared.Movement.Components;
 using Content.Shared.Wieldable;
 using Content.Shared.Wieldable.Components;
 using Robust.Client.Timing;
+using System.Numerics;
 
 namespace Content.Client.Wieldable;
 
-public sealed class WieldableSystem : SharedWieldableSystem
+public sealed partial class WieldableSystem : SharedWieldableSystem
 {
-    [Dependency] private readonly EyeCursorOffsetSystem _eyeOffset = default!;
-    [Dependency] private readonly IClientGameTiming _gameTiming = default!;
+    [Dependency] private EyeCursorOffsetSystem _eyeOffset = default!;
+    [Dependency] private IClientGameTiming _gameTiming = default!;
 
     public override void Initialize()
     {

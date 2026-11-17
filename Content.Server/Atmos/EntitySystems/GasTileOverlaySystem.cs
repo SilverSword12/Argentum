@@ -1,4 +1,3 @@
-using Content.Server.Atmos.Components;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.EntitySystems;
@@ -24,14 +23,16 @@ using System.Runtime.CompilerServices;
 namespace Content.Server.Atmos.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class GasTileOverlaySystem : SharedGasTileOverlaySystem
+    public sealed partial class GasTileOverlaySystem : SharedGasTileOverlaySystem
     {
-        [Robust.Shared.IoC.Dependency] private readonly IGameTiming _gameTiming = default!;
-        [Robust.Shared.IoC.Dependency] private readonly IPlayerManager _playerManager = default!;
-        [Robust.Shared.IoC.Dependency] private readonly IMapManager _mapManager = default!;
-        [Robust.Shared.IoC.Dependency] private readonly IParallelManager _parMan = default!;
-        [Robust.Shared.IoC.Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-        [Robust.Shared.IoC.Dependency] private readonly ChunkingSystem _chunkingSys = default!;
+        [Robust.Shared.IoC.Dependency] private IGameTiming _gameTiming = default!;
+        [Robust.Shared.IoC.Dependency] private IPlayerManager _playerManager = default!;
+        [Robust.Shared.IoC.Dependency] private IParallelManager _parMan = default!;
+        [Robust.Shared.IoC.Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+        [Robust.Shared.IoC.Dependency] private ChunkingSystem _chunkingSys = default!;
+
+        [Robust.Shared.IoC.Dependency] private EntityQuery<MapGridComponent> _mapGridQuery = default!;
+        [Robust.Shared.IoC.Dependency] private EntityQuery<GasTileOverlayComponent> _gasTileOverlayQuery = default!;
 
         /// <summary>
         /// Per-tick cache of sessions.
@@ -57,15 +58,10 @@ namespace Content.Server.Atmos.EntitySystems
         private float _updateInterval;
 
         private int _thresholds;
-        private EntityQuery<MapGridComponent> _gridQuery;
-        private EntityQuery<GasTileOverlayComponent> _query;
 
         public override void Initialize()
         {
             base.Initialize();
-
-            _query = GetEntityQuery<GasTileOverlayComponent>();
-            _gridQuery = GetEntityQuery<MapGridComponent>();
 
             _updateJob = new UpdatePlayerJob()
             {
@@ -74,10 +70,9 @@ namespace Content.Server.Atmos.EntitySystems
                 ChunkIndexPool = _chunkIndexPool,
                 Sessions = _sessions,
                 ChunkingSys = _chunkingSys,
-                MapManager = _mapManager,
                 ChunkViewerPool = _chunkViewerPool,
                 LastSentChunks = _lastSentChunks,
-                GridQuery = _gridQuery,
+                GridQuery = _mapGridQuery,
             };
 
             _playerManager.PlayerStatusChanged += OnPlayerStatusChanged;
@@ -136,7 +131,7 @@ namespace Content.Server.Atmos.EntitySystems
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invalidate(Entity<GasTileOverlayComponent?> grid, Vector2i index)
         {
-            if (_query.Resolve(grid.Owner, ref grid.Comp))
+            if (_gasTileOverlayQuery.Resolve(grid.Owner, ref grid.Comp))
                 grid.Comp.InvalidTiles.Add(index);
         }
 
@@ -162,7 +157,7 @@ namespace Content.Server.Atmos.EntitySystems
 
         private byte GetOpacity(float moles, float molesVisible, float molesVisibleMax)
         {
-            return (byte) (ContentHelpers.RoundToLevels(
+            return (byte)(ContentHelpers.RoundToLevels(
                 MathHelper.Clamp01((moles - molesVisible) /
                                    (molesVisibleMax - molesVisible)) * 255, byte.MaxValue,
                 _thresholds) * 255 / (_thresholds - 1));
@@ -193,7 +188,7 @@ namespace Content.Server.Atmos.EntitySystems
                     continue;
                 }
 
-                opacity = (byte) (ContentHelpers.RoundToLevels(
+                opacity = (byte)(ContentHelpers.RoundToLevels(
                     MathHelper.Clamp01((moles - gas.GasMolesVisible) /
                                        (gas.GasMolesVisibleMax - gas.GasMolesVisible)) * 255, byte.MaxValue,
                     _thresholds) * 255 / (_thresholds - 1));
@@ -222,6 +217,12 @@ namespace Content.Server.Atmos.EntitySystems
 
             ThermalByte newByteTemp = new();
 
+            // Extract fire color as bytes from the hotspot's computed blended color.
+            var fireColorR = (byte)(tile.Hotspot.FireColor.R * 255);
+            var fireColorG = (byte)(tile.Hotspot.FireColor.G * 255);
+            var fireColorB = (byte)(tile.Hotspot.FireColor.B * 255);
+            var fireColorA = (byte)(tile.Hotspot.FireColor.A * 255);
+
             if (tile.Hotspot.Valid)
                 newByteTemp.SetTemperature(tile.Hotspot.Temperature);
             else if (!tile.Space && tile.Air?.TotalMoles <= 5f)
@@ -232,17 +233,18 @@ namespace Content.Server.Atmos.EntitySystems
             if (oldData.Equals(default))
             {
                 changed = true;
-                oldData = new GasOverlayData(tile.Hotspot.State, new byte[VisibleGasId.Length], newByteTemp);
+                oldData = new GasOverlayData(tile.Hotspot.State, new byte[VisibleGasId.Length], newByteTemp, fireColorR, fireColorG, fireColorB, fireColorA);
             }
             else if (oldData.FireState != tile.Hotspot.State ||
+                     oldData.FireColorR != fireColorR || oldData.FireColorG != fireColorG || oldData.FireColorB != fireColorB || oldData.FireColorA != fireColorA ||
                      Math.Abs(oldData.ByteGasTemperature.Value - newByteTemp.Value) > 1 || // Dirty Temperature when there is more then 1 byte difference. That should measure up to minimum 4 degreese difference, 6 degreese on average.
                      (oldData.ByteGasTemperature.Value != newByteTemp.Value && newByteTemp.Value > ThermalByte.TempResolution)) // change of special ThermalByte value
             {
                 changed = true;
-                oldData = new GasOverlayData(tile.Hotspot.State, oldData.Opacity, newByteTemp);
+                oldData = new GasOverlayData(tile.Hotspot.State, oldData.Opacity, newByteTemp, fireColorR, fireColorG, fireColorB, fireColorA);
             }
 
-            if (tile is {Air: not null, NoGridTile: false})
+            if (tile is { Air: not null, NoGridTile: false })
             {
                 for (var i = 0; i < VisibleGasId.Length; i++)
                 {
@@ -386,7 +388,6 @@ namespace Content.Server.Atmos.EntitySystems
             public int BatchSize => 2;
 
             public IEntityManager EntManager;
-            public IMapManager MapManager;
             public ChunkingSystem ChunkingSys;
             public GasTileOverlaySystem System;
             public ObjectPool<HashSet<Vector2i>> ChunkIndexPool;

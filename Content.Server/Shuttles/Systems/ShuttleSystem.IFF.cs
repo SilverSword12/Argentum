@@ -12,6 +12,9 @@ public sealed partial class ShuttleSystem
     {
         SubscribeLocalEvent<IFFConsoleComponent, AnchorStateChangedEvent>(OnIFFConsoleAnchor);
         SubscribeLocalEvent<IFFConsoleComponent, IFFShowIFFMessage>(OnIFFShow);
+        SubscribeLocalEvent<IFFConsoleComponent, IFFShowFactionTagMessage>(OnIFFShowFactionTag);
+        SubscribeLocalEvent<IFFConsoleComponent, IFFSetColorMessage>(OnIFFSetColor);
+        SubscribeLocalEvent<IFFConsoleComponent, IFFSetDesignationMessage>(OnIFFSetDesignation);
         SubscribeLocalEvent<IFFConsoleComponent, MapInitEvent>(OnInitIFFConsole);
         SubscribeLocalEvent<GridSplitEvent>(OnGridSplit);
     }
@@ -53,6 +56,20 @@ public sealed partial class ShuttleSystem
         }
     }
 
+    private void OnIFFShowFactionTag(EntityUid uid, IFFConsoleComponent component, IFFShowFactionTagMessage args)
+    {
+        if (!TryComp(uid, out TransformComponent? xform) || xform.GridUid is not { } gridUid)
+            return;
+
+        var iff = EnsureComp<IFFComponent>(gridUid);
+        if (iff.ShowFactionTag == args.Show)
+            return;
+
+        iff.ShowFactionTag = args.Show;
+        Dirty(gridUid, iff);
+        UpdateIFFInterfaces(gridUid, iff);
+    }
+
     private void OnInitIFFConsole(EntityUid uid, IFFConsoleComponent component, MapInitEvent args)
     {
         if (!TryComp(uid, out TransformComponent? xform) || xform.GridUid == null)
@@ -66,6 +83,40 @@ public sealed partial class ShuttleSystem
         }
     }
 
+    private void OnIFFSetColor(EntityUid uid, IFFConsoleComponent component, IFFSetColorMessage args)
+    {
+        if (!component.AllowColorChange ||
+            !TryComp(uid, out TransformComponent? xform) ||
+            xform.GridUid is not { } gridUid)
+        {
+            return;
+        }
+
+        if (!Color.TryFromHex(args.ColorHex, out var parsed))
+            return;
+
+        var normalized = IFFComponent.NormalizeSignatureColor(parsed);
+        SetIFFColor(gridUid, normalized);
+    }
+
+    private void OnIFFSetDesignation(EntityUid uid, IFFConsoleComponent component, IFFSetDesignationMessage args)
+    {
+        if (!component.AllowDesignationChange ||
+            !TryComp(uid, out TransformComponent? xform) ||
+            xform.GridUid is not { } gridUid)
+        {
+            return;
+        }
+
+        var iff = EnsureComp<IFFComponent>(gridUid);
+        if (iff.Designation == args.Designation)
+            return;
+
+        iff.Designation = args.Designation;
+        Dirty(gridUid, iff);
+        UpdateIFFInterfaces(gridUid, iff);
+    }
+
     private void OnIFFConsoleAnchor(EntityUid uid, IFFConsoleComponent component, ref AnchorStateChangedEvent args)
     {
         // If we anchor / re-anchor then make sure flags up to date.
@@ -77,6 +128,11 @@ public sealed partial class ShuttleSystem
             {
                 AllowedFlags = component.AllowedFlags,
                 Flags = IFFFlags.None,
+                SignatureColor = IFFComponent.IFFColor,
+                ColorEditable = component.AllowColorChange,
+                Designation = IFFDesignation.Other,
+                DesignationEditable = component.AllowDesignationChange,
+                ShowFactionTag = true,
             });
         }
         else
@@ -85,6 +141,11 @@ public sealed partial class ShuttleSystem
             {
                 AllowedFlags = component.AllowedFlags,
                 Flags = iff.Flags,
+                SignatureColor = iff.Color,
+                ColorEditable = component.AllowColorChange,
+                Designation = iff.Designation,
+                DesignationEditable = component.AllowDesignationChange,
+                ShowFactionTag = iff.ShowFactionTag,
             });
         }
     }
@@ -103,6 +164,11 @@ public sealed partial class ShuttleSystem
             {
                 AllowedFlags = comp.AllowedFlags,
                 Flags = component.Flags,
+                SignatureColor = component.Color,
+                ColorEditable = comp.AllowColorChange,
+                Designation = component.Designation,
+                DesignationEditable = comp.AllowDesignationChange,
+                ShowFactionTag = component.ShowFactionTag,
             });
         }
     }

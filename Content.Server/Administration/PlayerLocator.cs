@@ -1,10 +1,3 @@
-using System.Collections.Immutable;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.Connection;
 using Content.Server.Database;
 using Content.Shared.Database;
@@ -14,6 +7,13 @@ using Robust.Shared;
 using Robust.Shared.Configuration;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
+using System.Collections.Immutable;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.Administration
 {
@@ -70,12 +70,12 @@ namespace Content.Server.Administration
         Task<LocatedPlayerData?> LookupIdAsync(NetUserId userId, CancellationToken cancel = default);
     }
 
-    internal sealed class PlayerLocator : IPlayerLocator, IDisposable, IPostInjectInit
+    internal sealed partial class PlayerLocator : IPlayerLocator, IDisposable, IPostInjectInit
     {
-        [Dependency] private readonly IPlayerManager _playerManager = default!;
-        [Dependency] private readonly IConfigurationManager _configurationManager = default!;
-        [Dependency] private readonly IServerDbManager _db = default!;
-        [Dependency] private readonly ILogManager _logManager = default!;
+        [Dependency] private IPlayerManager _playerManager = default!;
+        [Dependency] private IConfigurationManager _configurationManager = default!;
+        [Dependency] private IServerDbManager _db = default!;
+        [Dependency] private ILogManager _logManager = default!;
 
         private readonly HttpClient _httpClient = new();
         private ISawmill _sawmill = default!;

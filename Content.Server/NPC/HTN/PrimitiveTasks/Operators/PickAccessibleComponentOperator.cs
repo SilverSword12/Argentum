@@ -1,8 +1,7 @@
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Content.Server.NPC.Pathfinding;
 using Robust.Shared.Map;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 
@@ -11,7 +10,7 @@ namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 /// </summary>
 public sealed partial class PickAccessibleComponentOperator : HTNOperator
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
+    [Dependency] private IEntityManager _entManager = default!;
     private PathfindingSystem _pathfinding = default!;
     private EntityLookupSystem _lookup = default!;
 

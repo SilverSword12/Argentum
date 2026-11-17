@@ -68,6 +68,9 @@
     - ScannersAndVessels
   - type: Item
     storedRotation: -90
+  - type: Tag
+    tags:
+      - AnomalyScanner
 
 - type: entity
   parent: AnomalyScanner
@@ -103,6 +106,7 @@
         enum.ToggleableVisuals.Layer:
           True: { visible: true }
           False: { visible: false }
+  - type: ItemToggleExaminableStatus
   - type: ItemToggle
   - type: ProximityBeeper
   - type: ProximityDetector
@@ -118,6 +122,9 @@
       params:
         maxDistance: 1
         volume: -8
+  - type: Tag
+    tags:
+      - AnomalyLocator
 
 - type: entity
   id: AnomalyLocator

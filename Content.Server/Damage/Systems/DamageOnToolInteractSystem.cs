@@ -1,6 +1,5 @@
 using Content.Server.Administration.Logs;
 using Content.Server.Damage.Components;
-using Content.Shared.Damage;
 using Content.Shared.Database;
 using Content.Shared.Interaction;
 using Content.Shared.Tools.Components;
@@ -9,11 +8,11 @@ using ItemToggleComponent = Content.Shared.Item.ItemToggle.Components.ItemToggle
 
 namespace Content.Server.Damage.Systems
 {
-    public sealed class DamageOnToolInteractSystem : EntitySystem
+    public sealed partial class DamageOnToolInteractSystem : EntitySystem
     {
-        [Dependency] private readonly Shared.Damage.Systems.DamageableSystem _damageableSystem = default!;
-        [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly SharedToolSystem _toolSystem = default!;
+        [Dependency] private Shared.Damage.Systems.DamageableSystem _damageableSystem = default!;
+        [Dependency] private IAdminLogManager _adminLogger = default!;
+        [Dependency] private SharedToolSystem _toolSystem = default!;
 
         public override void Initialize()
         {
@@ -30,7 +29,7 @@ namespace Content.Server.Damage.Systems
             if (!TryComp<ItemToggleComponent>(args.Used, out var itemToggle))
                 return;
 
-            if (component.WeldingDamage is {} weldingDamage
+            if (component.WeldingDamage is { } weldingDamage
             && TryComp(args.Used, out WelderComponent? welder)
             && itemToggle.Activated
             && !welder.TankSafe)
@@ -43,7 +42,7 @@ namespace Content.Server.Damage.Systems
 
                 args.Handled = true;
             }
-            else if (component.DefaultDamage is {} damage
+            else if (component.DefaultDamage is { } damage
                 && _toolSystem.HasQuality(args.Used, component.Tools))
             {
                 if (_damageableSystem.TryChangeDamage(args.Target, damage, out var dmg, origin: args.User))

@@ -1,12 +1,12 @@
+using Robust.Shared.Random;
 using System.Threading;
 using System.Threading.Tasks;
-using Robust.Shared.Random;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 
 public sealed partial class PickRandomRotationOperator : HTNOperator
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     [DataField("targetKey")]
     public string TargetKey = "RotateTarget";

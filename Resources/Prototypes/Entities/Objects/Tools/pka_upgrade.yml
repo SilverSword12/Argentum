@@ -11,10 +11,14 @@
     size: Small
   - type: GunUpgrade
   - type: StaticPrice
-    price: 750
+    price: 700
   - type: Tag
     tags:
     - PKAUpgrade
+  - type: PhysicalComposition
+    materialComposition:
+      Steel: 200
+      Silver: 100
 
 - type: entity
   id: PKAUpgradeDamage
@@ -37,7 +41,7 @@
     damage:
       types:
         Blunt: 10
-        Structural: 15
+        Structural: 10
 
 - type: entity
   id: PKAUpgradeRange

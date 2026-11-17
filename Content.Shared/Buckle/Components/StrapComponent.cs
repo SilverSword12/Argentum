@@ -65,7 +65,7 @@ public sealed partial class StrapComponent : Component
     /// The sound to be played when a mob is buckled
     /// </summary>
     [DataField]
-    public SoundSpecifier BuckleSound  = new SoundPathSpecifier("/Audio/Effects/buckle.ogg");
+    public SoundSpecifier BuckleSound = new SoundPathSpecifier("/Audio/Effects/buckle.ogg");
 
     /// <summary>
     /// The sound to be played when a mob is unbuckled
@@ -90,6 +90,12 @@ public sealed partial class StrapComponent : Component
     /// </summary>
     [DataField]
     public bool BuckleOnInteractHand = true;
+
+    /// <summary>
+    /// Whether being buckled to this entity should change the buckled ent's drawdepth.
+    /// </summary>
+    [DataField]
+    public bool ModifyBuckleDrawDepth = true;
 }
 
 public enum StrapPosition

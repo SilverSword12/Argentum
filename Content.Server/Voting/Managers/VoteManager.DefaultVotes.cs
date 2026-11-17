@@ -1,6 +1,3 @@
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using Content.Server.Administration;
 using Content.Server.Administration.Managers;
 using Content.Server.Discord.WebhookMessages;
@@ -19,15 +16,16 @@ using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
+using System.Linq;
 
 namespace Content.Server.Voting.Managers
 {
     public sealed partial class VoteManager
     {
-        [Dependency] private readonly IPlayerLocator _locator = default!;
-        [Dependency] private readonly ILogManager _logManager = default!;
-        [Dependency] private readonly IBanManager _bans = default!;
-        [Dependency] private readonly VoteWebhooks _voteWebhooks = default!;
+        [Dependency] private IPlayerLocator _locator = default!;
+        [Dependency] private ILogManager _logManager = default!;
+        [Dependency] private IBanManager _bans = default!;
+        [Dependency] private VoteWebhooks _voteWebhooks = default!;
 
         private VotingSystem? _votingSystem;
         private RoleSystem? _roleSystem;
@@ -168,7 +166,7 @@ namespace Content.Server.Voting.Managers
                 var total = votesYes + votesNo;
 
                 var ratioRequired = _cfg.GetCVar(CCVars.VoteRestartRequiredRatio);
-                if (total > 0 && votesYes / (float) total >= ratioRequired)
+                if (total > 0 && votesYes / (float)total >= ratioRequired)
                 {
                     // Check if an admin is online, and ignore the passed vote if the cvar is enabled
                     if (_cfg.GetCVar(CCVars.VoteRestartNotAllowedWhenAdminOnline) && _adminMgr.ActiveAdmins.Count() != 0)
@@ -245,13 +243,13 @@ namespace Content.Server.Voting.Managers
                 string picked;
                 if (args.Winner == null)
                 {
-                    picked = (string) _random.Pick(args.Winners);
+                    picked = (string)_random.Pick(args.Winners);
                     _chatManager.DispatchServerAnnouncement(
                         Loc.GetString("ui-vote-gamemode-tie", ("picked", Loc.GetString(presets[picked]))));
                 }
                 else
                 {
-                    picked = (string) args.Winner;
+                    picked = (string)args.Winner;
                     _chatManager.DispatchServerAnnouncement(
                         Loc.GetString("ui-vote-gamemode-win", ("winner", Loc.GetString(presets[picked]))));
                 }
@@ -291,13 +289,13 @@ namespace Content.Server.Voting.Managers
                 GameMapPrototype picked;
                 if (args.Winner == null)
                 {
-                    picked = (GameMapPrototype) _random.Pick(args.Winners);
+                    picked = (GameMapPrototype)_random.Pick(args.Winners);
                     _chatManager.DispatchServerAnnouncement(
                         Loc.GetString("ui-vote-map-tie", ("picked", maps[picked])));
                 }
                 else
                 {
-                    picked = (GameMapPrototype) args.Winner;
+                    picked = (GameMapPrototype)args.Winner;
                     _chatManager.DispatchServerAnnouncement(
                         Loc.GetString("ui-vote-map-win", ("winner", maps[picked])));
                 }
@@ -344,7 +342,7 @@ namespace Content.Server.Voting.Managers
                 _votingSystem = _entityManager.SystemOrNull<VotingSystem>();
 
             // Check that the initiator is actually allowed to do a votekick.
-            if (_votingSystem != null && !await _votingSystem.CheckVotekickInitEligibility(initiator))
+            if (_votingSystem != null && !_votingSystem.CheckVotekickInitEligibility(initiator))
             {
                 _logManager.GetSawmill("admin.votekick").Warning($"User {initiator} attempted a votekick, despite not being eligible to!");
                 _adminLogger.Add(LogType.Vote, LogImpact.Extreme, $"Votekick attempted by {initiator}, but they are not eligible to votekick!");
@@ -597,13 +595,13 @@ namespace Content.Server.Voting.Managers
 
             foreach (var preset in _prototypeManager.EnumeratePrototypes<GamePresetPrototype>())
             {
-                if(!preset.ShowInVote)
+                if (!preset.ShowInVote)
                     continue;
 
-                if(_playerManager.PlayerCount < (preset.MinPlayers ?? int.MinValue))
+                if (_playerManager.PlayerCount < (preset.MinPlayers ?? int.MinValue))
                     continue;
 
-                if(_playerManager.PlayerCount > (preset.MaxPlayers ?? int.MaxValue))
+                if (_playerManager.PlayerCount > (preset.MaxPlayers ?? int.MaxValue))
                     continue;
 
                 presets[preset.ID] = preset.ModeTitle;

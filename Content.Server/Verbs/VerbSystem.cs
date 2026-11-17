@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Server.Administration.Managers;
 using Content.Server.Hands.Systems;
 using Content.Server.Popups;
@@ -8,15 +7,16 @@ using Content.Shared.Database;
 using Content.Shared.Inventory.VirtualItem;
 using Content.Shared.Verbs;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Server.Verbs
 {
-    public sealed class VerbSystem : SharedVerbSystem
+    public sealed partial class VerbSystem : SharedVerbSystem
     {
-        [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly HandsSystem _hands = default!;
-        [Dependency] private readonly PopupSystem _popupSystem = default!;
-        [Dependency] private readonly IAdminManager _adminMgr = default!;
+        [Dependency] private ISharedAdminLogManager _adminLogger = default!;
+        [Dependency] private HandsSystem _hands = default!;
+        [Dependency] private PopupSystem _popupSystem = default!;
+        [Dependency] private IAdminManager _adminMgr = default!;
 
         public override void Initialize()
         {
@@ -35,7 +35,7 @@ namespace Content.Server.Verbs
                 return;
             }
 
-            if (player.AttachedEntity is not {} attached)
+            if (player.AttachedEntity is not { } attached)
             {
                 Log.Warning($"{nameof(HandleVerbRequest)} called by player {player} with no attached entity.");
                 return;

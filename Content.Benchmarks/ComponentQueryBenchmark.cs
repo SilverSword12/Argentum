@@ -1,5 +1,6 @@
-﻿#nullable enable
+#nullable enable
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -44,7 +45,7 @@ public class ComponentQueryBenchmark
         ProgramShared.PathOffset = "../../../../";
         PoolManager.Startup(typeof(QueryBenchSystem).Assembly);
 
-        _pair = PoolManager.GetServerClient().GetAwaiter().GetResult();
+        _pair = PoolManager.GetServerClient(testContext: new ExternalTestContext("Benchmark", StreamWriter.Null)).GetAwaiter().GetResult();
         _entMan = _pair.Server.ResolveDependency<IEntityManager>();
 
         _itemQuery = _entMan.GetEntityQuery<ItemComponent>();
@@ -55,7 +56,7 @@ public class ComponentQueryBenchmark
         _pair.Server.WaitPost(() =>
         {
             var map = new ResPath(Map);
-            var opts = DeserializationOptions.Default with {InitializeMaps = true};
+            var opts = DeserializationOptions.Default with { InitializeMaps = true };
             if (!_entMan.System<MapLoaderSystem>().TryLoadMap(map, out _, out _, opts))
                 throw new Exception("Map load failed");
         }).GetAwaiter().GetResult();
@@ -258,7 +259,7 @@ public struct QueryBenchEvent
     public int HashCode;
 }
 
-public sealed class QueryBenchSystem : EntitySystem
+public sealed partial class QueryBenchSystem : EntitySystem
 {
     public override void Initialize()
     {

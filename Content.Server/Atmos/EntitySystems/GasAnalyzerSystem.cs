@@ -1,25 +1,27 @@
 using System.Linq;
 using Content.Server.Atmos.Components;
+using Content.Server.MiningFluid.Components;
 using Content.Server.NodeContainer.Nodes;
 using Content.Server.Popups;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
+using Content.Shared.Coordinates;
 using Content.Shared.Interaction;
 using Content.Shared.NodeContainer;
 using JetBrains.Annotations;
 using Robust.Server.GameObjects;
-using static Content.Shared.Atmos.Components.GasAnalyzerComponent;
 
 namespace Content.Server.Atmos.EntitySystems;
 
 [UsedImplicitly]
-public sealed class GasAnalyzerSystem : EntitySystem
+public sealed partial class GasAnalyzerSystem : EntitySystem
 {
     [Dependency] private readonly PopupSystem _popup = default!;
     [Dependency] private readonly AtmosphereSystem _atmo = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly UserInterfaceSystem _userInterface = default!;
     [Dependency] private readonly SharedInteractionSystem _interactionSystem = default!;
+    [Dependency] private readonly SharedTransformSystem _xform = default!;
 
     /// <summary>
     /// Minimum moles of a gas to be sent to the client.
@@ -101,6 +103,7 @@ public sealed class GasAnalyzerSystem : EntitySystem
             _popup.PopupEntity(Loc.GetString("gas-analyzer-shutoff"), user.Value, user.Value);
 
         entity.Comp.Enabled = false;
+        entity.Comp.User = null;
         Dirty(entity);
         _appearance.SetData(entity.Owner, GasAnalyzerVisuals.Enabled, entity.Comp.Enabled);
         RemCompDeferred<ActiveGasAnalyzerComponent>(entity.Owner);
@@ -139,15 +142,15 @@ public sealed class GasAnalyzerSystem : EntitySystem
             return false;
 
         // check if the user has walked away from what they scanned
-        if (component.Target.HasValue)
+        if (component.Target.HasValue && component.User.HasValue)
         {
             // Listen! Even if you don't want the Gas Analyzer to work on moving targets, you should use
             // this code to determine if the object is still generally in range so that the check is consistent with the code
             // in OnAfterInteract() and also consistent with interaction code in general.
-            if (!_interactionSystem.InRangeUnobstructed((component.User, null), (component.Target.Value, null)))
+            if (!_interactionSystem.InRangeUnobstructed((component.User.Value, null), (component.Target.Value, null)))
             {
-                if (component.User is { } userId && component.Enabled)
-                    _popup.PopupEntity(Loc.GetString("gas-analyzer-object-out-of-range"), userId, userId);
+                if (component.Enabled)
+                    _popup.PopupEntity(Loc.GetString("gas-analyzer-object-out-of-range"), component.User.Value, component.User.Value);
 
                 component.Target = null;
             }
@@ -220,14 +223,33 @@ public sealed class GasAnalyzerSystem : EntitySystem
             }
         }
 
+        var deviceName = component.Target != null ? Name(component.Target.Value) : string.Empty;
+        var deviceUid = GetNetEntity(component.Target) ?? NetEntity.Invalid;
+
+        if (component.Target == null)
+        {
+            // Fetch potential underground/trapped atmosphere
+            var gridUid = _xform.GetGrid(uid.ToCoordinates());
+            if (TryComp<TrappedFluidComponent>(gridUid, out var trappedFluid) && trappedFluid.Seeded)
+            {
+                var trappedMix = trappedFluid.Air;
+                gasMixList.Add(
+                    new GasMixEntry(Loc.GetString("gas-analyzer-window-trapped-tab-label"),
+                    trappedMix.Volume, trappedMix.Pressure, trappedMix.Temperature,
+                    GenerateGasEntryArray(trappedMix)));
+                deviceName = Comp<MetaDataComponent>(gridUid.Value).EntityName;
+                deviceUid = GetNetEntity(gridUid.Value);
+            }
+        }
+
         // Don't bother sending a UI message with no content, and stop updating I guess?
         if (gasMixList.Count == 0)
             return false;
 
         _userInterface.ServerSendUiMessage(uid, GasAnalyzerUiKey.Key,
             new GasAnalyzerUserMessage(gasMixList.ToArray(),
-                component.Target != null ? Name(component.Target.Value) : string.Empty,
-                GetNetEntity(component.Target) ?? NetEntity.Invalid,
+                deviceName,
+                deviceUid,
                 deviceFlipped));
         return true;
     }
@@ -256,18 +278,17 @@ public sealed class GasAnalyzerSystem : EntitySystem
     {
         var gases = new List<GasEntry>();
 
+        if (mixture == null)
+            return [];
+
         for (var i = 0; i < Atmospherics.TotalNumberOfGases; i++)
         {
-            var gas = _atmo.GetGas(i);
+            var gas = (Gas)i;
 
-            if (mixture?[i] <= UIMinMoles)
+            if (mixture[i] <= UIMinMoles)
                 continue;
 
-            if (mixture != null)
-            {
-                var gasName = Loc.GetString(gas.Name);
-                gases.Add(new GasEntry(gasName, mixture[i], gas.Color));
-            }
+            gases.Add(new GasEntry(gas, mixture[i]));
         }
 
         var gasesOrdered = gases.OrderByDescending(gas => gas.Amount);

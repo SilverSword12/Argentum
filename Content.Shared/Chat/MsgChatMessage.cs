@@ -37,11 +37,12 @@ namespace Content.Shared.Chat
         public Color? MessageColorOverride;
         public string? AudioPath;
         public float AudioVolume;
+        public bool RepeatCheckSender;
 
         [NonSerialized]
         public bool Read;
 
-        public ChatMessage(ChatChannel channel, string message, string wrappedMessage, NetEntity source, int? senderKey, bool hideChat = false, Color? colorOverride = null, string? audioPath = null, float audioVolume = 0)
+        public ChatMessage(ChatChannel channel, string message, string wrappedMessage, NetEntity source, int? senderKey, bool hideChat = false, Color? colorOverride = null, string? audioPath = null, float audioVolume = 0, bool repeatCheckSender = true)
         {
             Channel = channel;
             Message = message;
@@ -52,6 +53,21 @@ namespace Content.Shared.Chat
             MessageColorOverride = colorOverride;
             AudioPath = audioPath;
             AudioVolume = audioVolume;
+            RepeatCheckSender = repeatCheckSender;
+        }
+
+        public ChatMessage(ChatMessage copyFrom)
+        {
+            Channel = copyFrom.Channel;
+            Message = copyFrom.Message;
+            WrappedMessage = copyFrom.WrappedMessage;
+            SenderEntity = copyFrom.SenderEntity;
+            SenderKey = copyFrom.SenderKey;
+            HideChat = copyFrom.HideChat;
+            MessageColorOverride = copyFrom.MessageColorOverride;
+            AudioPath = copyFrom.AudioPath;
+            AudioVolume = copyFrom.AudioVolume;
+            Read = copyFrom.Read;
         }
     }
 
@@ -68,6 +84,7 @@ namespace Content.Shared.Chat
         public override void ReadFromBuffer(NetIncomingMessage buffer, IRobustSerializer serializer)
         {
             var length = buffer.ReadVariableInt32();
+            buffer.AssertAtLeastSize(length);
             using var stream = new MemoryStream(length);
             buffer.ReadAlignedMemory(stream, length);
             serializer.DeserializeDirect(stream, out Message);
@@ -77,7 +94,7 @@ namespace Content.Shared.Chat
         {
             var stream = new MemoryStream();
             serializer.SerializeDirect(stream, Message);
-            buffer.WriteVariableInt32((int) stream.Length);
+            buffer.WriteVariableInt32((int)stream.Length);
             buffer.Write(stream.AsSpan());
         }
     }

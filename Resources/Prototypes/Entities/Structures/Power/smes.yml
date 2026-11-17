@@ -2,7 +2,7 @@
 - type: entity
   abstract: true
   id: BaseSMES
-  parent: [ BaseMachine, ConstructibleMachine ]
+  parent: [ BaseMachine, ConstructibleMachine, BaseConstructibleMachineDestructible ]
   name: SMES
   description: A high-capacity superconducting magnetic energy storage (SMES) unit.
   placement:
@@ -65,9 +65,9 @@
       node: input
     - type: PowerNetworkBattery
       maxSupply: 150000
-      maxChargeRate: 5000
+      maxChargeRate: 150000
       supplyRampTolerance: 5000
-      supplyRampRate: 1000
+      supplyRampRate: 10000
     - type: PointLight
       radius: 1.2
       energy: 3.0
@@ -85,9 +85,14 @@
       requirePower: true
       highVoltageNode: input
       mediumVoltageNode: output
-    - type: Damageable
-      damageContainer: StructuralInorganic
-      damageModifierSet: StructuralMetallicStrong
+    - type: Destructible
+      thresholds:
+      - trigger: !type:DamageTrigger
+          damage: 175
+        behaviors:
+        - !type:PlaySoundBehavior
+          sound:
+            collection: MetalBreak
     - type: BatterySensor
     - type: DeviceNetwork
       deviceNetId: AtmosDevices
@@ -96,6 +101,14 @@
       prefix: device-address-prefix-smes
       sendBroadcastAttemptEvent: true
       examinableAddress: true
+    - type: DeviceLinkSource
+      ports:
+        - PowerChargeLevel0
+        - PowerChargeLevel1
+        - PowerChargeLevel2
+        - PowerChargeLevel3
+        - PowerChargeLevel4
+        - PowerChargeLevel5
     - type: WiredNetworkConnection
     - type: GuideHelp
       guides:
@@ -115,17 +128,20 @@
           type: BatteryBoundUserInterface
     - type: ActivatableUI
       key: enum.BatteryUiKey.Key
+    - type: Upgradeable
+      upgrades:
+        BatteryCapacityZenith : 0
 
 # SMES' in use
 
 - type: entity
   parent: BaseSMES
   id: SMESBasic
-  suffix: Basic, 8MJ
+  suffix: Basic, 16MJ
   components:
   - type: Battery
-    maxCharge: 8000000
-    startingCharge: 8000000
+    maxCharge: 16000000
+    startingCharge: 16000000
 
 - type: entity
   parent: SMESBasic
@@ -138,7 +154,7 @@
 - type: entity
   parent: BaseSMES
   id: SMESAdvanced
-  suffix: Advanced, 16MJ
+  suffix: Advanced, 32MJ
   name: advanced SMES
   description: An even-higher-capacity superconducting magnetic energy storage (SMES) unit.
   components:
@@ -162,8 +178,8 @@
   - type: Machine
     board: SMESAdvancedMachineCircuitboard
   - type: Battery
-    maxCharge: 16000000
-    startingCharge: 16000000
+    maxCharge: 32000000
+    startingCharge: 32000000
   - type: PowerMonitoringDevice
     group: SMES
     sourceNode: input

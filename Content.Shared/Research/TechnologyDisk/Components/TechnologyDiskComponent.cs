@@ -1,4 +1,4 @@
-﻿using Content.Shared.Random;
+using Content.Shared.Random;
 using Content.Shared.Research.Prototypes;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
@@ -10,15 +10,37 @@ namespace Content.Shared.Research.TechnologyDisk.Components;
 public sealed partial class TechnologyDiskComponent : Component
 {
     /// <summary>
+    /// A discipline to constrain the disk to.
+    /// </summary>
+    [DataField, AutoNetworkedField]
+    public ProtoId<TechDisciplinePrototype>? Discipline;
+
+    /// <summary>
+    /// A tier to constrain the disk to.
+    /// </summary>
+    [DataField, AutoNetworkedField]
+    public int? Tier;
+
+    /// <summary>
     /// The recipe that will be added. If null, one will be randomly generated
     /// </summary>
-    [DataField]
-    [AutoNetworkedField]
-    public List<ProtoId<LatheRecipePrototype>>? Recipes;
+    [DataField, AutoNetworkedField]
+    public Dictionary<ProtoId<LatheRecipePrototype>, int>? Recipes;
 
     /// <summary>
     /// A weighted random prototype for how rare each tier should be.
     /// </summary>
     [DataField]
     public ProtoId<WeightedRandomPrototype> TierWeightPrototype = "TechDiskTierWeights";
+
+    /// <summary>
+    /// Mapping of disk tiers to disk prices.
+    /// </summary>
+    [DataField]
+    public Dictionary<int, int> DiskPricePerTier = new()
+    {
+        [1] = 50,
+        [2] = 135,
+        [3] = 1000,
+    };
 }

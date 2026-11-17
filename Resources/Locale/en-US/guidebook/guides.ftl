@@ -59,6 +59,7 @@ guide-entry-teslaengine = Tesla Engine
 guide-entry-solarpanels = Solar Panels
 guide-entry-teg = Thermo-electric Generator (TEG)
 guide-entry-rtg = RTG
+guide-entry-gas-generator = Gas Generator
 guide-entry-jobs = Jobs
 guide-entry-cargo = Cargo
 guide-entry-cargo-bounties = Cargo Bounties
@@ -104,6 +105,7 @@ guide-entry-radio = Radio and Speech
 guide-entry-references = Tables & References
 guide-entry-chemicals = Chemicals
 guide-entry-drinks = Drinks
+guide-entry-entities = Entity Recipes
 guide-entry-foodrecipes = Food Recipes
 
 guide-entry-elements = Elements
@@ -144,6 +146,7 @@ guide-entry-space-ninja = Space Ninja
 guide-entry-thieves = Thieves
 guide-entry-wizard = Wizard
 guide-entry-xenoborgs = Xenoborgs
+guide-entry-changelings = Changelings
 
 guide-entry-rules = Server Rules
 guide-entry-rules-core-only = Core Only Ruleset

@@ -8,6 +8,9 @@
     sprite: Clothing/Neck/Scarfs/red.rsi
   - type: Clothing
     sprite: Clothing/Neck/Scarfs/red.rsi
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 25
 
 - type: entity
   parent: ClothingScarfBase
@@ -96,8 +99,6 @@
       sprite: Clothing/Neck/Scarfs/syndiegreen.rsi
     - type: Clothing
       sprite: Clothing/Neck/Scarfs/syndiegreen.rsi
-    - type: StaticPrice
-      price: 500
 
 - type: entity
   parent: [ ClothingScarfBase, BaseSyndicateContraband ]
@@ -109,8 +110,6 @@
       sprite: Clothing/Neck/Scarfs/syndiered.rsi
     - type: Clothing
       sprite: Clothing/Neck/Scarfs/syndiered.rsi
-    - type: StaticPrice
-      price: 500
 
 - type: entity
   parent: [ ClothingScarfBase, BaseCentcommContraband ]

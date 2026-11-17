@@ -1,5 +1,6 @@
 using Content.Server.Construction.Components;
 using Content.Server.Stack;
+using Content.Server.Worldgen.Components.Debris;
 using Content.Shared.Construction;
 using Content.Shared.DoAfter;
 using JetBrains.Annotations;
@@ -15,11 +16,12 @@ namespace Content.Server.Construction
     [UsedImplicitly]
     public sealed partial class ConstructionSystem : SharedConstructionSystem
     {
-        [Dependency] private readonly IRobustRandom _robustRandom = default!;
-        [Dependency] private readonly SharedDoAfterSystem _doAfterSystem = default!;
-        [Dependency] private readonly ContainerSystem _container = default!;
-        [Dependency] private readonly StackSystem _stackSystem = default!;
-        [Dependency] private readonly SharedToolSystem _toolSystem = default!;
+        [Dependency] private IRobustRandom _robustRandom = default!;
+        [Dependency] private SharedDoAfterSystem _doAfterSystem = default!;
+        [Dependency] private ContainerSystem _container = default!;
+        [Dependency] private StackSystem _stackSystem = default!;
+        [Dependency] private SharedToolSystem _toolSystem = default!;
+        [Dependency] private SharedTransformSystem _transformSystem = default!;
 
         public override void Initialize()
         {
@@ -34,27 +36,38 @@ namespace Content.Server.Construction
 
             SubscribeLocalEvent<ConstructionComponent, ComponentInit>(OnConstructionInit);
             SubscribeLocalEvent<ConstructionComponent, ComponentStartup>(OnConstructionStartup);
+
+            SubscribeLocalEvent<ConstructionComponent, MapInitEvent>(OnConstructionMapInit);
+        }
+
+        private void OnConstructionMapInit(Entity<ConstructionComponent> ent, ref MapInitEvent args)
+        {
+            if (!TryComp(ent.Owner, out TransformComponent? _))
+                return;
+            var grid = _transformSystem.GetGrid(ent.Owner);
+            if (grid.HasValue)
+                RemComp<OwnedDebrisComponent>(grid.Value);
         }
 
         private void OnConstructionInit(Entity<ConstructionComponent> ent, ref ComponentInit args)
         {
             var construction = ent.Comp;
-            if (GetCurrentGraph(ent, construction) is not {} graph)
+            if (GetCurrentGraph(ent, construction) is not { } graph)
             {
                 Log.Warning($"Prototype {Comp<MetaDataComponent>(ent).EntityPrototype?.ID}'s construction component has an invalid graph specified.");
                 return;
             }
 
-            if (GetNodeFromGraph(graph, construction.Node) is not {} node)
+            if (GetNodeFromGraph(graph, construction.Node) is not { } node)
             {
                 Log.Warning($"Prototype {Comp<MetaDataComponent>(ent).EntityPrototype?.ID}'s construction component has an invalid node specified.");
                 return;
             }
 
             ConstructionGraphEdge? edge = null;
-            if (construction.EdgeIndex is {} edgeIndex)
+            if (construction.EdgeIndex is { } edgeIndex)
             {
-                if (GetEdgeFromNode(node, edgeIndex) is not {} currentEdge)
+                if (GetEdgeFromNode(node, edgeIndex) is not { } currentEdge)
                 {
                     Log.Warning($"Prototype {Comp<MetaDataComponent>(ent).EntityPrototype?.ID}'s construction component has an invalid edge index specified.");
                     return;
@@ -63,7 +76,7 @@ namespace Content.Server.Construction
                 edge = currentEdge;
             }
 
-            if (construction.TargetNode is {} targetNodeId)
+            if (construction.TargetNode is { } targetNodeId)
             {
                 if (GetNodeFromGraph(graph, targetNodeId) is not { } targetNode)
                 {
@@ -77,7 +90,7 @@ namespace Content.Server.Construction
 
         private void OnConstructionStartup(EntityUid uid, ConstructionComponent construction, ComponentStartup args)
         {
-            if (GetCurrentNode(uid, construction) is not {} node)
+            if (GetCurrentNode(uid, construction) is not { } node)
                 return;
 
             PerformActions(uid, null, node.Actions);

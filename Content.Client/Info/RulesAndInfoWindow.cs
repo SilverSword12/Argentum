@@ -1,15 +1,15 @@
-using System.Numerics;
 using Content.Client.UserInterface.Systems.EscapeMenu;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.CustomControls;
 using Robust.Shared.ContentPack;
+using System.Numerics;
 
 namespace Content.Client.Info
 {
-    public sealed class RulesAndInfoWindow : DefaultWindow
+    public sealed partial class RulesAndInfoWindow : DefaultWindow
     {
-        [Dependency] private readonly IResourceManager _resourceManager = default!;
+        [Dependency] private IResourceManager _resourceManager = default!;
 
         public RulesAndInfoWindow()
         {
@@ -43,11 +43,15 @@ namespace Content.Client.Info
 
         private void PopulateTutorial(Info tutorialList)
         {
-            AddSection(tutorialList, Loc.GetString("ui-info-header-intro"), "Intro.txt");
+            // AddSection(tutorialList, Loc.GetString("ui-info-header-intro"), "Intro.txt", true);
+            AddSection(tutorialList, Loc.GetString("ui-info-header-intro-persist"), "_Persistence14/PersistInfo/Intro.txt", true);
+            AddSection(tutorialList, Loc.GetString("ui-info-header-intro-persist-basics"), "_Persistence14/PersistInfo/Basics.txt", true);
+            AddSection(tutorialList, Loc.GetString("ui-info-header-intro-persist-ins-outs"), "_Persistence14/PersistInfo/InsOuts.txt", true);
+            AddSection(tutorialList, Loc.GetString("ui-info-header-intro-persist-independence-interdependence"), "_Persistence14/PersistInfo/IndependenceInterdependence.txt", true);
             var infoControlSection = new InfoControlsSection();
             tutorialList.InfoContainer.AddChild(infoControlSection);
-            AddSection(tutorialList, Loc.GetString("ui-info-header-gameplay"), "Gameplay.txt", true);
-            AddSection(tutorialList, Loc.GetString("ui-info-header-sandbox"), "Sandbox.txt", true);
+            // AddSection(tutorialList, Loc.GetString("ui-info-header-gameplay"), "Gameplay.txt", true);
+            // AddSection(tutorialList, Loc.GetString("ui-info-header-sandbox"), "Sandbox.txt", true);
 
             infoControlSection.ControlsButton.OnPressed += _ => UserInterfaceManager.GetUIController<OptionsUIController>().OpenWindow();
         }

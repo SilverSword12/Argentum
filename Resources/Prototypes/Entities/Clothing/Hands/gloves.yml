@@ -93,8 +93,8 @@
   - type: MeleeWeapon
     damage:
       types:
-        Blunt: 8
-    bluntStaminaDamageFactor: 2
+        Blunt: 0.8
+    bluntStaminaDamageFactor: 0.75
 
 - type: entity
   parent: [ ClothingHandsGlovesBoxingRiggedBase, ClothingHandsGlovesBoxingRed ]
@@ -193,6 +193,20 @@
     sprite: Clothing/Hands/Gloves/nitrile.rsi
   - type: Clothing
     sprite: Clothing/Hands/Gloves/nitrile.rsi
+  - type: Fiber
+    fiberMaterial: fibers-nitrile
+  - type: FingerprintMask
+
+- type: entity
+  parent: ClothingHandsButcherable
+  id: ClothingHandsGlovesNitrileForensic
+  name: black nitrile gloves
+  description: High-quality black nitrile gloves. Expensive medical PPE, perfect for autopsies.
+  components:
+  - type: Sprite
+    sprite: Clothing/Hands/Gloves/forensicnitrile.rsi
+  - type: Clothing
+    sprite: Clothing/Hands/Gloves/forensicnitrile.rsi
   - type: Fiber
     fiberMaterial: fibers-nitrile
   - type: FingerprintMask
@@ -331,7 +345,7 @@
     fiberColor: fibers-black
 
 - type: entity
-  parent: [ BaseSecurityCargoContraband, ClothingHandsGlovesCombat ]
+  parent: [ BaseSecurityCargoContraband, ClothingHandsGlovesCombat, BaseSlicingRefinable ]
   id: ClothingHandsMercGlovesCombat
   name: mercenary combat gloves
   description: High-quality combat gloves to protect hands from mechanical damage during combat.
@@ -340,9 +354,8 @@
     sprite: Clothing/Hands/Gloves/mercbattle.rsi
   - type: Clothing
     sprite: Clothing/Hands/Gloves/mercbattle.rsi
-  - type: Butcherable
-    butcheringType: Knife
-    spawned:
+  - type: ToolRefinable
+    refineResult:
     - id: ClothingHandsGlovesMercFingerless
   - type: Fiber
     fiberMaterial: fibers-insulative
@@ -475,9 +488,9 @@
   - type: Clothing
     sprite: Clothing/Hands/Gloves/forensic.rsi
   - type: FingerprintMask
-  - type: GuideHelp
-    guides:
-    - Forensics
+#  - type: GuideHelp
+#    guides:
+#    - Forensics
 
 # TODO Make lubed items not slip in hands
 - type: entity
@@ -622,6 +635,9 @@
           False: {state: knuckleduster_off}
   - type: ToggleClothing
     action: ActionToggleKnuckleDustersStun
+  - type: ItemToggleExaminableStatus
+  - type: ItemToggleRequiresCharge
+    requiredCharge: 50
   - type: ItemToggle
     predictable: false
     soundActivate:
@@ -639,8 +655,6 @@
       params:
         variation: 0.250
         volume: 5
-  - type: Stunbaton
-    energyPerUse: 50
   - type: ItemToggleMeleeWeapon
     activatedDamage:
       types:
@@ -652,6 +666,10 @@
         Blunt: 8
     bluntStaminaDamageFactor: 2.0
     animation: WeaponArcFist
+  - type: MeleeBatteryHitsLeft
+  - type: StaminaDamageOnHitRequiresToggle
+  - type: StaminaDamageOnHitRequiresCharge
+    requiredCharge: 50
   - type: StaminaDamageOnHit
     damage: 35
     sound: /Audio/Weapons/egloves.ogg
@@ -665,7 +683,11 @@
   - type: GuideHelp
     guides:
     - Security
-    - Antagonists
+#    - Antagonists
+  - type: Tag
+    tags:
+    - WhitelistChameleon
+    - Stunbaton
 
 - type: entity #Admeme
   parent: ClothingHandsKnuckleDusters

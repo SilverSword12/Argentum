@@ -1,10 +1,8 @@
-﻿using Content.Server.Atmos.EntitySystems;
-using Content.Server.Atmos.Piping.Components;
-using Content.Server.NodeContainer;
+using Content.Server.Atmos.EntitySystems;
 using Content.Server.NodeContainer.EntitySystems;
 using Content.Server.NodeContainer.Nodes;
-using Content.Server.Power.Components;
 using Content.Shared.Atmos;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Power;
 
 namespace Content.Server.Power.Generator;
@@ -12,10 +10,10 @@ namespace Content.Server.Power.Generator;
 /// <summary>
 /// This handles gas power receivers, allowing devices to accept power in the form of a gas.
 /// </summary>
-public sealed class GasPowerReceiverSystem : EntitySystem
+public sealed partial class GasPowerReceiverSystem : EntitySystem
 {
-    [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-    [Dependency] private readonly NodeContainerSystem _nodeContainer = default!;
+    [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+    [Dependency] private NodeContainerSystem _nodeContainer = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -34,7 +32,7 @@ public sealed class GasPowerReceiverSystem : EntitySystem
         if (pipe.Air.Temperature <= component.MaxTemperature)
         {
             // we have enough gas, so we consume it and are powered
-            if (pipe.Air[(int) component.TargetGas] > component.MolesConsumedSec * timeDelta)
+            if (pipe.Air[(int)component.TargetGas] > component.MolesConsumedSec * timeDelta)
             {
                 pipe.Air.AdjustMoles(component.TargetGas, -component.MolesConsumedSec * timeDelta);
                 SetPowered(uid, component, true);

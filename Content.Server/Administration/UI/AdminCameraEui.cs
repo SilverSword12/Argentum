@@ -1,14 +1,14 @@
 using Content.Server.Administration.Managers;
 using Content.Server.EUI;
 using Content.Shared.Administration;
+using Content.Shared.Coordinates;
 using Content.Shared.Eui;
 using Content.Shared.Follower;
-using Content.Shared.Coordinates;
+using JetBrains.Annotations;
 using Robust.Server.GameStates;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
-using JetBrains.Annotations;
 
 namespace Content.Server.Administration.UI;
 
@@ -19,9 +19,9 @@ namespace Content.Server.Administration.UI;
 [UsedImplicitly]
 public sealed partial class AdminCameraEui : BaseEui
 {
-    [Dependency] private readonly IAdminManager _admin = default!;
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private IAdminManager _admin = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     private readonly FollowerSystem _follower = default!;
     private readonly PvsOverrideSystem _pvs = default!;

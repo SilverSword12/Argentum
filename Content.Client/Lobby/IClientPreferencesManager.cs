@@ -19,6 +19,9 @@ namespace Content.Client.Lobby
         void CreateCharacter(HumanoidCharacterProfile profile);
         void DeleteCharacter(HumanoidCharacterProfile profile);
         void DeleteCharacter(int slot);
+        void DeleteCharacter(string name);
         void UpdateConstructionFavorites(List<ProtoId<ConstructionPrototype>> favorites);
+        void FinalizeCharacter(HumanoidCharacterProfile profile, int slot);
+        void JoinAsCharacter(int slot);
     }
 }

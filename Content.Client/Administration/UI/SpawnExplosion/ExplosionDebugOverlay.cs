@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Numerics;
 using JetBrains.Annotations;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
@@ -7,14 +5,16 @@ using Robust.Client.ResourceManagement;
 using Robust.Shared.Enums;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
+using System.Linq;
+using System.Numerics;
 
 namespace Content.Client.Administration.UI.SpawnExplosion;
 
 [UsedImplicitly]
-public sealed class ExplosionDebugOverlay : Overlay
+public sealed partial class ExplosionDebugOverlay : Overlay
 {
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly IEyeManager _eyeManager = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private IEyeManager _eyeManager = default!;
 
     public Dictionary<int, List<Vector2i>>? SpaceTiles;
     public Dictionary<EntityUid, Dictionary<int, List<Vector2i>>> Tiles = new();

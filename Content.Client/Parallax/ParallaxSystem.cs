@@ -8,13 +8,14 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Client.Parallax;
 
-public sealed class ParallaxSystem : SharedParallaxSystem
+public sealed partial class ParallaxSystem : SharedParallaxSystem
 {
-    [Dependency] private readonly IOverlayManager _overlay = default!;
-    [Dependency] private readonly IParallaxManager _parallax = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
+    [Dependency] private IOverlayManager _overlay = default!;
+    [Dependency] private IParallaxManager _parallax = default!;
+    [Dependency] private SharedMapSystem _map = default!;
 
     private static readonly ProtoId<ParallaxPrototype> Fallback = "Default";
+    private string? _localWeatherParallaxOverride;
 
     public const int ParallaxZIndex = 0;
 
@@ -65,9 +66,32 @@ public sealed class ParallaxSystem : SharedParallaxSystem
         return GetParallax(_map.GetMapOrInvalid(mapId));
     }
 
+    public ParallaxLayerPrepared[] GetParallaxLayersByName(string name)
+    {
+        return _parallax.GetParallaxLayers(name);
+    }
+
     public string GetParallax(EntityUid mapUid)
     {
+        if (!string.IsNullOrWhiteSpace(_localWeatherParallaxOverride))
+            return _localWeatherParallaxOverride;
+
         return TryComp<ParallaxComponent>(mapUid, out var parallax) ? parallax.Parallax : Fallback;
+    }
+
+    public void SetLocalParallaxOverride(string? parallax)
+    {
+        var normalized = string.IsNullOrWhiteSpace(parallax) ? null : parallax;
+        if (_localWeatherParallaxOverride == normalized)
+            return;
+
+        _localWeatherParallaxOverride = normalized;
+
+        if (_localWeatherParallaxOverride == null)
+            return;
+
+        if (!_parallax.IsLoaded(_localWeatherParallaxOverride))
+            _parallax.LoadParallaxByName(_localWeatherParallaxOverride);
     }
 
     /// <summary>
@@ -94,8 +118,8 @@ public sealed class ParallaxSystem : SharedParallaxSystem
         Color? modulate = null)
     {
         // Size of the texture in world units.
-        var size = sprite.Size / (float) EyeManager.PixelsPerMeter * scale;
-        var scrolled = scrolling * (float) curTime.TotalSeconds;
+        var size = sprite.Size / (float)EyeManager.PixelsPerMeter * scale;
+        var scrolled = scrolling * (float)curTime.TotalSeconds;
 
         // Origin - start with the parallax shift itself.
         var originBL = position * slowness + scrolled;

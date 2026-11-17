@@ -1,17 +1,16 @@
-using System.Numerics;
 using Content.Shared.Salvage.Fulton;
-using Robust.Shared.Containers;
 using Robust.Shared.Map;
 using Robust.Shared.Random;
+using System.Numerics;
 
 namespace Content.Server.Salvage;
 
 /// <summary>
 /// Transports attached entities to the linked beacon after a timer has elapsed.
 /// </summary>
-public sealed class FultonSystem : SharedFultonSystem
+public sealed partial class FultonSystem : SharedFultonSystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     public override void Initialize()
     {
@@ -53,9 +52,9 @@ public sealed class FultonSystem : SharedFultonSystem
 
     private void Fulton(EntityUid uid, FultonedComponent component)
     {
-        if (!Deleted(component.Beacon) &&
-            TryComp(component.Beacon, out TransformComponent? beaconXform) &&
-            !Container.IsEntityOrParentInContainer(component.Beacon.Value, xform: beaconXform) &&
+        if (TryGetBeacon(component.BeaconKey, out var beaconUid) &&
+            TryComp(beaconUid, out TransformComponent? beaconXform) &&
+            !Container.IsEntityOrParentInContainer(beaconUid.Value, xform: beaconXform) &&
             CanFulton(uid))
         {
             var xform = Transform(uid);

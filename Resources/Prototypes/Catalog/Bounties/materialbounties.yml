@@ -1,0 +1,167 @@
+- type: cargoBounty
+  id: BountySteel
+  reward: 10000
+  description: bounty-description-steel
+  group: MaterialBounty
+  condition:
+    name: bounty-item-steel
+    amount: 250
+    whitelist:
+      tags:
+      - Steel
+
+- type: cargoBounty
+  id: BountyGold
+  reward: 9900
+  description: bounty-description-gold
+  group: MaterialBounty
+  condition:
+    name: bounty-item-gold
+    amount: 60
+    whitelist:
+      tags:
+      - Gold
+
+- type: cargoBounty
+  id: BountySilver
+  reward: 9750
+  description: bounty-description-silver
+  group: MaterialBounty
+  condition:
+    name: bounty-item-silver
+    amount: 75
+    whitelist:
+      tags:
+      - Silver
+
+- type: cargoBounty
+  id: BountyBrass
+  reward: 9000
+  description: bounty-description-brass
+  group: MaterialBounty
+  condition:
+    name: bounty-item-brass
+    amount: 60
+    whitelist:
+      tags:
+      - Brass
+
+- type: cargoBounty
+  id: BountyPlasteel
+  reward: 10000
+  description: bounty-description-plasteel
+  group: MaterialBounty
+  condition:
+    name: bounty-item-plasteel
+    amount: 25
+    whitelist:
+      tags:
+      - Plasteel
+
+- type: cargoBounty
+  id: BountyPlasma
+  reward: 9000
+  description: bounty-description-plasma
+  group: MaterialBounty
+  condition:
+    name: bounty-item-plasma
+    amount: 30
+    whitelist:
+      tags:
+      - Plasma
+
+- type: cargoBounty
+  id: BountyPlastic
+  reward: 10000
+  description: bounty-description-plastic
+  group: MaterialBounty
+  condition:
+    name: bounty-item-plastic
+    amount: 250
+    whitelist:
+      tags:
+      - Plastic
+
+- type: cargoBounty
+  id: BountyWood
+  reward: 10000
+  description: bounty-description-wood
+  group: MaterialBounty
+  condition:
+    name: bounty-item-wood
+    amount: 100
+    whitelist:
+      tags:
+      - Wood
+
+- type: cargoBounty
+  id: BountyUranium
+  reward: 9990
+  description: bounty-description-uranium
+  group: MaterialBounty
+  condition:
+    name: bounty-item-uranium
+    amount: 30
+    whitelist:
+      tags:
+      - Uranium
+
+- type: cargoBounty
+  id: BountyTitanium
+  reward: 10000
+  description: bounty-description-titanium
+  group: MaterialBounty
+  condition:
+    name: bounty-item-titanium
+    amount: 100
+    whitelist:
+      tags:
+      - Titanium
+
+- type: cargoBounty
+  id: BountyBananium
+  reward: 10000
+  description: bounty-description-bananium
+  group: MaterialBounty
+  condition:
+    name: bounty-item-bananium
+    amount: 20
+    whitelist:
+      tags:
+      - Bananium
+
+- type: cargoBounty
+  id: BountyPhoronAlloy
+  reward: 15000
+  description: bounty-description-phoronalloy
+  group: MaterialBounty
+  condition:
+    name: bounty-item-phoronalloy
+    amount: 30
+    whitelist:
+      tags:
+      - Phoron
+
+- type: cargoBounty
+  id: BountyCoal
+  reward: 9750
+  description: bounty-description-coal
+  group: MaterialBounty
+  condition:
+    name: bounty-item-coal
+    amount: 130
+    whitelist:
+      tags:
+      - Coal
+
+- type: cargoBounty
+  id: BountyDiamonds
+  reward: 10000
+  description: bounty-description-diamond
+  group: MaterialBounty
+  condition:
+    name: bounty-item-diamond
+    amount: 10
+    whitelist:
+      tags:
+      - Diamond

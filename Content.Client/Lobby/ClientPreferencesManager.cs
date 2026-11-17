@@ -1,11 +1,12 @@
-using System.Linq;
 using Content.Shared.Construction.Prototypes;
 using Content.Shared.Preferences;
 using Robust.Client;
 using Robust.Client.Player;
 using Robust.Shared.Network;
+using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Client.Lobby
 {
@@ -14,11 +15,11 @@ namespace Content.Client.Lobby
     ///     connection.
     ///     Stores preferences on the server through <see cref="SelectCharacter" /> and <see cref="UpdateCharacter" />.
     /// </summary>
-    public sealed class ClientPreferencesManager : IClientPreferencesManager
+    public sealed partial class ClientPreferencesManager : IClientPreferencesManager
     {
-        [Dependency] private readonly IClientNetManager _netManager = default!;
-        [Dependency] private readonly IBaseClient _baseClient = default!;
-        [Dependency] private readonly IPlayerManager _playerManager = default!;
+        [Dependency] private IClientNetManager _netManager = default!;
+        [Dependency] private IBaseClient _baseClient = default!;
+        [Dependency] private IPlayerManager _playerManager = default!;
 
         public event Action? OnServerDataLoaded;
 
@@ -31,7 +32,7 @@ namespace Content.Client.Lobby
             _netManager.RegisterNetMessage<MsgUpdateCharacter>();
             _netManager.RegisterNetMessage<MsgSelectCharacter>();
             _netManager.RegisterNetMessage<MsgDeleteCharacter>();
-
+            _netManager.RegisterNetMessage<MsgFinalizeCharacter>();
             _baseClient.RunLevelChanged += BaseClientOnRunLevelChanged;
         }
 
@@ -63,7 +64,7 @@ namespace Content.Client.Lobby
         {
             var collection = IoCManager.Instance!;
             profile.EnsureValid(_playerManager.LocalSession!, collection);
-            var characters = new Dictionary<int, HumanoidCharacterProfile>(Preferences.Characters) {[slot] = profile};
+            var characters = new Dictionary<int, HumanoidCharacterProfile>(Preferences.Characters) { [slot] = profile };
             Preferences = new PlayerPreferences(characters, Preferences.SelectedCharacterIndex, Preferences.AdminOOCColor, Preferences.ConstructionFavorites);
             var msg = new MsgUpdateCharacter
             {
@@ -108,6 +109,10 @@ namespace Content.Client.Lobby
             _netManager.ClientSendMessage(msg);
         }
 
+        public void DeleteCharacter(string name)
+        {
+
+        }
         public void UpdateConstructionFavorites(List<ProtoId<ConstructionPrototype>> favorites)
         {
             Preferences = new PlayerPreferences(Preferences.Characters, Preferences.SelectedCharacterIndex, Preferences.AdminOOCColor, favorites);
@@ -124,6 +129,23 @@ namespace Content.Client.Lobby
             Settings = message.Settings;
 
             OnServerDataLoaded?.Invoke();
+        }
+        public void FinalizeCharacter(HumanoidCharacterProfile profile, int slot)
+        {
+            var msg = new MsgFinalizeCharacter
+            {
+                Slot = slot,
+                Profile = profile
+            };
+            _netManager.ClientSendMessage(msg);
+        }
+        public void JoinAsCharacter(int slot)
+        {
+            var msg = new MsgJoinAsCharacter
+            {
+                Slot = slot,
+            };
+            _netManager.ClientSendMessage(msg);
         }
     }
 }

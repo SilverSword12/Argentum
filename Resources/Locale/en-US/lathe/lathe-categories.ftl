@@ -6,6 +6,8 @@ lathe-category-machines = Machines
 lathe-category-parts = Parts
 lathe-category-tools = Tools
 lathe-category-weapons = Weapons
+lathe-category-bureaucracy = Bureaucracy
+lathe-category-religion = Religion
 
 # Biogen
 lathe-category-food = Food
@@ -31,8 +33,12 @@ lathe-category-faux-tile = Faux
 lathe-category-maints-tile = Maints
 lathe-category-marble = Marble
 lathe-category-steel-tile = Steel
+lathe-category-shuttle-tile = Shuttle
 lathe-category-white-tile = White
 lathe-category-wood-tile = Wood
+lathe-category-plastic-tile = Plastic
+lathe-category-precious-tile = Precious
+lathe-category-industrial-tile = Industrial
 
 # Science
 lathe-category-mechs = Mechs
@@ -52,3 +58,10 @@ lathe-category-command = Command
 lathe-category-hats = Hats
 lathe-category-jumpsuits = Jumpsuits
 lathe-category-neck = Neck
+lathe-category-shoes = Shoes
+lathe-category-gloves = Gloves
+lathe-category-belts = Belts
+lathe-category-glasses = Glasses
+lathe-category-masks = Masks
+lathe-category-flags = Flags
+lathe-category-bandanas = Bandanas

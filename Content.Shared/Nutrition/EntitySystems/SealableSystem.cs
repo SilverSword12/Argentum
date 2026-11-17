@@ -1,18 +1,23 @@
 using Content.Shared.Examine;
-using Content.Shared.Nutrition.EntitySystems;
 using Content.Shared.Nutrition.Components;
 
 namespace Content.Shared.Nutrition.EntitySystems;
 
 public sealed partial class SealableSystem : EntitySystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
     public override void Initialize()
     {
         base.Initialize();
 
         SubscribeLocalEvent<SealableComponent, ExaminedEvent>(OnExamined, after: new[] { typeof(OpenableSystem) });
         SubscribeLocalEvent<SealableComponent, OpenableOpenedEvent>(OnOpened);
+        SubscribeLocalEvent<SealableComponent, ComponentStartup>(OnComponentStartup);
+    }
+
+    private void OnComponentStartup(Entity<SealableComponent> ent, ref ComponentStartup args)
+    {
+        UpdateAppearance(ent, ent.Comp);
     }
 
     private void OnExamined(EntityUid uid, SealableComponent comp, ExaminedEvent args)

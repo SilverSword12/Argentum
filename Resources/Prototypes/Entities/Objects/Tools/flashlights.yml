@@ -60,7 +60,7 @@
     storedRotation: -90
   - type: PointLight
     enabled: false
-    mask: /Textures/Effects/LightMasks/cone.png
+    lightMask: ConeSingle
     autoRot: true
     radius: 6
     netsync: false
@@ -74,6 +74,10 @@
     quickEquip: false
     slots:
       - Belt
+  - type: PhysicalComposition
+    materialComposition:
+      Plastic: 50
+      Steel: 100
 
 - type: entity
   name: seclite

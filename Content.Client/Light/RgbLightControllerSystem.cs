@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Numerics;
 using Content.Client.Items.Systems;
 using Content.Shared.Clothing;
 using Content.Shared.Hands;
@@ -10,16 +8,18 @@ using Robust.Client.GameObjects;
 using Robust.Shared.GameStates;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Timing;
+using System.Linq;
+using System.Numerics;
 using static Robust.Client.GameObjects.SpriteComponent;
 
 namespace Content.Client.Light
 {
-    public sealed class RgbLightControllerSystem : SharedRgbLightControllerSystem
+    public sealed partial class RgbLightControllerSystem : SharedRgbLightControllerSystem
     {
-        [Dependency] private readonly IGameTiming _gameTiming = default!;
-        [Dependency] private readonly ItemSystem _itemSystem = default!;
-        [Dependency] private readonly SharedPointLightSystem _lights = default!;
-        [Dependency] private readonly SpriteSystem _sprite = default!;
+        [Dependency] private IGameTiming _gameTiming = default!;
+        [Dependency] private ItemSystem _itemSystem = default!;
+        [Dependency] private SharedPointLightSystem _lights = default!;
+        [Dependency] private SpriteSystem _sprite = default!;
 
         public override void Initialize()
         {

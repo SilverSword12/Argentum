@@ -1,15 +1,14 @@
 using Content.Shared.Examine;
 using Content.Shared.Mobs;
-using Content.Shared.Mobs.Systems;
 using Content.Shared.Stealth.Components;
 using Robust.Shared.GameStates;
 using Robust.Shared.Timing;
 
 namespace Content.Shared.Stealth;
 
-public abstract class SharedStealthSystem : EntitySystem
+public abstract partial class SharedStealthSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     public override void Initialize()
     {
@@ -98,7 +97,7 @@ public abstract class SharedStealthSystem : EntitySystem
 
     private void OnStealthGetState(EntityUid uid, StealthComponent component, ref ComponentGetState args)
     {
-        args.State = new StealthComponentState(component.LastVisibility, component.LastUpdated, component.Enabled);
+        args.State = new StealthComponentState(component.LastVisibility, component.LastUpdated, component.Enabled, component.ShimmerFrequency);
     }
 
     private void OnStealthHandleState(EntityUid uid, StealthComponent component, ref ComponentHandleState args)
@@ -109,6 +108,7 @@ public abstract class SharedStealthSystem : EntitySystem
         SetEnabled(uid, cast.Enabled, component);
         component.LastVisibility = cast.Visibility;
         component.LastUpdated = cast.LastUpdated;
+        component.ShimmerFrequency = cast.ShimmerFrequency;
     }
 
     private void OnMove(EntityUid uid, StealthOnMoveComponent component, ref MoveEvent args)
@@ -181,7 +181,7 @@ public abstract class SharedStealthSystem : EntitySystem
 
         var deltaTime = _timing.CurTime - component.LastUpdated.Value;
 
-        var ev = new GetVisibilityModifiersEvent(uid, component, (float) deltaTime.TotalSeconds, 0f);
+        var ev = new GetVisibilityModifiersEvent(uid, component, (float)deltaTime.TotalSeconds, 0f);
         RaiseLocalEvent(uid, ev, false);
 
         return Math.Clamp(component.LastVisibility + ev.FlatModifier, component.MinVisibility, component.MaxVisibility);

@@ -8,9 +8,9 @@ using Robust.Shared.Serialization;
 
 namespace Content.Shared.RatKing.Systems;
 
-public sealed class RummagerSystem : EntitySystem
+public sealed partial class RummagerSystem : EntitySystem
 {
-    [Dependency] private readonly EntityTableSystem _entityTable =  default!;
+    [Dependency] private readonly EntityTableSystem _entityTable = default!;
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;

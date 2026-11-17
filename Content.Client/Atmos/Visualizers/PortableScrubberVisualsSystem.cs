@@ -1,13 +1,13 @@
-using Robust.Client.GameObjects;
-using Content.Shared.Atmos.Visuals;
 using Content.Client.Power;
+using Content.Shared.Atmos.Visuals;
+using Robust.Client.GameObjects;
 
 namespace Content.Client.Atmos.Visualizers;
 
 /// <summary>
 /// Controls client-side visuals for portable scrubbers.
 /// </summary>
-public sealed class PortableScrubberSystem : VisualizerSystem<PortableScrubberVisualsComponent>
+public sealed partial class PortableScrubberSystem : VisualizerSystem<PortableScrubberVisualsComponent>
 {
     protected override void OnAppearanceChange(EntityUid uid, PortableScrubberVisualsComponent component, ref AppearanceChangeEvent args)
     {

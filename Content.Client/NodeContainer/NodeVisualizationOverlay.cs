@@ -1,5 +1,3 @@
-using System.Numerics;
-using System.Text;
 using Content.Client.Resources;
 using Robust.Client.Graphics;
 using Robust.Client.Input;
@@ -9,6 +7,9 @@ using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Linq;
+using System.Numerics;
+using System.Text;
 using static Content.Shared.NodeContainer.NodeVis;
 
 namespace Content.Client.NodeContainer
@@ -17,7 +18,6 @@ namespace Content.Client.NodeContainer
     {
         private readonly NodeGroupSystem _system;
         private readonly EntityLookupSystem _lookup;
-        private readonly IMapManager _mapManager;
         private readonly IInputManager _inputManager;
         private readonly IEntityManager _entityManager;
         private readonly SharedTransformSystem _transformSystem;
@@ -38,14 +38,12 @@ namespace Content.Client.NodeContainer
         public NodeVisualizationOverlay(
             NodeGroupSystem system,
             EntityLookupSystem lookup,
-            IMapManager mapManager,
             IInputManager inputManager,
             IResourceCache cache,
             IEntityManager entityManager)
         {
             _system = system;
             _lookup = lookup;
-            _mapManager = mapManager;
             _inputManager = inputManager;
             _entityManager = entityManager;
             _transformSystem = _entityManager.System<SharedTransformSystem>();
@@ -119,7 +117,10 @@ namespace Content.Client.NodeContainer
             var xformQuery = _entityManager.GetEntityQuery<TransformComponent>();
 
             _grids.Clear();
-            _mapManager.FindGridsIntersecting(map, worldAABB, ref _grids);
+            _mapSystem.FindGridsIntersecting(map, worldAABB, ref _grids);
+
+            // For looking up reachable nodes that aren't in the same grid.
+            Dictionary<(NetEntity Entity, string Name, string Type), (Matrix3x2 WorldMatrix, NodeRenderData NodeData)> cachedNodeData = new();
 
             foreach (var grid in _grids)
             {
@@ -151,6 +152,7 @@ namespace Content.Client.NodeContainer
             {
                 var grid = _entityManager.GetComponent<MapGridComponent>(gridId);
                 var (_, _, worldMatrix, invMatrix) = _transformSystem.GetWorldPositionRotationMatrixWithInv(gridId);
+                Matrix3x2.Invert(worldMatrix, out var worldMatrixInverted);
 
                 var lCursorBox = invMatrix.TransformBox(cursorBox);
                 foreach (var (pos, list) in gridDict)
@@ -167,6 +169,7 @@ namespace Content.Client.NodeContainer
                             _hovered = (group.NetId, node.NetId);
 
                         _nodeIndex[(group.NetId, node.NetId)] = new NodeRenderData(group, node, nodePos);
+                        cachedNodeData[(node.Entity, node.Name, node.Type)] = (worldMatrix, _nodeIndex[(group.NetId, node.NetId)]);
                         offset += nodeOffset;
                     }
                 }
@@ -196,9 +199,18 @@ namespace Content.Client.NodeContainer
                         {
                             handle.DrawLine(pos, reachDat.NodePos, color);
                         }
+                        else
+                        {
+                            // If its reachable but on a different grid, try to find it from cache (or when the next grid is rendered)
+                            // Perhaps per-grid visualization is unneeded but i'd actually need better research on that topic. This should be good enough for Visual debugging.
+                            var reachableInterGrid = nodeRenderData.GroupData.Nodes.FirstOrDefault(x => x.NetId == reachable);
+                            if (reachableInterGrid != null && cachedNodeData.TryGetValue((reachableInterGrid.Entity, reachableInterGrid.Name, reachableInterGrid.Type), out var reachableNode))
+                            {
+                                handle.DrawLine(pos, Vector2.Transform(Vector2.Transform(reachableNode.NodeData.NodePos, reachableNode.WorldMatrix), worldMatrixInverted), color);
+                            }
+                        }
                     }
                 }
-
                 _nodeIndex.Clear();
             }
 

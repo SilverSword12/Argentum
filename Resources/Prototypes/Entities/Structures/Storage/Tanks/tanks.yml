@@ -8,7 +8,7 @@
   suffix: Empty
   components:
   - type: StaticPrice
-    price: 750
+    price: 300
   - type: Sprite
     sprite: Structures/Storage/tanks.rsi
     layers:
@@ -33,18 +33,20 @@
   - type: Explosive
     explosionType: Default
     totalIntensity: 60 # Mediocre explosion. Not enough to do any meaningful structural damage to anything other then windows, provided you're only using one tank.
+  - type: Construction
+    graph: GenericTankGraph
+    node: generictank
 
 - type: entity
   id: WeldingFuelTankFull
   parent: WeldingFuelTank
   suffix: Full
   components:
-  - type: SolutionContainerManager
-    solutions:
-      tank:
-        reagents:
-        - ReagentId: WeldingFuel
-          Quantity: 1500
+  - type: Solution
+    solution:
+      reagents:
+      - ReagentId: WeldingFuel
+        Quantity: 960
 
 - type: entity
   parent: [StorageTankBig, WeldingFuelTank] # StorageTankBig must come first, or else the desnity won't get inherited.
@@ -54,7 +56,7 @@
   suffix: Full
   components:
   - type: StaticPrice
-    price: 2500
+    price: 2000
   - type: Sprite
     sprite: Structures/Storage/tanks.rsi
     layers:
@@ -65,13 +67,11 @@
   - type: SolutionContainerVisuals
     maxFillLevels: 7
     fillBaseName: highfueltank-2-
-  - type: SolutionContainerManager
-    solutions:
-      tank:
-        reagents:
-        - ReagentId: WeldingFuel
-          Quantity: 5000
-        maxVol: 5000
+  - type: Solution
+    solution:
+      reagents:
+      - ReagentId: WeldingFuel
+        Quantity: 3840
   - type: Explosive
     explosionType: Default
     totalIntensity: 120
@@ -86,7 +86,7 @@
   suffix: Empty
   components:
   - type: StaticPrice
-    price: 500
+    price: 300
   - type: Sprite
     sprite: Structures/Storage/tanks.rsi
     layers:
@@ -100,21 +100,23 @@
     fillBaseName: watertank-2-
   - type: ExaminableSolution
     solution: tank
+  - type: Construction
+    graph: GenericTankGraph
+    node: generictank
 
 - type: entity
   parent: WaterTank
   id: WaterTankFull
   suffix: Full
   components:
-  - type: SolutionContainerManager
-    solutions:
-      tank:
-        reagents:
-        - ReagentId: Water
-          Quantity: 1500
+  - type: Solution
+    solution:
+      reagents:
+      - ReagentId: Water
+        Quantity: 960
 
 - type: entity
-  parent: StorageTank
+  parent: [SolutionHuge, StorageTank]
   id: WaterCooler
   name: water cooler
   description: Seems like a good place to stand and waste time. It has a stock of paper cups on the side.
@@ -130,12 +132,11 @@
   - type: SolutionContainerVisuals
     maxFillLevels: 4
     fillBaseName: watercooler-2-
-  - type: SolutionContainerManager
-    solutions:
-      tank:
-        reagents:
-        - ReagentId: Water
-          Quantity: 500
+  - type: Solution
+    solution:
+      reagents:
+      - ReagentId: Water
+        Quantity: 480
   - type: ContainerContainer
     containers:
       bin-container: !type:Container
@@ -161,6 +162,11 @@
     solution: tank
   - type: StaticPrice
     price: 500
+  - type: Construction # Persistence14
+    graph: WaterCooler
+    node: water-cooler
+    defaultTarget: water-cooler
+    deconstructionTarget: start
 
 - type: entity
   parent: [StorageTankBig, WaterTank]
@@ -170,7 +176,7 @@
   suffix: Full
   components:
   - type: StaticPrice
-    price: 2500
+    price: 2000
   - type: Sprite
     sprite: Structures/Storage/tanks.rsi
     layers:
@@ -182,15 +188,11 @@
   - type: SolutionContainerVisuals
     maxFillLevels: 7
     fillBaseName: highwatertank-2-
-  - type: SolutionContainerManager
-    solutions:
-      tank:
-        reagents:
-        - ReagentId: Water
-#         This is *100, 000* on /tg/
-          Quantity: 10000
-        maxVol: 10000
-#   It's pressurized...
+  - type: Solution
+    solution:
+      reagents:
+      - ReagentId: Water
+        Quantity: 3840 # This is *100, 000* on /tg/
   - type: ExaminableSolution
     solution: tank
   - type: ReagentTank
@@ -202,7 +204,7 @@
   suffix: Empty
   components:
     - type: StaticPrice
-      price: 500
+      price: 300
     - type: Sprite
       sprite: Structures/Storage/tanks.rsi
       layers:
@@ -216,3 +218,9 @@
       fillBaseName: watertank-2-
     - type: ExaminableSolution
       solution: tank
+    - type: Icon
+      sprite: Structures/Storage/tanks.rsi
+      state: "generictank-1"
+    - type: Construction
+      graph: GenericTankGraph
+      node: generictank

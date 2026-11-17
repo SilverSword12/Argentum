@@ -1,4 +1,4 @@
-﻿using Content.Shared.CCVar;
+using Content.Shared.CCVar;
 using Robust.Shared.Audio;
 using Robust.Shared.Serialization;
 namespace Content.Shared.Audio;
@@ -8,6 +8,19 @@ namespace Content.Shared.Audio;
 /// </summary>
 public abstract class SharedGlobalSoundSystem : EntitySystem
 {
+}
+
+[Virtual]
+[Serializable, NetSerializable]
+public class LocalSoundEvent : EntityEventArgs
+{
+    public SoundSpecifier Specifier;
+    public AudioParams? AudioParams;
+    public LocalSoundEvent(SoundSpecifier specifier, AudioParams? audioParams = null)
+    {
+        Specifier = specifier;
+        AudioParams = audioParams;
+    }
 }
 
 [Virtual]
@@ -29,7 +42,7 @@ public class GlobalSoundEvent : EntityEventArgs
 [Serializable, NetSerializable]
 public sealed class AdminSoundEvent : GlobalSoundEvent
 {
-    public AdminSoundEvent(ResolvedSoundSpecifier specifier, AudioParams? audioParams = null) : base(specifier, audioParams){}
+    public AdminSoundEvent(ResolvedSoundSpecifier specifier, AudioParams? audioParams = null) : base(specifier, audioParams) { }
 }
 
 /// <summary>
@@ -38,7 +51,7 @@ public sealed class AdminSoundEvent : GlobalSoundEvent
 [Serializable, NetSerializable]
 public sealed class GameGlobalSoundEvent : GlobalSoundEvent
 {
-    public GameGlobalSoundEvent(ResolvedSoundSpecifier specifier, AudioParams? audioParams = null) : base(specifier, audioParams){}
+    public GameGlobalSoundEvent(ResolvedSoundSpecifier specifier, AudioParams? audioParams = null) : base(specifier, audioParams) { }
 }
 
 public enum StationEventMusicType : byte

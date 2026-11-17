@@ -17,7 +17,7 @@ namespace Content.Client.Power
     public sealed partial class SolarControlWindow : DefaultWindow, IComputerWindow<SolarControlConsoleBoundInterfaceState>
     {
         [ViewVariables]
-        private SolarControlConsoleBoundInterfaceState _lastState = new(0, 0, 0, 0);
+        private SolarControlConsoleBoundInterfaceState _lastState = new(0, 0, 0, 0, false);
 
         public SolarControlWindow()
         {
@@ -26,9 +26,11 @@ namespace Content.Client.Power
 
         public void SetupComputerWindow(ComputerBoundUserInterfaceBase cb)
         {
+            MissingSolarTracker.FontColorOverride = Color.Red;
+
             PanelRotation.OnTextEntered += text =>
             {
-                if (!double.TryParse((string?) text.Text, out var value))
+                if (!double.TryParse((string?)text.Text, out var value))
                     return;
 
                 SolarControlConsoleAdjustMessage msg = new()
@@ -45,7 +47,7 @@ namespace Content.Client.Power
 
             PanelVelocity.OnTextEntered += text =>
             {
-                if (!double.TryParse((string?) text.Text, out var value))
+                if (!double.TryParse((string?)text.Text, out var value))
                     return;
 
                 SolarControlConsoleAdjustMessage msg = new()
@@ -80,8 +82,13 @@ namespace Content.Client.Power
         public void UpdateState(SolarControlConsoleBoundInterfaceState scc)
         {
             _lastState = scc;
+
+            SunAngle.Visible = SunAngleUnit.Visible = SunAngleLabel.Visible = SunAngleLabel2.Visible
+                = scc.HasTracker;
+            MissingSolarTracker.Visible = !scc.HasTracker;
+
             NotARadar.UpdateState(scc);
-            OutputPower.Text = ((int) MathF.Floor(scc.OutputPower)).ToString();
+            OutputPower.Text = ((int)MathF.Floor(scc.OutputPower)).ToString();
             SunAngle.Text = FormatAngle(scc.TowardsSun);
             UpdateField(PanelRotation, FormatAngle(scc.Rotation));
             UpdateField(PanelVelocity, FormatAngle(scc.AngularVelocity * 60));
@@ -89,20 +96,20 @@ namespace Content.Client.Power
 
     }
 
-    public sealed class SolarControlNotARadar : Control
+    public sealed partial class SolarControlNotARadar : Control
     {
         // This is used for client-side prediction of the panel rotation.
         // This makes the display feel a lot smoother.
-        [Dependency] private readonly IGameTiming _gameTiming = default!;
+        [Dependency] private IGameTiming _gameTiming = default!;
 
-        private SolarControlConsoleBoundInterfaceState _lastState = new(0, 0, 0, 0);
+        private SolarControlConsoleBoundInterfaceState _lastState = new(0, 0, 0, 0, false);
 
         private TimeSpan _lastStateTime = TimeSpan.Zero;
 
         public const int StandardSizeFull = 290;
         public const int StandardRadiusCircle = 140;
-        public int SizeFull => (int) (StandardSizeFull * UIScale);
-        public int RadiusCircle => (int) (StandardRadiusCircle * UIScale);
+        public int SizeFull => (int)(StandardSizeFull * UIScale);
+        public int RadiusCircle => (int)(StandardRadiusCircle * UIScale);
 
         public SolarControlNotARadar()
         {

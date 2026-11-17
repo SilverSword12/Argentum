@@ -1,5 +1,6 @@
 using Content.Client.Gameplay;
 using Content.Client.Info;
+using Content.Shared._Persistence14.UserInterface;
 using Robust.Client.Input;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controllers;
@@ -9,15 +10,17 @@ using Robust.Shared.Input.Binding;
 
 namespace Content.Client.UserInterface.Systems.Info;
 
-public sealed class CloseAllWindowsUIController : UIController
+public sealed partial class CloseAllWindowsUIController : UIController
 {
-    [Dependency] private readonly IInputManager _inputManager = default!;
-    [Dependency] private readonly IUserInterfaceManager _uiManager = default!;
+    [Dependency] private IInputManager _inputManager = default!;
+    [Dependency] private IUserInterfaceManager _uiManager = default!;
 
     public override void Initialize()
     {
         _inputManager.SetInputCommand(EngineKeyFunctions.WindowCloseAll,
             InputCmdHandler.FromDelegate(session => CloseAllWindows()));
+
+        SubscribeNetworkEvent<CloseAllWindowsEvent>((_, __) => CloseAllWindows());
     }
 
     private void CloseAllWindows()
@@ -26,7 +29,7 @@ public sealed class CloseAllWindowsUIController : UIController
         {
             if (childControl is BaseWindow)
             {
-                ((BaseWindow) childControl).Close();
+                ((BaseWindow)childControl).Close();
             }
         }
     }

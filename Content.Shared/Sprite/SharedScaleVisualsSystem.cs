@@ -1,21 +1,27 @@
-using System.Numerics;
 using Robust.Shared.Serialization;
+using System.Numerics;
 
 namespace Content.Shared.Sprite;
 
-public abstract class SharedScaleVisualsSystem : EntitySystem
+public abstract partial class SharedScaleVisualsSystem : EntitySystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
 
     public override void Initialize()
     {
         base.Initialize();
 
         SubscribeLocalEvent<ScaleVisualsComponent, MapInitEvent>(OnMapInit);
+        SubscribeLocalEvent<ScaleVisualsComponent, ComponentInit>(OnCompInit);
         SubscribeLocalEvent<ScaleVisualsComponent, ComponentShutdown>(OnComponentShutdown);
     }
 
     private void OnMapInit(Entity<ScaleVisualsComponent> ent, ref MapInitEvent args)
+    {
+        SetSpriteScale(ent.Owner, ent.Comp.Scale);
+    }
+
+    private void OnCompInit(Entity<ScaleVisualsComponent> ent, ref ComponentInit args)
     {
         SetSpriteScale(ent.Owner, ent.Comp.Scale);
     }

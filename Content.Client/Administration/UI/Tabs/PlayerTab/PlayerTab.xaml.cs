@@ -9,6 +9,7 @@ using Robust.Client.Player;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Configuration;
+using Robust.Shared.Prototypes;
 using static Content.Client.Administration.UI.Tabs.PlayerTab.PlayerTabHeader;
 using static Robust.Client.UserInterface.Controls.BaseButton;
 
@@ -17,9 +18,10 @@ namespace Content.Client.Administration.UI.Tabs.PlayerTab;
 [GenerateTypedNameReferences]
 public sealed partial class PlayerTab : Control
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
-    [Dependency] private readonly IConfigurationManager _config = default!;
-    [Dependency] private readonly IPlayerManager _playerMan = default!;
+    [Dependency] private IEntityManager _entManager = default!;
+    [Dependency] private IConfigurationManager _config = default!;
+    [Dependency] private IPlayerManager _playerMan = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
 
     private const string ArrowUp = "↑";
     private const string ArrowDown = "↓";
@@ -155,13 +157,18 @@ public sealed partial class PlayerTab : Control
         UpdateHeaderSymbols();
 
         SearchList.PopulateList(sortedPlayers.Select(info => new PlayerListData(info,
-                $"{info.Username} {info.CharacterName} {info.IdentityName} {info.StartingJob}"))
+                $"{info.Username} " +
+                $"{info.CharacterName} " +
+                $"{info.IdentityName} " +
+                $"{info.StartingJob} " +
+                $"{(info.Subtype is not null ? Loc.GetString(info.Subtype) : string.Empty)} " +
+                $"{(_proto.TryIndex(info.RoleProto, out var proto) ? Loc.GetString(proto.Name) : string.Empty)}"))
             .ToList());
     }
 
     private void GenerateButton(ListData data, ListContainerButton button)
     {
-        if (data is not PlayerListData { Info: var player})
+        if (data is not PlayerListData { Info: var player })
             return;
 
         var entry = new PlayerTabEntry(
@@ -185,7 +192,7 @@ public sealed partial class PlayerTab : Control
     /// <returns>Whether <paramref name="filter"/> is contained in <paramref name="listData"/>.FilteringString.</returns>
     private bool DataFilterCondition(string filter, ListData listData)
     {
-        if (listData is not PlayerListData {Info: var info, FilteringString: var playerString})
+        if (listData is not PlayerListData { Info: var info, FilteringString: var playerString })
             return false;
 
         if (!_showDisconnected && !info.Connected)
@@ -238,7 +245,9 @@ public sealed partial class PlayerTab : Control
             Header.Username => Compare(x.Username, y.Username),
             Header.Character => Compare(x.CharacterName, y.CharacterName),
             Header.Job => Compare(x.StartingJob, y.StartingJob),
-            Header.RoleType => y.SortWeight - x.SortWeight,
+            Header.RoleType => y.SortWeight != x.SortWeight
+                ? y.SortWeight - x.SortWeight
+                : string.Compare(x.RoleProto?.Id ?? "", y.RoleProto?.Id ?? "", StringComparison.Ordinal),
             Header.Playtime => TimeSpan.Compare(x.OverallPlaytime ?? default, y.OverallPlaytime ?? default),
             _ => 1
         };

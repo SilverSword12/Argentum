@@ -1,16 +1,16 @@
-using Content.Shared.UserInterface;
 using Content.Server.Advertise.EntitySystems;
 using Content.Shared.Advertise.Components;
 using Content.Shared.Arcade;
 using Content.Shared.Power;
+using Content.Shared.UserInterface;
 using Robust.Server.GameObjects;
 
 namespace Content.Server.Arcade.BlockGame;
 
-public sealed class BlockGameArcadeSystem : EntitySystem
+public sealed partial class BlockGameArcadeSystem : EntitySystem
 {
-    [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
-    [Dependency] private readonly SpeakOnUIClosedSystem _speakOnUIClosed = default!;
+    [Dependency] private UserInterfaceSystem _uiSystem = default!;
+    [Dependency] private SpeakOnUIClosedSystem _speakOnUIClosed = default!;
 
     public override void Initialize()
     {

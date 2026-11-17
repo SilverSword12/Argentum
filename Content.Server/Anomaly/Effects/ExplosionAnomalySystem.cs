@@ -1,5 +1,5 @@
-using Content.Server.Explosion.EntitySystems;
 using Content.Server.Anomaly.Components;
+using Content.Server.Explosion.EntitySystems;
 using Content.Shared.Anomaly.Components;
 
 namespace Content.Server.Anomaly.Effects;
@@ -7,9 +7,9 @@ namespace Content.Server.Anomaly.Effects;
 /// <summary>
 /// This handles <see cref="ExplosionAnomalyComponent"/>
 /// </summary>
-public sealed class ExplosionAnomalySystem : EntitySystem
+public sealed partial class ExplosionAnomalySystem : EntitySystem
 {
-    [Dependency] private readonly ExplosionSystem _boom = default!;
+    [Dependency] private ExplosionSystem _boom = default!;
 
     public override void Initialize()
     {

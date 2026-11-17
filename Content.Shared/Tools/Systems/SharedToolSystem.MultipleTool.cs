@@ -1,7 +1,7 @@
-using System.Linq;
 using Content.Shared.Interaction;
 using Content.Shared.Prying.Components;
 using Content.Shared.Tools.Components;
+using System.Linq;
 
 namespace Content.Shared.Tools.Systems;
 
@@ -78,7 +78,7 @@ public abstract partial class SharedToolSystem
         if (playSound && current.ChangeSound != null)
             _audioSystem.PlayPredicted(current.ChangeSound, uid, user);
 
-        if (_protoMan.TryIndex(current.Behavior.First(), out ToolQualityPrototype? quality))
+        if (ProtoMan.TryIndex(current.Behavior.First(), out ToolQualityPrototype? quality))
             multiple.CurrentQualityName = Loc.GetString(quality.Name);
     }
 }

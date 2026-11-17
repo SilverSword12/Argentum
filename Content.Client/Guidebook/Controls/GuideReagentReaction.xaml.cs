@@ -1,4 +1,3 @@
-using System.Linq;
 using Content.Client.Message;
 using Content.Client.UserInterface.ControlExtensions;
 using Content.Shared.Atmos.Prototypes;
@@ -15,6 +14,7 @@ using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Graphics.RSI;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Client.Guidebook.Controls;
 
@@ -31,12 +31,12 @@ public sealed partial class GuideReagentReaction : BoxContainer, ISearchableCont
         _protoMan = protoMan;
     }
 
-    public GuideReagentReaction(ReactionPrototype prototype, IPrototypeManager protoMan, IEntitySystemManager sysMan) : this(protoMan)
+    public GuideReagentReaction(ReactionPrototype prototype, IPrototypeManager protoMan, IEntitySystemManager sysMan, string prod = "") : this(protoMan)
     {
         Container container = ReactantsContainer;
         SetReagents(prototype.Reactants, ref container, protoMan);
         Container productContainer = ProductsContainer;
-        var products = new Dictionary<string, FixedPoint2>(prototype.Products);
+        var products = new Dictionary<ProtoId<ReagentPrototype>, FixedPoint2>(prototype.Products);
         foreach (var (reagent, reactantProto) in prototype.Reactants)
         {
             if (reactantProto.Catalyst)
@@ -101,11 +101,11 @@ public sealed partial class GuideReagentReaction : BoxContainer, ISearchableCont
         ReactantsContainer.Visible = true;
         ReactantsContainer.AddChild(label);
 
-        if (prototype.Reagent != null)
+        if (prototype.Reagent is {} reagent)
         {
-            var quantity = new Dictionary<string, FixedPoint2>
+            var quantity = new Dictionary<ProtoId<ReagentPrototype>, FixedPoint2>
             {
-                { prototype.Reagent, FixedPoint2.New(0.21f) }
+                { reagent, FixedPoint2.New(0.21f) }
             };
             Container productContainer = ProductsContainer;
             SetReagents(quantity, ref productContainer, protoMan, false);
@@ -113,9 +113,9 @@ public sealed partial class GuideReagentReaction : BoxContainer, ISearchableCont
         SetMixingCategory(categories, null, sysMan);
     }
 
-    private void SetReagents(List<ReagentQuantity> reagents, ref Container container, IPrototypeManager protoMan, bool addLinks = true)
+    private static void SetReagents(List<ReagentQuantity> reagents, ref Container container, IPrototypeManager protoMan, bool addLinks = true)
     {
-        var amounts = new Dictionary<string, FixedPoint2>();
+        var amounts = new Dictionary<ProtoId<ReagentPrototype>, FixedPoint2>();
         foreach (var (reagent, quantity) in reagents)
         {
             amounts.Add(reagent.Prototype, quantity);
@@ -123,13 +123,13 @@ public sealed partial class GuideReagentReaction : BoxContainer, ISearchableCont
         SetReagents(amounts, ref container, protoMan, addLinks);
     }
 
-    private void SetReagents(
-        Dictionary<string, ReactantPrototype> reactants,
+    private static void SetReagents(
+        Dictionary<ProtoId<ReagentPrototype>, ReactantInfo> reactants,
         ref Container container,
         IPrototypeManager protoMan,
         bool addLinks = true)
     {
-        var amounts = new Dictionary<string, FixedPoint2>();
+        var amounts = new Dictionary<ProtoId<ReagentPrototype>, FixedPoint2>();
         foreach (var (reagent, reactantPrototype) in reactants)
         {
             amounts.Add(reagent, reactantPrototype.Amount);
@@ -137,35 +137,35 @@ public sealed partial class GuideReagentReaction : BoxContainer, ISearchableCont
         SetReagents(amounts, ref container, protoMan, addLinks);
     }
 
-    [PublicAPI]
-    private void SetReagents(
-        Dictionary<ProtoId<MixingCategoryPrototype>, ReactantPrototype> reactants,
-        ref Container container,
-        IPrototypeManager protoMan,
-        bool addLinks = true)
-    {
-        var amounts = new Dictionary<string, FixedPoint2>();
-        foreach (var (reagent, reactantPrototype) in reactants)
-        {
-            amounts.Add(reagent, reactantPrototype.Amount);
-        }
-        SetReagents(amounts, ref container, protoMan, addLinks);
-    }
-
-    private void SetReagents(Dictionary<string, FixedPoint2> reagents, ref Container container, IPrototypeManager protoMan, bool addLinks = true)
+    private static void SetReagents(Dictionary<ProtoId<ReagentPrototype>, FixedPoint2> reagents, ref Container container, IPrototypeManager protoMan, bool addLinks = true)
     {
         foreach (var (product, amount) in reagents.OrderByDescending(p => p.Value))
         {
-            var productProto = protoMan.Index<ReagentPrototype>(product);
-            var msg = new FormattedMessage();
-            msg.AddMarkupOrThrow(Loc.GetString("guidebook-reagent-recipes-reagent-display",
-                ("reagent", productProto.LocalizedName), ("ratio", amount)));
+            if (!protoMan.HasIndex<ReagentPrototype>(product))
+            {
+                var productProto = protoMan.Index<EntityPrototype>(product);
+                var msg = new FormattedMessage();
+                msg.AddMarkupOrThrow(Loc.GetString("guidebook-reagent-recipes-reagent-display",
+                    ("reagent", productProto.Name), ("ratio", amount)));
+                var label = new GuidebookRichPrototypeLink();
+                if (addLinks)
+                    label.LinkedPrototype = productProto;
+                label.SetMessage(msg);
+                container.AddChild(label);
+            }
+            else
+            {
+                var productProto = protoMan.Index<ReagentPrototype>(product);
+                var msg = new FormattedMessage();
+                msg.AddMarkupOrThrow(Loc.GetString("guidebook-reagent-recipes-reagent-display",
+                    ("reagent", productProto.LocalizedName), ("ratio", amount)));
 
-            var label = new GuidebookRichPrototypeLink();
-            if (addLinks)
-                label.LinkedPrototype = productProto;
-            label.SetMessage(msg);
-            container.AddChild(label);
+                var label = new GuidebookRichPrototypeLink();
+                if (addLinks)
+                    label.LinkedPrototype = productProto;
+                label.SetMessage(msg);
+                container.AddChild(label);
+            }
         }
         container.Visible = true;
     }

@@ -1,8 +1,9 @@
 using Content.Server.Solar.Components;
-using Content.Server.UserInterface;
 using Content.Shared.Solar;
 using JetBrains.Annotations;
 using Robust.Server.GameObjects;
+using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Server.Solar.EntitySystems
 {
@@ -10,10 +11,12 @@ namespace Content.Server.Solar.EntitySystems
     /// Responsible for updating solar control consoles.
     /// </summary>
     [UsedImplicitly]
-    internal sealed class PowerSolarControlConsoleSystem : EntitySystem
+    internal sealed partial class PowerSolarControlConsoleSystem : EntitySystem
     {
         [Dependency] private readonly PowerSolarSystem _powerSolarSystem = default!;
+        [Dependency] private readonly PowerSolarTrackerSystem _powerSolarTracker = default!;
         [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
+        [Dependency] private readonly SharedTransformSystem _transform = default!;
 
         /// <summary>
         /// Timer used to avoid updating the UI state every frame (which would be overkill)
@@ -33,10 +36,35 @@ namespace Content.Server.Solar.EntitySystems
             if (_updateTimer >= 1)
             {
                 _updateTimer -= 1;
-                var state = new SolarControlConsoleBoundInterfaceState(_powerSolarSystem.TargetPanelRotation, _powerSolarSystem.TargetPanelVelocity, _powerSolarSystem.TotalPanelPower, _powerSolarSystem.TowardsSun);
                 var query = EntityQueryEnumerator<SolarControlConsoleComponent, UserInterfaceComponent>();
                 while (query.MoveNext(out var uid, out _, out var uiComp))
                 {
+                    Angle towardsSun = Angle.Zero;
+                    float totalPanelPower = 0;
+                    bool hasTracker = false;
+                    Angle targetPanelRotation = Angle.Zero;
+                    Angle targetPanelVelocity = Angle.Zero;
+
+                    var mapUid = _transform.GetMap(uid);
+                    if (mapUid.HasValue && TryComp<SolarLocationComponent>(mapUid, out var solarLocation) && solarLocation != null)
+                        towardsSun = solarLocation.TowardsSun;
+
+                    var gridUid = _transform.GetGrid(uid);
+                    if (gridUid.HasValue)
+                    {
+                        totalPanelPower = _powerSolarSystem.GetGridTotalPower(gridUid.Value);
+                        var trackerUid = _powerSolarTracker.GetGridTrackerEntity(gridUid.Value);
+                        if (trackerUid != null && TryComp<SolarTrackerComponent>(trackerUid, out var trackerComp) && trackerComp != null)
+                            hasTracker = true;
+                        var panel = _powerSolarSystem.GetGridPanels(gridUid.Value)
+                            .FirstOrDefault();
+                        if (panel != null)
+                        {
+                            targetPanelRotation = panel.TargetPanelRotation;
+                            targetPanelVelocity = panel.TargetPanelVelocity;
+                        }
+                    }
+                    var state = new SolarControlConsoleBoundInterfaceState(targetPanelRotation, targetPanelVelocity, totalPanelPower, towardsSun, hasTracker);
                     _uiSystem.SetUiState((uid, uiComp), SolarControlConsoleUiKey.Key, state);
                 }
             }
@@ -44,16 +72,13 @@ namespace Content.Server.Solar.EntitySystems
 
         private void OnUIMessage(EntityUid uid, SolarControlConsoleComponent component, SolarControlConsoleAdjustMessage msg)
         {
+            var gridUid = _transform.GetGrid(uid).GetValueOrDefault();
+            DebugTools.Assert(gridUid != default);
+
             if (double.IsFinite(msg.Rotation))
-            {
-                _powerSolarSystem.TargetPanelRotation = msg.Rotation.Reduced();
-            }
+                _powerSolarSystem.SetTargetPanelRotation(gridUid, msg.Rotation.Reduced());
             if (double.IsFinite(msg.AngularVelocity))
-            {
-                var degrees = msg.AngularVelocity.Degrees;
-                degrees = Math.Clamp(degrees, -PowerSolarSystem.MaxPanelVelocityDegrees, PowerSolarSystem.MaxPanelVelocityDegrees);
-                _powerSolarSystem.TargetPanelVelocity = Angle.FromDegrees(degrees);
-            }
+                _powerSolarSystem.SetTargetPanelVelocityDegrees(gridUid, msg.AngularVelocity.Degrees);
         }
 
     }

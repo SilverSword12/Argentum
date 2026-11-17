@@ -1,0 +1,99 @@
+- type: cargoBounty
+  id: BountyTechDisk
+  reward: 10000
+  description: bounty-description-tech-disk
+  idPrefix: SS13-
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-tech-disk
+    amount: 4
+    whitelist:
+      components:
+      - TechnologyDisk
+
+- type: cargoBounty
+  id: BountyCoins
+  reward: 10000
+  description: bounty-description-coins
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-coins
+    amount: 10
+    whitelist:
+      components:
+      - NFCoin # Coins have no tag but have a unique component
+
+- type: cargoBounty
+  id: BountyCPU
+  reward: 10500
+  description: bounty-description-cpu
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-cpu
+    amount: 7
+    whitelist:
+      tags:
+      - TreasureOldCPU # Supercharged CPU
+
+- type: cargoBounty
+  id: BountyOldComputer
+  reward: 10500
+  description: bounty-description-old-computer
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-old-computer
+    amount: 7
+    whitelist:
+      tags:
+      - TreasureOldComputer # Hard drive, floppy drive, CD drive
+
+- type: cargoBounty
+  id: TreasureDataDisk
+  reward: 10500
+  description: bounty-description-data-disk
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-data-disk
+    amount: 7
+    whitelist:
+      tags:
+      - TreasureDataDisk # Salvage data disk
+
+- type: cargoBounty
+  id: TreasureSampleTube
+  reward: 10500
+  description: bounty-description-sample-tube
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-sample-tube
+    amount: 7
+    whitelist:
+      tags:
+      - TreasureSampleTube # Salvage sample tube
+
+- type: cargoBounty
+  id: BountyRing
+  reward: 9900
+  description: bounty-description-ring
+  group: ExplorationBounty
+  condition:
+    name: bounty-item-ring
+    amount: 3
+    whitelist:
+      tags:
+      - Ring
+
+- type: cargoBounty
+  id: BountySalvageScrap
+  reward: 10000
+  description: bounty-description-salvage-scrap
+  group: ExplorationBounty
+  sprite:
+    sprite: Objects/Materials/Scrap/generic.rsi
+    state: metal-1
+  condition:
+    name: bounty-item-scrap
+    amount: 20
+    whitelist:
+      tags:
+      - SalvageScrap

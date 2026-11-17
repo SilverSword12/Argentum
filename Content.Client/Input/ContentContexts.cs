@@ -51,6 +51,10 @@ namespace Content.Client.Input
             // Not in engine so that the RCD can rotate objects
             common.AddFunction(EngineKeyFunctions.EditorRotateObject);
 
+            // funky. lets you activate a held item without cancelling placement first.
+            var editor = contexts.GetContext("editor");
+            editor.AddFunction(ContentKeyFunctions.UseItemInHand);
+
             var human = contexts.GetContext("human");
             human.AddFunction(EngineKeyFunctions.MoveUp);
             human.AddFunction(EngineKeyFunctions.MoveDown);
@@ -78,8 +82,10 @@ namespace Content.Client.Input
             human.AddFunction(ContentKeyFunctions.SmartEquipPocket1);
             human.AddFunction(ContentKeyFunctions.SmartEquipPocket2);
             human.AddFunction(ContentKeyFunctions.SmartEquipSuitStorage);
+            human.AddFunction(ContentKeyFunctions.SmartEquipWallet); // Frontier
             human.AddFunction(ContentKeyFunctions.OpenBackpack);
             human.AddFunction(ContentKeyFunctions.OpenBelt);
+            human.AddFunction(ContentKeyFunctions.OpenWallet); // Frontier
             human.AddFunction(ContentKeyFunctions.MouseMiddle);
             human.AddFunction(ContentKeyFunctions.RotateObjectClockwise);
             human.AddFunction(ContentKeyFunctions.RotateObjectCounterclockwise);

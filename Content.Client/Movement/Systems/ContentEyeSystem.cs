@@ -1,13 +1,13 @@
-using System.Numerics;
 using Content.Shared.Movement.Components;
 using Content.Shared.Movement.Systems;
 using Robust.Client.Player;
+using System.Numerics;
 
 namespace Content.Client.Movement.Systems;
 
-public sealed class ContentEyeSystem : SharedContentEyeSystem
+public sealed partial class ContentEyeSystem : SharedContentEyeSystem
 {
-    [Dependency] private readonly IPlayerManager _player = default!;
+    [Dependency] private IPlayerManager _player = default!;
 
     public void RequestZoom(EntityUid uid, Vector2 zoom, bool ignoreLimit, bool scalePvs, ContentEyeComponent? content = null)
     {

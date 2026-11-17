@@ -46,6 +46,7 @@
   materials:
     Steel: 25
     Plastic: 450
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -62,6 +63,7 @@
     Steel: 25
     Plastic: 300
     Uranium: 300
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -76,6 +78,7 @@
   result: MagazineBoxRifleIncendiary
   materials:
     Plastic: 750
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -91,14 +94,7 @@
   materials:
     Plastic: 500
     Uranium: 500
-
-# .25 Caseless
-- type: latheRecipe
-  parent: BaseAmmoRecipe
-  id: MagazinePistolCaselessRifle
-  result: MagazinePistolCaselessRifle
-  materials:
-    Steel: 145
+  unlockUses: 6
 
 # .30 Rifle
 - type: latheRecipe
@@ -122,6 +118,7 @@
   materials:
     Steel: 25
     Plastic: 540
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -138,6 +135,7 @@
     Steel: 25
     Plastic: 360
     Uranium: 360
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -152,6 +150,7 @@
   result: MagazineBoxLightRifleIncendiary
   materials:
     Plastic: 900
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -167,6 +166,7 @@
   materials:
     Plastic: 600
     Uranium: 600
+  unlockUses: 6
 
 # .35 Auto
 - type: latheRecipe
@@ -190,6 +190,7 @@
   materials:
     Steel: 25
     Plastic: 120
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -206,6 +207,7 @@
     Steel: 25
     Plastic: 65
     Uranium: 120
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseEmptyAmmoRecipe
@@ -228,6 +230,7 @@
   materials:
     Steel: 25
     Plastic: 275
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -244,6 +247,7 @@
     Steel: 25
     Plastic: 250
     Uranium: 250
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseEmptyAmmoRecipe
@@ -272,6 +276,7 @@
   result: MagazineBoxPistolIncendiary
   materials:
     Plastic: 600
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -287,6 +292,38 @@
   materials:
     Plastic: 300
     Uranium: 600
+  unlockUses: 6
+
+#Persistence 14 .25 caseless
+
+- type: latheRecipe
+  parent: BaseAmmoBoxRecipe
+  id: MagazineBoxCaselessRifleRecipe
+  result: MagazineBoxCaselessRifle
+  materials:
+    Steel: 800
+
+- type: latheRecipe
+  parent: BaseAmmoRecipe
+  id: MagazinePistolCaselessRifleRecipe
+  result: MagazinePistolCaselessRifle
+  materials:
+    Steel: 245
+
+- type: latheRecipe
+  parent: BaseAmmoBoxRecipe
+  id: MagazineBoxCaselessRiflePracticeRecipe
+  result: MagazineBoxCaselessRiflePractice
+  materials:
+    Steel: 500
+
+- type: latheRecipe
+  parent: BaseAmmoRecipe
+  id: MagazinePistolCaselessRiflePracticeRecipe
+  result: MagazinePistolCaselessRiflePractice
+  materials:
+    Steel: 185
+
 
 # .45 Magnum
 - type: latheRecipe
@@ -310,6 +347,7 @@
   materials:
     Steel: 50
     Plastic: 150
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -326,6 +364,7 @@
     Steel: 50
     Plastic: 150
     Uranium: 110
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -340,6 +379,7 @@
   result: MagazineBoxMagnumIncendiary
   materials:
     Plastic: 240
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -355,7 +395,49 @@
   materials:
     Plastic: 240
     Uranium: 180
+  unlockUses: 6
 
+# .10 Rifle
+- type: latheRecipe
+  parent: BaseEmptyAmmoRecipe
+  id: MagazineMarineRifleEmpty
+  result: MagazineMarineRifleEmpty
+  materials:
+    Steel: 25
+
+- type: latheRecipe
+  parent: BaseAmmoRecipe
+  id: MagazineMarineRifle
+  result: MagazineMarineRifle
+  materials:
+    Steel: 565
+
+- type: latheRecipe
+  parent: BaseAmmoRecipe
+  id: MagazineMarineRifleIncendiary
+  result: MagazineMarineRifleIncendiary
+  materials:
+    Steel: 25
+    Plastic: 540
+  unlockUses: 6
+
+- type: latheRecipe
+  parent: BaseAmmoRecipe
+  id: MagazineMarineRiflePractice
+  result: MagazineMarineRiflePractice
+  materials:
+    Steel: 205
+
+- type: latheRecipe
+  parent: BaseAmmoRecipe
+  id: MagazineMarineRifleUranium
+  result: MagazineMarineRifleUranium
+  materials:
+    Steel: 25
+    Plastic: 360
+    Uranium: 360
+  unlockUses: 6
+  
 # .50 Shell
 - type: latheRecipe
   parent: BaseEmptyAmmoRecipe
@@ -378,6 +460,7 @@
   materials:
     Steel: 100
     Plastic: 190
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -386,6 +469,7 @@
   materials:
     Steel: 150
     Plastic: 140
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoRecipe
@@ -409,6 +493,7 @@
   materials:
     Steel: 80
     Plastic: 320
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -424,6 +509,7 @@
   materials:
     Plastic: 320
     Uranium: 240
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -432,6 +518,7 @@
   materials:
     Steel: 160
     Plastic: 240
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -451,6 +538,7 @@
     Glass: 80
     Plasma: 160
     Silver: 80
+  unlockUses: 6
 
 - type: latheRecipe
   parent: BaseAmmoBoxRecipe
@@ -478,6 +566,7 @@
   materials:
     Steel: 150
     Plastic: 50
+  unlockUses: 3
 
 - type: latheRecipe
   id: GrenadeEMP
@@ -489,6 +578,7 @@
     Steel: 150
     Plastic: 100
     Glass: 20
+  unlockUses: 5
 
 - type: latheRecipe
   id: GrenadeBlast
@@ -500,6 +590,7 @@
     Steel: 450
     Plastic: 300
     Gold: 150
+  unlockUses: 5
 
 - type: latheRecipe
   id: GrenadeFlash
@@ -511,3 +602,4 @@
     Steel: 150
     Plastic: 100
     Glass: 20
+  unlockUses: 5

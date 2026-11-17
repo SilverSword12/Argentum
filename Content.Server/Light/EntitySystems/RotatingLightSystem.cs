@@ -1,10 +1,9 @@
 using Content.Shared.Light;
 using Content.Shared.Light.Components;
-using Robust.Shared.GameObjects;
 
 namespace Content.Server.Light.EntitySystems;
 
-public sealed class RotatingLightSystem : SharedRotatingLightSystem
+public sealed partial class RotatingLightSystem : SharedRotatingLightSystem
 {
     public override void Initialize()
     {

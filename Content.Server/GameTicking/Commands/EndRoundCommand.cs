@@ -1,13 +1,13 @@
-﻿using Content.Server.Administration;
+using Content.Server.Administration;
 using Content.Shared.Administration;
 using Robust.Shared.Console;
 
 namespace Content.Server.GameTicking.Commands;
 
 [AdminCommand(AdminFlags.Round)]
-public sealed class EndRoundCommand : LocalizedEntityCommands
+public sealed partial class EndRoundCommand : LocalizedEntityCommands
 {
-    [Dependency] private readonly GameTicker _gameTicker = default!;
+    [Dependency] private GameTicker _gameTicker = default!;
 
     public override string Command => "endround";
 

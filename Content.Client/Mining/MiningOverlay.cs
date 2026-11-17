@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Shared.Mining.Components;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
@@ -6,14 +5,15 @@ using Robust.Client.Player;
 using Robust.Shared.Enums;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using System.Numerics;
 
 namespace Content.Client.Mining;
 
-public sealed class MiningOverlay : Overlay
+public sealed partial class MiningOverlay : Overlay
 {
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPlayerManager _player = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPlayerManager _player = default!;
     private readonly EntityLookupSystem _lookup;
     private readonly SpriteSystem _sprite;
     private readonly TransformSystem _xform;

@@ -6,10 +6,10 @@ using Robust.Shared.Console;
 namespace Content.Server.GameTicking.Commands
 {
     [AnyCommand]
-    sealed class ObserveCommand : IConsoleCommand
+    sealed partial class ObserveCommand : IConsoleCommand
     {
-        [Dependency] private readonly IEntityManager _e = default!;
-        [Dependency] private readonly IAdminManager _adminManager = default!;
+        [Dependency] private IEntityManager _e = default!;
+        [Dependency] private IAdminManager _adminManager = default!;
 
         public string Command => "observe";
         public string Description => "";
@@ -22,6 +22,7 @@ namespace Content.Server.GameTicking.Commands
                 shell.WriteError(Loc.GetString("shell-cannot-run-command-from-server"));
                 return;
             }
+            if (!_adminManager.IsAdmin(player)) return;
 
             var ticker = _e.System<GameTicker>();
 

@@ -25,6 +25,11 @@ fibers-orange = orange
 fibers-white = white
 fibers-yellow = yellow
 fibers-regal-blue = regal blue
+fibers-regal-red = regal red
 fibers-olive = olive
 fibers-silver = silver
 fibers-gold = gold
+
+# Persistence: no idea why these weren't here already but the linter was mad about it
+fibers-pink = pink
+fibers-maroon = maroon

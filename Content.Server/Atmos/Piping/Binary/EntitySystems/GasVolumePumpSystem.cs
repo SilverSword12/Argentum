@@ -1,30 +1,30 @@
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Monitor.Systems;
-using Content.Server.Atmos.Piping.Components;
 using Content.Server.DeviceNetwork.Systems;
 using Content.Server.NodeContainer.EntitySystems;
 using Content.Server.NodeContainer.Nodes;
 using Content.Server.Power.Components;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Piping.Binary.Components;
 using Content.Shared.Atmos.Piping.Binary.Systems;
 using Content.Shared.Atmos.Piping.Components;
 using Content.Shared.Audio;
 using Content.Shared.DeviceNetwork;
+using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork.Events;
 using JetBrains.Annotations;
 using Robust.Server.GameObjects;
-using Content.Shared.DeviceNetwork.Components;
 
 namespace Content.Server.Atmos.Piping.Binary.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class GasVolumePumpSystem : SharedGasVolumePumpSystem
+    public sealed partial class GasVolumePumpSystem : SharedGasVolumePumpSystem
     {
-        [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-        [Dependency] private readonly UserInterfaceSystem _userInterfaceSystem = default!;
-        [Dependency] private readonly SharedAmbientSoundSystem _ambientSoundSystem = default!;
-        [Dependency] private readonly NodeContainerSystem _nodeContainer = default!;
-        [Dependency] private readonly DeviceNetworkSystem _deviceNetwork = default!;
+        [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+        [Dependency] private UserInterfaceSystem _userInterfaceSystem = default!;
+        [Dependency] private SharedAmbientSoundSystem _ambientSoundSystem = default!;
+        [Dependency] private NodeContainerSystem _nodeContainer = default!;
+        [Dependency] private DeviceNetworkSystem _deviceNetwork = default!;
 
         public override void Initialize()
         {
@@ -32,6 +32,7 @@ namespace Content.Server.Atmos.Piping.Binary.EntitySystems
 
             SubscribeLocalEvent<GasVolumePumpComponent, AtmosDeviceUpdateEvent>(OnVolumePumpUpdated);
             SubscribeLocalEvent<GasVolumePumpComponent, AtmosDeviceDisabledEvent>(OnVolumePumpLeaveAtmosphere);
+            SubscribeLocalEvent<GasVolumePumpComponent, AtmosDeviceEnabledEvent>(OnVolumePumpJoinAtmosphere);
 
             SubscribeLocalEvent<GasVolumePumpComponent, DeviceNetworkPacketEvent>(OnPacketRecv);
         }
@@ -105,6 +106,13 @@ namespace Content.Server.Atmos.Piping.Binary.EntitySystems
             Dirty(uid, pump);
             UpdateAppearance(uid, pump);
             _userInterfaceSystem.CloseUi(uid, GasVolumePumpUiKey.Key);
+        }
+
+        private void OnVolumePumpJoinAtmosphere(EntityUid uid, GasVolumePumpComponent pump, ref AtmosDeviceEnabledEvent args)
+        {
+            pump.Enabled = pump.DesiredEnabled;
+            Dirty(uid, pump);
+            UpdateAppearance(uid, pump);
         }
 
         private void OnPacketRecv(EntityUid uid, GasVolumePumpComponent component, DeviceNetworkPacketEvent args)

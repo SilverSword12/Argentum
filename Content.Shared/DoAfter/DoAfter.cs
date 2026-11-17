@@ -1,7 +1,6 @@
 using Robust.Shared.Map;
 using Robust.Shared.Serialization;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
-using Robust.Shared.Utility;
 
 namespace Content.Shared.DoAfter;
 
@@ -10,7 +9,7 @@ namespace Content.Shared.DoAfter;
 [Access(typeof(SharedDoAfterSystem))]
 public sealed partial class DoAfter
 {
-    [DataField("index", required:true)]
+    [DataField("index", required: true)]
     public ushort Index;
 
     public DoAfterId Id => new(Args.User, Index);
@@ -21,13 +20,13 @@ public sealed partial class DoAfter
     /// <summary>
     ///     Time at which this do after was started.
     /// </summary>
-    [DataField("startTime", customTypeSerializer: typeof(TimeOffsetSerializer), required:true)]
+    [DataField("startTime", customTypeSerializer: typeof(TimeOffsetSerializer), required: true)]
     public TimeSpan StartTime;
 
     /// <summary>
     ///     The time at which this do after was canceled
     /// </summary>
-    [DataField("cancelledTime", customTypeSerializer: typeof(TimeOffsetSerializer), required:true)]
+    [DataField("cancelledTime", customTypeSerializer: typeof(TimeOffsetSerializer), required: true)]
     public TimeSpan? CancelledTime;
 
     /// <summary>
@@ -49,6 +48,15 @@ public sealed partial class DoAfter
     public EntityCoordinates UserPosition;
 
     public NetCoordinates NetUserPosition;
+
+    /// <summary>
+    ///     The entity whose movement is treated as the user's effective movement for BreakOnMove checks.
+    /// </summary>
+    [NonSerialized]
+    public EntityUid MovementEntity;
+
+    [DataField("movementEntity")]
+    public NetEntity NetMovementEntity;
 
     /// <summary>
     ///     Distance from the user to the target when the do after was started.
@@ -100,6 +108,9 @@ public sealed partial class DoAfter
 
         NetUserPosition = other.NetUserPosition;
         NetInitialItem = other.NetInitialItem;
+
+        MovementEntity = other.MovementEntity;
+        NetMovementEntity = other.NetMovementEntity;
     }
 }
 

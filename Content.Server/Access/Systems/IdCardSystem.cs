@@ -1,35 +1,68 @@
-using System.Linq;
 using Content.Server.Administration.Logs;
 using Content.Server.Chat.Systems;
+using Content.Server.CrewRecords.Systems;
 using Content.Server.Kitchen.Components;
+using Content.Server.Kitchen.EntitySystems;
 using Content.Server.Popups;
+using Content.Server.Station.Systems;
 using Content.Shared.Access;
 using Content.Shared.Access.Components;
 using Content.Shared.Access.Systems;
 using Content.Shared.Chat;
+using Content.Shared.CrewAssignments.Components;
+using Content.Shared.CrewRecords.Components;
 using Content.Shared.Database;
 using Content.Shared.Kitchen;
 using Content.Shared.Popups;
-using Robust.Shared.Prototypes;
+using Content.Shared.Station.Components;
 using Robust.Shared.Random;
-using Content.Server.Kitchen.EntitySystems;
+using System.Linq;
 
 namespace Content.Server.Access.Systems;
 
-public sealed class IdCardSystem : SharedIdCardSystem
+public sealed partial class IdCardSystem : SharedIdCardSystem
 {
-    [Dependency] private readonly PopupSystem _popupSystem = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-    [Dependency] private readonly IAdminLogManager _adminLogger = default!;
-    [Dependency] private readonly ChatSystem _chat = default!;
-    [Dependency] private readonly MicrowaveSystem _microwave = default!;
+    [Dependency] private PopupSystem _popupSystem = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private IAdminLogManager _adminLogger = default!;
+    [Dependency] private ChatSystem _chat = default!;
+    [Dependency] private MicrowaveSystem _microwave = default!;
+    [Dependency] private CrewMetaRecordsSystem _crewMeta = default!;
+    [Dependency] private StationSystem _station = default!;
 
     public override void Initialize()
     {
         base.Initialize();
 
         SubscribeLocalEvent<IdCardComponent, BeingMicrowavedEvent>(OnMicrowaved);
+        SubscribeLocalEvent<IdCardComponent, ComponentStartup>(OnCompInit);
+    }
+
+    private void OnCompInit(EntityUid uid, IdCardComponent id, ComponentStartup args)
+    {
+        if (id.CreatedTime == null)
+        {
+            id.CreatedTime = DateTime.Now;
+        }
+        else
+        {
+            if (_crewMeta.MetaRecords != null && id.FullName != null)
+            {
+                if (_crewMeta.MetaRecords.TryGetRecord(id.FullName, out var record))
+                {
+                    if (record != null && id.CreatedTime < record.LatestIDTime)
+                    {
+                        QueueDel(uid);
+                    }
+                }
+            }
+        }
+        if (id.FullName != "*Expired*" && id.FullName != null && id.FullName != "")
+        {
+            RebuildJob(uid, id);
+            UpdateEntityName(uid, id);
+        }
+
     }
 
     private void OnMicrowaved(EntityUid uid, IdCardComponent component, BeingMicrowavedEvent args)
@@ -82,7 +115,7 @@ public sealed class IdCardSystem : SharedIdCardSystem
             }
 
             // Give them a wonderful new access to compensate for everything
-            var ids = _prototypeManager.EnumeratePrototypes<AccessLevelPrototype>().Where(x => x.CanAddToIdCard).ToArray();
+            var ids = ProtoMan.EnumeratePrototypes<AccessLevelPrototype>().Where(x => x.CanAddToIdCard).ToArray();
 
             if (ids.Length == 0)
                 return;
@@ -98,12 +131,55 @@ public sealed class IdCardSystem : SharedIdCardSystem
         }
     }
 
-    public override void ExpireId(Entity<ExpireIdCardComponent> ent)
+    public void ExpireAllIds(string name)
     {
-        if (ent.Comp.Expired)
-            return;
+        var query = EntityQueryEnumerator<IdCardComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            if (comp.FullName == name)
+            {
+                if (comp.CreatedTime < DateTime.Now)
+                {
+                    QueueDel(uid);
+                }
+            }
 
-        base.ExpireId(ent);
+        }
+    }
+
+    public void UpdateIDAssignment(string name, int station)
+    {
+        var query = EntityQueryEnumerator<IdCardComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            if (comp.FullName == name)
+            {
+                comp.stationID = station;
+                RebuildJob(uid, comp);
+                UpdateEntityName(uid, comp);
+            }
+
+        }
+    }
+
+    public void RefreshStationIds(int stationId)
+    {
+        var query = EntityQueryEnumerator<IdCardComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            if (comp.stationID != stationId)
+                continue;
+
+            RebuildJob(uid, comp);
+            UpdateEntityName(uid, comp);
+            Dirty(uid, comp);
+        }
+    }
+
+    public override bool ExpireId(Entity<ExpireIdCardComponent> ent)
+    {
+        if (!base.ExpireId(ent))
+            return false;
 
         if (ent.Comp.ExpireMessage != null)
         {
@@ -113,6 +189,62 @@ public sealed class IdCardSystem : SharedIdCardSystem
                 InGameICChatType.Speak,
                 ChatTransmitRange.Normal,
                 true);
+        }
+
+        return true;
+    }
+
+    public void BuildID(EntityUid card, string name)
+    {
+        if (TryComp<IdCardComponent>(card, out var comp))
+        {
+            comp.FullName = name;
+            RebuildJob(card, comp);
+            UpdateEntityName(card, comp);
+        }
+    }
+
+    public void RebuildJob(EntityUid card, IdCardComponent comp)
+    {
+        if (comp.FullName == null || comp.stationID == null)
+        {
+            comp.LocalizedJobTitle = "Off Duty";
+            return;
+        }
+        var station = _station.GetStationByID(comp.stationID.Value);
+        if (station == null)
+        {
+            comp.LocalizedJobTitle = "Off Duty";
+            return;
+        }
+        bool found = false;
+
+        if (TryComp<CrewRecordsComponent>(station, out var crewRecords))
+        {
+            if (crewRecords.TryGetRecord(comp.FullName, out var crewRecord) && crewRecord != null)
+            {
+                if (TryComp<CrewAssignmentsComponent>(station, out var crewAssignments))
+                {
+                    if (crewAssignments.TryGetAssignment(crewRecord.AssignmentID, out var crewAssignment) && crewAssignment != null)
+                    {
+                        // IDs show assignment as "[TAG] Job" so players can quickly identify
+                        // which faction the card holder currently works for.
+                        var factionTag = string.Empty;
+                        if (TryComp<StationDataComponent>(station, out var stationData))
+                            factionTag = stationData.GetResolvedFactionTag(MetaData(station.Value).EntityName);
+
+                        comp.LocalizedJobTitle = string.IsNullOrEmpty(factionTag)
+                            ? crewAssignment.Name
+                            : $"[{factionTag}] {crewAssignment.Name}";
+                        found = true;
+                    }
+                }
+            }
+        }
+        if (!found)
+        {
+            comp.LocalizedJobTitle = "Off Duty";
+            return;
         }
     }
 }

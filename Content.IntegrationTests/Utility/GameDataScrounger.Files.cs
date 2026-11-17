@@ -1,7 +1,7 @@
-using System.IO;
-using System.Linq;
 using Robust.Shared.ContentPack;
 using Robust.Shared.Utility;
+using System.IO;
+using System.Linq;
 
 namespace Content.IntegrationTests.Utility;
 
@@ -39,7 +39,7 @@ public static partial class GameDataScrounger
         return Directory.EnumerateFiles(path,
                 pattern ?? "*",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-            .Select(x => new ResPath(x.Remove(0, resBasePath.Length)))
+            .Select(x => ResPath.FromRelativeSystemPath(x.Remove(0, resBasePath.Length)))
             .ToArray();
     }
 

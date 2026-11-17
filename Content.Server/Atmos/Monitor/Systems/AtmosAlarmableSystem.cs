@@ -1,9 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Content.Server.Atmos.Monitor.Components;
 using Content.Server.DeviceNetwork.Systems;
 using Content.Shared.Atmos.Monitor;
 using Content.Shared.DeviceNetwork;
+using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork.Events;
 using Content.Shared.Power;
 using Content.Shared.Tag;
@@ -11,16 +10,17 @@ using Robust.Server.Audio;
 using Robust.Server.GameObjects;
 using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
-using Content.Shared.DeviceNetwork.Components;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Content.Server.Atmos.Monitor.Systems;
 
-public sealed class AtmosAlarmableSystem : EntitySystem
+public sealed partial class AtmosAlarmableSystem : EntitySystem
 {
-    [Dependency] private readonly AppearanceSystem _appearance = default!;
-    [Dependency] private readonly AudioSystem _audioSystem = default!;
-    [Dependency] private readonly DeviceNetworkSystem _deviceNet = default!;
-    [Dependency] private readonly AtmosDeviceNetworkSystem _atmosDevNetSystem = default!;
+    [Dependency] private AppearanceSystem _appearance = default!;
+    [Dependency] private AudioSystem _audioSystem = default!;
+    [Dependency] private DeviceNetworkSystem _deviceNet = default!;
+    [Dependency] private AtmosDeviceNetworkSystem _atmosDevNetSystem = default!;
 
     /// <summary>
     ///     An alarm. Has three valid states: Normal, Warning, Danger.
@@ -304,7 +304,9 @@ public sealed class AtmosAlarmableSystem : EntitySystem
     {
         if (alarm == AtmosAlarmType.Danger)
         {
-            _audioSystem.PlayPvs(alarmable.AlarmSound, uid, AudioParams.Default.WithVolume(alarmable.AlarmVolume));
+            var audioParams = alarmable.AlarmSound?.Params ?? AudioParams.Default;
+            audioParams = audioParams.AddVolume(alarmable.AlarmVolume);
+            _audioSystem.PlayPvs(alarmable.AlarmSound, uid, audioParams);
         }
     }
 

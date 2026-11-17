@@ -1,4 +1,4 @@
-﻿using Content.Shared.Atmos;
+using Content.Shared.Atmos;
 using Content.Shared.Body.Components;
 
 namespace Content.Shared.EntityEffects.Effects.Body;
@@ -19,7 +19,7 @@ public sealed partial class ModifyLungGasEntityEffectSystem : EntityEffectSystem
         {
             var quantity = ratio * amount / Atmospherics.BreathMolesToReagentMultiplier;
             if (quantity < 0)
-                quantity = Math.Max(quantity, -entity.Comp.Air[(int) gas]);
+                quantity = Math.Max(quantity, -entity.Comp.Air[(int)gas]);
             entity.Comp.Air.AdjustMoles(gas, quantity);
         }
     }
@@ -28,6 +28,9 @@ public sealed partial class ModifyLungGasEntityEffectSystem : EntityEffectSystem
 /// <inheritdoc cref="EntityEffect"/>
 public sealed partial class ModifyLungGas : EntityEffectBase<ModifyLungGas>
 {
+    /// <summary>
+    /// The new gas composition to set in the lung.
+    /// </summary>
     [DataField(required: true)]
     public Dictionary<Gas, float> Ratios = default!;
 }

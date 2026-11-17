@@ -3,6 +3,7 @@ using Content.Server.NodeContainer.NodeGroups;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
 using Content.Shared.NodeContainer;
+using Content.Shared.NodeContainer.NodeGroups;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Utility;
 
@@ -26,13 +27,19 @@ namespace Content.Server.NodeContainer.Nodes
         ///     The *current* layer to which the pipe node is assigned.
         /// </summary>
         [DataField("pipeLayer")]
-        public AtmosPipeLayer CurrentPipeLayer = AtmosPipeLayer.Primary;
+        public AtmosPipeLayer OriginalPipeLayer = AtmosPipeLayer.Primary;
+
+        [DataField]
+        public PipeLayerRotationMode Mode = PipeLayerRotationMode.Stable;
 
         /// <summary>
         ///     The *current* pipe directions (accounting for rotation)
         ///     Used to check if this pipe can connect to another pipe in a given direction.
         /// </summary>
         public PipeDirection CurrentPipeDirection { get; private set; }
+
+        [ViewVariables(VVAccess.ReadOnly)]
+        public AtmosPipeLayer CurrentPipeLayer { get; set; }
 
         private HashSet<PipeNode>? _alwaysReachable;
 
@@ -43,7 +50,7 @@ namespace Content.Server.NodeContainer.Nodes
             _alwaysReachable.Add(pipeNode);
 
             if (NodeGroup != null)
-                IoCManager.Resolve<IEntityManager>().System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup) NodeGroup);
+                IoCManager.Resolve<IEntityManager>().System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup)NodeGroup);
         }
 
         public void RemoveAlwaysReachable(PipeNode pipeNode)
@@ -53,7 +60,7 @@ namespace Content.Server.NodeContainer.Nodes
             _alwaysReachable.Remove(pipeNode);
 
             if (NodeGroup != null)
-                IoCManager.Resolve<IEntityManager>().System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup) NodeGroup);
+                IoCManager.Resolve<IEntityManager>().System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup)NodeGroup);
         }
 
         /// <summary>
@@ -68,7 +75,7 @@ namespace Content.Server.NodeContainer.Nodes
                 _connectionsEnabled = value;
 
                 if (NodeGroup != null)
-                    IoCManager.Resolve<IEntityManager>().System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup) NodeGroup);
+                    IoCManager.Resolve<IEntityManager>().System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup)NodeGroup);
             }
         }
 
@@ -87,7 +94,7 @@ namespace Content.Server.NodeContainer.Nodes
         ///     The <see cref="IPipeNet"/> this pipe is a part of.
         /// </summary>
         [ViewVariables]
-        private IPipeNet? PipeNet => (IPipeNet?) NodeGroup;
+        private IPipeNet? PipeNet => (IPipeNet?)NodeGroup;
 
         /// <summary>
         ///     The gases in this pipe.
@@ -117,6 +124,7 @@ namespace Content.Server.NodeContainer.Nodes
 
             var xform = entMan.GetComponent<TransformComponent>(owner);
             CurrentPipeDirection = OriginalPipeDirection.RotatePipeDirection(xform.LocalRotation);
+            CurrentPipeLayer = OriginalPipeLayer.RotatePipeLayer(xform.LocalRotation, Mode);
         }
 
         bool IRotatableNode.RotateNode(in MoveEvent ev)
@@ -127,16 +135,22 @@ namespace Content.Server.NodeContainer.Nodes
             // update valid pipe direction
             if (!RotationsEnabled)
             {
-                if (CurrentPipeDirection == OriginalPipeDirection)
+                if (CurrentPipeDirection == OriginalPipeDirection &&
+                    CurrentPipeLayer == OriginalPipeLayer)
                     return false;
 
                 CurrentPipeDirection = OriginalPipeDirection;
+                CurrentPipeLayer = OriginalPipeLayer;
                 return true;
             }
 
             var oldDirection = CurrentPipeDirection;
             CurrentPipeDirection = OriginalPipeDirection.RotatePipeDirection(ev.NewRotation);
-            return oldDirection != CurrentPipeDirection;
+
+            var oldLayer = CurrentPipeLayer;
+            CurrentPipeLayer = OriginalPipeLayer.RotatePipeLayer(ev.NewRotation, Mode);
+
+            return oldDirection != CurrentPipeDirection || oldLayer != CurrentPipeLayer;
         }
 
         public override void OnAnchorStateChanged(IEntityManager entityManager, bool anchored)
@@ -149,11 +163,13 @@ namespace Content.Server.NodeContainer.Nodes
             if (!RotationsEnabled)
             {
                 CurrentPipeDirection = OriginalPipeDirection;
+                CurrentPipeLayer = OriginalPipeLayer;
                 return;
             }
 
             var xform = entityManager.GetComponent<TransformComponent>(Owner);
             CurrentPipeDirection = OriginalPipeDirection.RotatePipeDirection(xform.LocalRotation);
+            CurrentPipeLayer = OriginalPipeLayer.RotatePipeLayer(xform.LocalRotation, Mode);
         }
 
         public override IEnumerable<Node> GetReachableNodes(
@@ -189,7 +205,7 @@ namespace Content.Server.NodeContainer.Nodes
 
             for (var i = 0; i < PipeDirectionHelpers.PipeDirections; i++)
             {
-                var pipeDir = (PipeDirection) (1 << i);
+                var pipeDir = (PipeDirection)(1 << i);
 
                 if (!CurrentPipeDirection.HasDirection(pipeDir))
                     continue;

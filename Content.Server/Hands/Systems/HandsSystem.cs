@@ -1,4 +1,3 @@
-using System.Numerics;
 using Content.Server.Stack;
 using Content.Server.Stunnable;
 using Content.Shared.ActionBlocker;
@@ -20,20 +19,20 @@ using Robust.Shared.Physics.Components;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
+using System.Numerics;
 
 namespace Content.Server.Hands.Systems
 {
-    public sealed class HandsSystem : SharedHandsSystem
+    public sealed partial class HandsSystem : SharedHandsSystem
     {
-        [Dependency] private readonly IGameTiming _timing = default!;
-        [Dependency] private readonly IRobustRandom _random = default!;
-        [Dependency] private readonly StackSystem _stackSystem = default!;
-        [Dependency] private readonly ActionBlockerSystem _actionBlockerSystem = default!;
-        [Dependency] private readonly SharedTransformSystem _transformSystem = default!;
-        [Dependency] private readonly PullingSystem _pullingSystem = default!;
-        [Dependency] private readonly ThrowingSystem _throwingSystem = default!;
-
-        private EntityQuery<PhysicsComponent> _physicsQuery;
+        [Dependency] private IGameTiming _timing = default!;
+        [Dependency] private IRobustRandom _random = default!;
+        [Dependency] private StackSystem _stackSystem = default!;
+        [Dependency] private ActionBlockerSystem _actionBlockerSystem = default!;
+        [Dependency] private SharedTransformSystem _transformSystem = default!;
+        [Dependency] private PullingSystem _pullingSystem = default!;
+        [Dependency] private ThrowingSystem _throwingSystem = default!;
+        [Dependency] private EntityQuery<PhysicsComponent> _physicsQuery = default!;
 
         /// <summary>
         /// Items dropped when the holder falls down will be launched in
@@ -46,7 +45,7 @@ namespace Content.Server.Hands.Systems
         {
             base.Initialize();
 
-            SubscribeLocalEvent<HandsComponent, DisarmedEvent>(OnDisarmed, before: new[] {typeof(StunSystem), typeof(SharedStaminaSystem)});
+            SubscribeLocalEvent<HandsComponent, DisarmedEvent>(OnDisarmed, before: new[] { typeof(StunSystem), typeof(SharedStaminaSystem) });
 
             SubscribeLocalEvent<HandsComponent, ComponentGetState>(GetComponentState);
 
@@ -54,11 +53,10 @@ namespace Content.Server.Hands.Systems
 
             SubscribeLocalEvent<HandsComponent, DropHandItemsEvent>(OnDropHandItems);
 
+
             CommandBinds.Builder
                 .Bind(ContentKeyFunctions.ThrowItemInHand, new PointerInputCmdHandler(HandleThrowItem))
                 .Register<HandsSystem>();
-
-            _physicsQuery = GetEntityQuery<PhysicsComponent>();
         }
 
         public override void Shutdown()
@@ -70,7 +68,28 @@ namespace Content.Server.Hands.Systems
 
         private void GetComponentState(EntityUid uid, HandsComponent hands, ref ComponentGetState args)
         {
-            args.State = new HandsComponentState(hands);
+            // If we only switch hands don't send a full state.
+            if (args.FromTick > hands.CreationTick && hands.LastUnclassifiedDirty >= args.FromTick)
+            {
+                var aspects = EntityManager.GetModifiedAspects(hands, args.FromTick);
+
+                if (aspects == ActiveHandIdIndex)
+                {
+                    args.State = new HandsComponentActiveHandDeltaState(hands.ActiveHandId);
+                    return;
+                }
+            }
+
+            // Get full state.
+            args.State = new HandsComponentState(
+                hands.ActiveHandId,
+                hands.Hands,
+                hands.SortedHands,
+                hands.ShowInHands,
+                hands.HandDisplacement,
+                hands.LeftHandDisplacement,
+                hands.RightHandDisplacement,
+                hands.CanBeStripped);
         }
 
 
@@ -107,7 +126,7 @@ namespace Content.Server.Hands.Systems
 
         private bool HandleThrowItem(ICommonSession? playerSession, EntityCoordinates coordinates, EntityUid entity)
         {
-            if (playerSession?.AttachedEntity is not {Valid: true} player || !Exists(player) || !coordinates.IsValid(EntityManager))
+            if (playerSession?.AttachedEntity is not { Valid: true } player || !Exists(player) || !coordinates.IsValid(EntityManager))
                 return false;
 
             return ThrowHeldItem(player, coordinates);
@@ -132,7 +151,7 @@ namespace Content.Server.Hands.Systems
             {
                 var splitStack = _stackSystem.Split((throwEnt.Value, stack), 1, Comp<TransformComponent>(player).Coordinates);
 
-                if (splitStack is not {Valid: true})
+                if (splitStack is not { Valid: true })
                     return false;
 
                 throwEnt = splitStack.Value;

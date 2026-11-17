@@ -1,7 +1,7 @@
-using System.IO;
 using Lidgren.Network;
 using Robust.Shared.Network;
 using Robust.Shared.Serialization;
+using System.IO;
 
 namespace Content.Shared.Eui
 {
@@ -18,6 +18,7 @@ namespace Content.Shared.Eui
             Id = buffer.ReadUInt32();
 
             var length = buffer.ReadVariableInt32();
+            buffer.AssertAtLeastSize(length);
             using var stream = new MemoryStream(length);
             buffer.ReadAlignedMemory(stream, length);
             State = ser.Deserialize<EuiStateBase>(stream);

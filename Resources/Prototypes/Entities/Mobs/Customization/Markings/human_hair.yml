@@ -628,6 +628,8 @@
   sprites:
     - sprite: Mobs/Customization/human_hair.rsi
       state: longovereye
+    - sprite: Mobs/Customization/human_hair.rsi
+      state: longovereye_highlight
 - type: marking
   id: HumanHairLbangs
   bodyPart: Hair
@@ -1138,6 +1140,8 @@
   sprites:
     - sprite: Mobs/Customization/human_hair.rsi
       state: longest2
+    - sprite: Mobs/Customization/human_hair.rsi
+      state: longovereye_highlight
 - type: marking
   id: HumanHairVeryshortovereyealternate
   bodyPart: Hair
@@ -1210,3 +1214,97 @@
   sprites:
   - sprite: Mobs/Customization/human_hair.rsi
     state: overeyepigtail
+- type: marking
+  id: HumanHairTerminal
+  bodyPart: Hair
+  coloring:
+    layers:
+      terminal_headband:
+        type:
+          !type:SimpleColoring
+            color: "#C3C3C3"
+  sprites:
+  - sprite: Mobs/Customization/human_hair.rsi
+    state: terminal
+  - sprite: Mobs/Customization/human_hair.rsi
+    state: terminal_highlight
+  - sprite: Mobs/Customization/human_hair.rsi
+    state: terminal_headband
+
+# Persistence Additions
+- type: marking
+  id: HumanHairCIA2
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_cia2
+
+- type: marking
+  id: HumanHairCIA3
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_cia3
+
+- type: marking
+  id: HumanHairCIA5
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_cia5
+
+- type: marking
+  id: HumanHairIRS
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_irs
+
+- type: marking
+  id: HumanHairFlatPressed
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_flatpressed
+
+- type: marking
+  id: HumanHairWaver
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_waver
+
+- type: marking
+  id: HumanHairElegant
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_elegantbun
+
+- type: marking
+  id: HumanHairLowBun
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_low_bun
+
+- type: marking
+  id: HumanHairLowBunAlt
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_low_bun_alt
+
+- type: marking
+  id: HumanHairLowPonyTail
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_low_ponytail
+
+- type: marking
+  id: HumanHairLowPonyTailAlt
+  bodyPart: Hair
+  sprites:
+    - sprite: Mobs/Customization/human_hair_persistence.rsi
+      state: hair_low_ponytail_alt

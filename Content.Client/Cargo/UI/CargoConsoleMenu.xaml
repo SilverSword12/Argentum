@@ -1,4 +1,4 @@
-﻿<controls:FancyWindow
+<controls:FancyWindow
     xmlns="https://spacestation14.io"
     xmlns:gfx="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
     xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
@@ -34,7 +34,7 @@
                           <RichTextLabel Name="AccountNameLabel"
                               Text="{Loc 'cargo-console-menu-account-name-none-text'}"
                               Margin="4 0"/>
-
+                          
                           <!-- Balance -->
                           <Label Text="{Loc 'cargo-console-menu-points-label'}"
                               StyleClasses="LabelKeyText"/>
@@ -52,10 +52,26 @@
                           <PanelContainer StyleClasses="LowDivider" Margin="0 -2 0 -1"/>
 
                           <Label Name="ShuttleCapacityLabel"
-                              Text="0/20"
+                              Text="0/0"
+                              Access="Public"
                               Margin="4 0"/>
                       </GridContainer>
-
+                      <Label Text="Change Account Type: "
+                                 StyleClasses="LabelKeyText" />
+                      <Button Name="AccountTypeMode" Text="Station" Access="Public" />
+                      <BoxContainer Name="TaxContainer" Orientation="Horizontal">
+                          <Label Text="Tax Rate: "
+                             StyleClasses="LabelKeyText" />
+                          <RichTextLabel Name="TaxLabel" Text="10%" />
+                      </BoxContainer>
+                      <BoxContainer Orientation="Horizontal">
+                          <Label Text="Trade Station:"
+                                 StyleClasses="LabelKeyText" />
+                          <OptionButton Name="PossibleTrades"
+                              Access="Public"
+                              HorizontalExpand="True" />
+                          <Control HorizontalExpand="True"/>
+                      </BoxContainer>
                       <PanelContainer StyleClasses="LowDivider" Margin="0 4.5 -8 0"/>
                   </BoxContainer>
 

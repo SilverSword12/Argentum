@@ -1,11 +1,11 @@
-using Content.Shared.Trigger.Components.Effects;
 using Content.Shared.Chemistry.EntitySystems;
+using Content.Shared.Trigger.Components.Effects;
 
 namespace Content.Shared.Trigger.Systems;
 
-public sealed class SolutionTriggerSystem : XOnTriggerSystem<AddSolutionOnTriggerComponent>
+public sealed partial class SolutionTriggerSystem : XOnTriggerSystem<AddSolutionOnTriggerComponent>
 {
-    [Dependency] private readonly SharedSolutionContainerSystem _solutionContainer = default!;
+    [Dependency] private SharedSolutionContainerSystem _solutionContainer = default!;
 
     protected override void OnTrigger(Entity<AddSolutionOnTriggerComponent> ent, EntityUid target, ref TriggerEvent args)
     {

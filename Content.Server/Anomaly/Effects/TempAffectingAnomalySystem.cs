@@ -1,5 +1,5 @@
-using Content.Server.Atmos.EntitySystems;
 using Content.Server.Anomaly.Components;
+using Content.Server.Atmos.EntitySystems;
 using Content.Shared.Anomaly.Components;
 using Robust.Server.GameObjects;
 
@@ -8,10 +8,10 @@ namespace Content.Server.Anomaly.Effects;
 /// <summary>
 /// This handles <see cref="TempAffectingAnomalyComponent"/>
 /// </summary>
-public sealed class TempAffectingAnomalySystem : EntitySystem
+public sealed partial class TempAffectingAnomalySystem : EntitySystem
 {
-    [Dependency] private readonly AtmosphereSystem _atmosphere = default!;
-    [Dependency] private readonly TransformSystem _xform = default!;
+    [Dependency] private AtmosphereSystem _atmosphere = default!;
+    [Dependency] private TransformSystem _xform = default!;
 
     public override void Update(float frameTime)
     {

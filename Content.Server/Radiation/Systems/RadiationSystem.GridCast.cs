@@ -114,13 +114,46 @@ public partial class RadiationSystem
             // if no radiation rays reached target, that will set it to 0
             receiver.Comp.CurrentRadiation = rads;
 
-            // also send an event with combination of total rad
-            if (rads > 0)
-                IrradiateEntity(receiver, rads, GridcastUpdateRate);
+            if (rads <= 0)
+                continue;
+
+            IrradiateEntity(receiver, rads, GridcastUpdateRate);
+            IncreaseSourceIntensity(receiver.Owner, rads, GridcastUpdateRate);
         }
 
         // raise broadcast event that radiation system has updated
         RaiseLocalEvent(new RadiationSystemUpdatedEvent());
+    }
+
+    private bool ShouldProcessSourceThisTick(EntityUid uid, RadiationSourceComponent source)
+    {
+        var interval = source.UpdateInterval;
+        if (interval <= 0f || interval <= GridcastUpdateRate)
+            return true;
+
+        var now = (float)_timing.CurTime.TotalSeconds;
+
+        if (!source.UpdateScheduleInitialized)
+        {
+            source.UpdateScheduleInitialized = true;
+
+            if (source.StaggerUpdates)
+            {
+                var phase = (uint)uid.Id % 1024u;
+                var offset = interval * (phase / 1024f);
+                source.NextUpdateTime = now + offset;
+            }
+            else
+            {
+                source.NextUpdateTime = now;
+            }
+        }
+
+        if (now < source.NextUpdateTime)
+            return false;
+
+        source.NextUpdateTime = now + interval;
+        return true;
     }
 
     private RadiationRay? Irradiate(SourceData source,
@@ -131,6 +164,10 @@ public partial class RadiationSystem
     {
         // lets first check that source and destination on the same map
         if (source.Transform.MapID != destTrs.MapID)
+            return null;
+
+        // Persistence14 - Prevents entities from irradiating themself.
+        if (source.Entity.Owner == destUid)
             return null;
 
         var mapId = destTrs.MapID;
@@ -173,7 +210,7 @@ public partial class RadiationSystem
         // Avoids having to do a lookup per source*receiver.
         var box = Box2.FromTwoPoints(source.WorldPosition, destWorld);
         _grids.Clear();
-        _mapManager.FindGridsIntersecting(mapId, box, ref _grids, true);
+        _maps.FindGridsIntersecting(mapId, box, ref _grids, true);
 
         // gridcast through each grid and try to hit some radiation blockers
         // the ray will be updated with each grid that has some blockers

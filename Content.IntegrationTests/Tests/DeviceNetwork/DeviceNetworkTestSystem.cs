@@ -1,13 +1,13 @@
 using Content.Shared.DeviceNetwork;
+using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork.Events;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Reflection;
-using Content.Shared.DeviceNetwork.Components;
 
 namespace Content.IntegrationTests.Tests.DeviceNetwork;
 
 [Reflect(false)]
-public sealed class DeviceNetworkTestSystem : EntitySystem
+public sealed partial class DeviceNetworkTestSystem : EntitySystem
 {
     public NetworkPayload LastPayload = default;
 

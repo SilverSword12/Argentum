@@ -1,18 +1,16 @@
-using System.ComponentModel.Design;
-using System.Linq;
 using Content.Client.Light.Components;
-using Content.Shared.Trigger.Components.Effects;
-using Robust.Client.GameObjects;
 using Robust.Client.Animations;
-using Robust.Shared.Random;
+using Robust.Client.GameObjects;
 using Robust.Shared.Animations;
+using Robust.Shared.Random;
+using System.Linq;
 
 namespace Content.Client.Light.EntitySystems;
 
-public sealed class LightBehaviorSystem : EntitySystem
+public sealed partial class LightBehaviorSystem : EntitySystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly AnimationPlayerSystem _player = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private AnimationPlayerSystem _player = default!;
 
     public override void Initialize()
     {

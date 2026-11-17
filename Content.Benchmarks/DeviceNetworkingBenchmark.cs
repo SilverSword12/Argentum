@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Content.IntegrationTests;
@@ -10,6 +11,7 @@ using Robust.Shared;
 using Robust.Shared.Analyzers;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
+
 
 namespace Content.Benchmarks;
 
@@ -60,7 +62,7 @@ public class DeviceNetworkingBenchmark
     {
         ProgramShared.PathOffset = "../../../../";
         PoolManager.Startup(typeof(DeviceNetworkingBenchmark).Assembly);
-        _pair = await PoolManager.GetServerClient();
+        _pair = await PoolManager.GetServerClient(testContext: new ExternalTestContext("Benchmark", StreamWriter.Null));
         var server = _pair.Server;
 
         await server.WaitPost(() =>

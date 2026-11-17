@@ -1,12 +1,12 @@
-using System.Numerics;
 using Content.Shared.Sprite;
 using Robust.Client.GameObjects;
+using System.Numerics;
 
 namespace Content.Client.Sprite;
 
-public sealed class ScaleVisualsSystem : SharedScaleVisualsSystem
+public sealed partial class ScaleVisualsSystem : SharedScaleVisualsSystem
 {
-    [Dependency] private readonly SpriteSystem _sprite = default!;
+    [Dependency] private SpriteSystem _sprite = default!;
 
     public override void Initialize()
     {

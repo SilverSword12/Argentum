@@ -1,16 +1,16 @@
+using Content.Server.GameTicking;
 using Content.Server.Popups;
 using Content.Shared.Administration;
 using Content.Shared.GameTicking;
 using Content.Shared.Mind;
 using Robust.Shared.Console;
-using Content.Server.GameTicking;
 
 namespace Content.Server.Ghost
 {
     [AnyCommand]
-    public sealed class GhostCommand : IConsoleCommand
+    public sealed partial class GhostCommand : IConsoleCommand
     {
-        [Dependency] private readonly IEntityManager _entities = default!;
+        [Dependency] private IEntityManager _entities = default!;
 
         public string Command => "ghost";
         public string Description => Loc.GetString("ghost-command-description");

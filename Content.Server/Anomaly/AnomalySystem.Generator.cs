@@ -1,15 +1,21 @@
+/*
+Subsumed into Content.Server\_Persistence14\Research\Anomalies\AnomalyGeneratorSystem.cs
+
+
 using Content.Server.Anomaly.Components;
 using Content.Server.Power.EntitySystems;
+using Content.Shared._Persistence14.Research.Anomalies;
 using Content.Shared.Anomaly;
 using Content.Shared.CCVar;
+using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Materials;
+using Content.Shared.Physics;
+using Content.Shared.Power;
 using Content.Shared.Radio;
 using Robust.Shared.Audio;
-using Content.Shared.Physics;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics;
 using Robust.Shared.Physics.Components;
-using Content.Shared.Power;
 
 namespace Content.Server.Anomaly;
 
@@ -22,6 +28,7 @@ public sealed partial class AnomalySystem
 {
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly ItemSlotsSystem _slots = default!;
 
     private void InitializeGenerator()
     {
@@ -76,7 +83,9 @@ public sealed partial class AnomalySystem
 
         var generating = EnsureComp<GeneratingAnomalyGeneratorComponent>(uid);
         generating.EndTime = Timing.CurTime + component.GenerationLength;
-        generating.AudioStream = Audio.PlayPvs(component.GeneratingSound, uid, AudioParams.Default.WithLoop(true))?.Entity;
+        var audioParams = component.GeneratingSound?.Params ?? AudioParams.Default;
+        audioParams = audioParams.WithLoop(true);
+        generating.AudioStream = Audio.PlayPvs(component.GeneratingSound, uid, audioParams)?.Entity;
         component.CooldownEndTime = Timing.CurTime + component.CooldownLength;
         UpdateGeneratorUi(uid, component);
     }
@@ -93,8 +102,8 @@ public sealed partial class AnomalySystem
 
         for (var i = 0; i < 25; i++)
         {
-            var randomX = Random.Next((int) gridBounds.Left, (int) gridBounds.Right);
-            var randomY = Random.Next((int) gridBounds.Bottom, (int)gridBounds.Top);
+            var randomX = Random.Next((int)gridBounds.Left, (int)gridBounds.Right);
+            var randomY = Random.Next((int)gridBounds.Bottom, (int)gridBounds.Top);
 
             var tile = new Vector2i(randomX, randomY);
 
@@ -106,17 +115,16 @@ public sealed partial class AnomalySystem
             }
 
             // don't spawn inside of solid objects
-            var physQuery = GetEntityQuery<PhysicsComponent>();
             var valid = true;
 
             // TODO: This should be using static lookup.
             foreach (var ent in _mapSystem.GetAnchoredEntities(grid, gridComp, tile))
             {
-                if (!physQuery.TryGetComponent(ent, out var body))
+                if (!_physicsQuery.TryGetComponent(ent, out var body))
                     continue;
                 if (body.BodyType != BodyType.Static ||
                     !body.Hard ||
-                    (body.CollisionLayer & (int) CollisionGroup.Impassable) == 0)
+                    (body.CollisionLayer & (int)CollisionGroup.Impassable) == 0)
                     continue;
 
                 valid = false;
@@ -161,14 +169,8 @@ public sealed partial class AnomalySystem
     private void OnGeneratingFinished(EntityUid uid, AnomalyGeneratorComponent component)
     {
         var xform = Transform(uid);
-
-        if (_station.GetStationInMap(xform.MapID) is not { } station ||
-            _station.GetLargestGrid(station) is not { } grid)
-        {
-            if (xform.GridUid == null)
-                return;
-            grid = xform.GridUid.Value;
-        }
+        if (xform.GridUid is not { } grid)
+            return;
 
         SpawnOnRandomGridLocation(grid, component.SpawnerPrototype);
         RemComp<GeneratingAnomalyGeneratorComponent>(uid);
@@ -176,7 +178,7 @@ public sealed partial class AnomalySystem
         Audio.PlayPvs(component.GeneratingFinishedSound, uid);
 
         var message = Loc.GetString("anomaly-generator-announcement");
-        _radio.SendRadioMessage(uid, message, _prototype.Index<RadioChannelPrototype>(component.ScienceChannel), uid);
+        _radio.SendRadioMessage(uid, message, ProtoMan.Index<RadioChannelPrototype>(component.ScienceChannel), uid);
     }
 
     private void UpdateGenerator()
@@ -192,3 +194,4 @@ public sealed partial class AnomalySystem
         }
     }
 }
+*/

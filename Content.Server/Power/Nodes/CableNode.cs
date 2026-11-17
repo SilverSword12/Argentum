@@ -1,3 +1,4 @@
+using Content.Server._Persistence14.Power.Nodes;
 using Content.Server.NodeContainer.Nodes;
 using Content.Shared.NodeContainer;
 using Robust.Shared.Map.Components;
@@ -32,6 +33,12 @@ namespace Content.Server.Power.Nodes
                     nodeDirs.Add((dir, node));
                 }
 
+                if (node is CableJunctionNode junction)
+                {
+                    if (junction.MatchesAxis(dir))
+                        nodeDirs.Add((dir, node));
+                }
+
                 if (node is CableDeviceNode && dir == Direction.Invalid)
                 {
                     // device on same tile
@@ -43,7 +50,7 @@ namespace Content.Server.Power.Nodes
                     if (dir == Direction.Invalid)
                     {
                         // On own tile, block direction it faces
-                        terminalDirs |= 1 << (int) xformQuery.GetComponent(node.Owner).LocalRotation.GetCardinalDir();
+                        terminalDirs |= 1 << (int)xformQuery.GetComponent(node.Owner).LocalRotation.GetCardinalDir();
                     }
                     else
                     {
@@ -51,7 +58,7 @@ namespace Content.Server.Power.Nodes
                         if (terminalDir.GetOpposite() == dir)
                         {
                             // Target tile has a terminal towards us, block the direction.
-                            terminalDirs |= 1 << (int) dir;
+                            terminalDirs |= 1 << (int)dir;
                         }
                     }
                 }
@@ -60,7 +67,7 @@ namespace Content.Server.Power.Nodes
             foreach (var (dir, node) in nodeDirs)
             {
                 // If there is a wire terminal connecting across this direction, skip the node.
-                if (dir != Direction.Invalid && (terminalDirs & (1 << (int) dir)) != 0)
+                if (dir != Direction.Invalid && (terminalDirs & (1 << (int)dir)) != 0)
                     continue;
 
                 yield return node;

@@ -2,18 +2,18 @@ using Content.Shared.Administration;
 using Content.Shared.CCVar;
 using Robust.Shared.Configuration;
 using Robust.Shared.Console;
-using Robust.Shared.Map;
 using Robust.Shared.EntitySerialization.Systems;
+using Robust.Shared.Map;
 using Robust.Shared.Utility;
 
 namespace Content.Server.Administration.Commands;
 
 [AdminCommand(AdminFlags.Server)]
-public sealed class PersistenceSave : LocalizedEntityCommands
+public sealed class PersistenceSaveGrid : LocalizedEntityCommands
 {
-    [Dependency] private readonly IConfigurationManager _config = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly MapLoaderSystem _mapLoader = default!;
+    [Dependency] private IConfigurationManager _config = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private MapLoaderSystem _mapLoader = default!;
 
     public override string Command => "persistencesave";
 
@@ -45,7 +45,7 @@ public sealed class PersistenceSave : LocalizedEntityCommands
             return;
         }
 
-        _mapLoader.TrySaveMap(mapId, new ResPath(saveFilePath));
-        shell.WriteLine(Loc.GetString("cmd-savemap-success"));
+        bool save_stat = _mapLoader.TrySaveMap(mapId, new ResPath(saveFilePath));
+        shell.WriteLine(Loc.GetString("Did the map save? ") + $"{save_stat}");
     }
 }

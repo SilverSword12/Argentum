@@ -1,6 +1,5 @@
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Monitor.Systems;
-using Content.Server.Atmos.Piping.Components;
 using Content.Server.Atmos.Piping.Unary.Components;
 using Content.Server.DeviceNetwork.Systems;
 using Content.Server.NodeContainer.EntitySystems;
@@ -8,6 +7,7 @@ using Content.Server.NodeContainer.Nodes;
 using Content.Server.Power.EntitySystems;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Atmos;
+using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Monitor;
 using Content.Shared.Atmos.Piping.Components;
 using Content.Shared.Atmos.Piping.Unary.Components;
@@ -17,6 +17,7 @@ using Content.Shared.Database;
 using Content.Shared.DeviceNetwork;
 using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork.Events;
+using Content.Shared.Labels.Components;
 using Content.Shared.Power;
 using Content.Shared.Tools.Systems;
 using JetBrains.Annotations;
@@ -25,17 +26,17 @@ using Robust.Server.GameObjects;
 namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 {
     [UsedImplicitly]
-    public sealed class GasVentScrubberSystem : EntitySystem
+    public sealed partial class GasVentScrubberSystem : EntitySystem
     {
-        [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
-        [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
-        [Dependency] private readonly DeviceNetworkSystem _deviceNetSystem = default!;
-        [Dependency] private readonly NodeContainerSystem _nodeContainer = default!;
-        [Dependency] private readonly SharedAmbientSoundSystem _ambientSoundSystem = default!;
-        [Dependency] private readonly TransformSystem _transformSystem = default!;
-        [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-        [Dependency] private readonly WeldableSystem _weldable = default!;
-        [Dependency] private readonly PowerReceiverSystem _powerReceiverSystem = default!;
+        [Dependency] private ISharedAdminLogManager _adminLogger = default!;
+        [Dependency] private AtmosphereSystem _atmosphereSystem = default!;
+        [Dependency] private DeviceNetworkSystem _deviceNetSystem = default!;
+        [Dependency] private NodeContainerSystem _nodeContainer = default!;
+        [Dependency] private SharedAmbientSoundSystem _ambientSoundSystem = default!;
+        [Dependency] private TransformSystem _transformSystem = default!;
+        [Dependency] private SharedAppearanceSystem _appearance = default!;
+        [Dependency] private WeldableSystem _weldable = default!;
+        [Dependency] private PowerReceiverSystem _powerReceiverSystem = default!;
 
         public override void Initialize()
         {
@@ -63,7 +64,7 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
             if (!scrubber.Enabled || !_nodeContainer.TryGetNode(uid, scrubber.OutletName, out PipeNode? outlet))
                 return;
 
-            if (args.Grid is not {} grid)
+            if (args.Grid is not { } grid)
                 return;
 
             var position = _transformSystem.GetGridTilePositionOrDefault(uid);
@@ -90,13 +91,13 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 
         private void Scrub(float timeDelta, GasVentScrubberComponent scrubber, GasMixture? tile, PipeNode outlet)
         {
-            Scrub(timeDelta, scrubber.TransferRate*_atmosphereSystem.PumpSpeedup(), scrubber.PumpDirection, scrubber.FilterGases, tile, outlet.Air);
+            Scrub(timeDelta, scrubber.TransferRate * _atmosphereSystem.PumpSpeedup(), scrubber.PumpDirection, scrubber.FilterGases, scrubber.FilterGasLimits, tile, outlet.Air); // Persistence: Add scrubber.FilterGasLimits
         }
 
         /// <summary>
         /// True if we were able to scrub, false if we were not.
         /// </summary>
-        public bool Scrub(float timeDelta, float transferRate, ScrubberPumpDirection mode, HashSet<Gas> filterGases, GasMixture? tile, GasMixture destination)
+        public bool Scrub(float timeDelta, float transferRate, ScrubberPumpDirection mode, HashSet<Gas> filterGases, Dictionary<Gas, float> filterLimits, GasMixture? tile, GasMixture destination) // Persistence: Add Dictionary<Gas, float> filterLimits
         {
             // Cannot scrub if tile is null or air-blocked.
             if (tile == null
@@ -115,7 +116,7 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 
             if (mode == ScrubberPumpDirection.Scrubbing)
             {
-                _atmosphereSystem.ScrubInto(removed, destination, filterGases);
+                _atmosphereSystem.ScrubInto(removed, destination, filterGases, filterLimits); // Persistence: Add filterLimits
 
                 // Remix the gases.
                 _atmosphereSystem.Merge(tile, removed);
@@ -158,7 +159,14 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
             {
                 case AtmosDeviceNetworkSystem.SyncData:
                     payload.Add(DeviceNetworkConstants.Command, AtmosDeviceNetworkSystem.SyncData);
-                    payload.Add(AtmosDeviceNetworkSystem.SyncData, component.ToAirAlarmData());
+
+                    var name = "";
+                    if (TryComp<LabelComponent>(uid, out var labelComponent))
+                        name = labelComponent.CurrentLabel ?? "";
+                    var alarmData = component.ToAirAlarmData();
+                    alarmData.Name = name;
+
+                    payload.Add(AtmosDeviceNetworkSystem.SyncData, alarmData);
 
                     _deviceNetSystem.QueuePacket(uid, args.SenderAddress, payload, device: netConn);
 
@@ -171,7 +179,7 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 
                     if (previous.Enabled != setData.Enabled)
                     {
-                        string enabled = setData.Enabled ? "enabled" : "disabled" ;
+                        string enabled = setData.Enabled ? "enabled" : "disabled";
                         _adminLogger.Add(LogType.AtmosDeviceSetting, LogImpact.Medium, $"{ToPrettyString(uid)} {enabled}");
                     }
 
@@ -200,7 +208,7 @@ namespace Content.Server.Atmos.Piping.Unary.EntitySystems
 
                     if (previous.WideNet != setData.WideNet)
                     {
-                        string enabled = setData.WideNet ? "enabled" : "disabled" ;
+                        string enabled = setData.WideNet ? "enabled" : "disabled";
                         _adminLogger.Add(LogType.AtmosDeviceSetting, LogImpact.Medium, $"{ToPrettyString(uid)} WideNet {enabled}");
                     }
 

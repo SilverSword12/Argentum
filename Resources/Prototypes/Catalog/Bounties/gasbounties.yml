@@ -1,0 +1,89 @@
+- type: cargoBounty
+  id: BountyOxygen
+  reward: 9900
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Oxygen
+    quantity: 18000
+
+- type: cargoBounty
+  id: BountyNitrogen
+  reward: 10000
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Nitrogen
+    quantity: 20000
+
+- type: cargoBounty
+  id: BountyHydrogen
+  reward: 9750
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Hydrogen
+    quantity: 13000
+
+- type: cargoBounty
+  id: BountyPlasmaGas
+  reward: 9750
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Plasma
+    quantity: 13000
+
+- type: cargoBounty
+  id: BountyChlorine
+  reward: 10125
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Chlorine
+    quantity: 4500
+
+- type: cargoBounty
+  id: BountyFluorine
+  reward: 10000
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Fluorine
+    quantity: 4000
+
+- type: cargoBounty
+  id: BountyTritium
+  reward: 10000
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Tritium
+    quantity: 2000
+
+- type: cargoBounty
+  id: BountyFrezon
+  reward: 10000
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Frezon
+    quantity: 1000
+
+- type: cargoBounty
+  id: BountyMethane
+  reward: 9800
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: Methane
+    quantity: 3500
+
+- type: cargoBounty
+  id: BountyChlorineTrifluoride
+  reward: 10625
+  description: bounty-description-artifact
+  group: GasBounty
+  condition:
+    gas: ChlorineTrifluoride
+    quantity: 850

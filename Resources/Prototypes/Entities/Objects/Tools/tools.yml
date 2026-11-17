@@ -9,7 +9,6 @@
       path: /Audio/Items/wirecutter_drop.ogg
   - type: Tag
     tags:
-    - PlantSampleTaker
     - Wirecutter
   - type: Sprite
     sprite: Objects/Tools/wirecutters.rsi
@@ -28,6 +27,7 @@
   - type: Tool
     qualities:
       - Cutting
+      - Shearing
     useSound:
       path: /Audio/Items/wirecutter.ogg
   - type: RandomSprite
@@ -43,6 +43,10 @@
       Steel: 100
   - type: StaticPrice
     price: 30
+  - type: BotanySampleTaker
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0
 
 - type: entity
   name: screwdriver
@@ -87,6 +91,9 @@
       Steel: 100
   - type: StaticPrice
     price: 30
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0
 
 - type: entity
   name: wrench
@@ -129,6 +136,9 @@
   - type: GuideHelp
     guides:
     - Construction
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0
 
 - type: entity
   name: multitool
@@ -183,6 +193,9 @@
     - WirePanels
     - Airlocks
     - InspectingPower
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0
 
 - type: entity
   name: network configurator
@@ -234,6 +247,9 @@
     - type: GuideHelp
       guides:
       - Networking
+    - type: PhysicalComposition
+      materialComposition:
+        Plastic: 50
 
 #Power tools
 #Later on these should switch probably switch damage when changing the tool behavior.
@@ -256,26 +272,37 @@
     qualities:
       - Screwing
     speedModifier: 1.5
-    useSound: /Audio/Items/drill_use.ogg
+    useSound: !type:SoundPathSpecifier
+      path: /Audio/Items/drill_use.ogg
+      params:
+        volume: -2.5
   - type: MultipleTool
     statusShowBehavior: true
     entries:
-      - behavior: Screwing
+      - behavior: [ Screwing ]
         sprite:
           sprite: Objects/Tools/drill.rsi
           state: drill_screw
-        useSound:
+        useSound: !type:SoundPathSpecifier
           path: /Audio/Items/drill_use.ogg
-        changeSound:
+          params:
+            volume: -2.5
+        changeSound: !type:SoundPathSpecifier
           path: /Audio/Items/change_drill.ogg
-      - behavior: Anchoring
+          params:
+            volume: -5
+      - behavior: [ Anchoring ]
         sprite:
           sprite: Objects/Tools/drill.rsi
           state: drill_bolt
-        useSound:
+        useSound: !type:SoundPathSpecifier
           path: /Audio/Items/drill_use.ogg
-        changeSound:
+          params:
+            volume: -2.5
+        changeSound: !type:SoundPathSpecifier
           path: /Audio/Items/change_drill.ogg
+          params:
+            volume: -5
   - type: PhysicalComposition
     materialComposition:
       Steel: 300
@@ -290,6 +317,9 @@
         Piercing: 10
     soundHit:
       path: "/Audio/Items/drill_hit.ogg"
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0
 
 - type: entity
   id: RCD
@@ -393,6 +423,9 @@
       Plastic: 100
   - type: StaticPrice
     price: 60
+  - type: Tag
+    tags:
+    - HighRiskItem
 
 - type: entity
   name: omnitool
@@ -420,7 +453,7 @@
   - type: MultipleTool
     statusShowBehavior: true
     entries:
-      - behavior: Screwing
+      - behavior: [ Screwing ]
         sprite:
           sprite: Objects/Tools/omnitool.rsi
           state: omnitool-screwing
@@ -428,7 +461,7 @@
           path: /Audio/Items/drill_use.ogg
         changeSound:
           path: /Audio/Items/change_drill.ogg
-      - behavior: Prying
+      - behavior: [ Prying ]
         sprite:
           sprite: Objects/Tools/omnitool.rsi
           state: omnitool-prying
@@ -436,7 +469,7 @@
           path: /Audio/Items/jaws_pry.ogg
         changeSound:
           path: /Audio/Items/change_drill.ogg
-      - behavior: Anchoring
+      - behavior: [ Anchoring ]
         sprite:
           sprite: Objects/Tools/omnitool.rsi
           state: omnitool-wrenching
@@ -444,7 +477,7 @@
           path: /Audio/Items/ratchet.ogg
         changeSound:
           path: /Audio/Items/change_drill.ogg
-      - behavior: Cutting
+      - behavior: [ Cutting ]
         sprite:
           sprite: Objects/Tools/omnitool.rsi
           state: omnitool-snipping
@@ -452,12 +485,19 @@
           path: /Audio/Items/jaws_cut.ogg
         changeSound:
           path: /Audio/Items/change_drill.ogg
-      - behavior: Pulsing
+      - behavior: [ Pulsing ]
         sprite:
           sprite: Objects/Tools/omnitool.rsi
           state: omnitool-pulsing
         changeSound:
           path: /Audio/Items/change_drill.ogg
+  - type: PhysicalComposition
+    materialComposition:
+      Plastic: 50
+      Steel: 50
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0
 
 #Other
 - type: entity
@@ -524,3 +564,6 @@
   - type: Construction
     graph: WoodenRollingPin
     node: rollingpin
+  - type: Upgradeable
+    upgrades:
+      ToolSpeedGreen : 0

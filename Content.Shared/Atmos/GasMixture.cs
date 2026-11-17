@@ -1,6 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using Content.Shared.Atmos.EntitySystems;
 using Content.Shared.Atmos.Reactions;
@@ -16,7 +17,7 @@ namespace Content.Shared.Atmos
     [DataDefinition]
     public sealed partial class GasMixture : IEquatable<GasMixture>, ISerializationHooks, IEnumerable<(Gas gas, float moles)>
     {
-        public static GasMixture SpaceGas => new() {Volume = Atmospherics.CellVolume, Temperature = Atmospherics.TCMB, Immutable = true};
+        public static GasMixture SpaceGas => new() { Volume = Atmospherics.CellVolume, Temperature = Atmospherics.TCMB, Immutable = true };
 
         // No access, to ensure immutable mixtures are never accidentally mutated.
         [Access(typeof(SharedAtmosphereSystem), typeof(SharedAtmosDebugOverlaySystem), typeof(GasEnumerator), Other = AccessPermissions.None)]
@@ -42,7 +43,7 @@ namespace Content.Shared.Atmos
         public float TotalMoles
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => NumericsHelpers.HorizontalAdd(Moles);
+            get => TensorPrimitives.Sum(Moles);
         }
 
         [ViewVariables]
@@ -123,7 +124,8 @@ namespace Content.Shared.Atmos
         public void SetMoles(int gasId, float quantity)
         {
             if (!float.IsFinite(quantity) || float.IsNegative(quantity))
-                throw new ArgumentException($"Invalid quantity \"{quantity}\" specified!", nameof(quantity));
+                quantity = 0;
+               // throw new ArgumentException($"Invalid quantity \"{quantity}\" specified!", nameof(quantity));
 
             if (!Immutable)
                 Moles[gasId] = quantity;
@@ -142,7 +144,8 @@ namespace Content.Shared.Atmos
                 return;
 
             if (!float.IsFinite(quantity))
-                throw new ArgumentException($"Invalid quantity \"{quantity}\" specified!", nameof(quantity));
+                quantity = 0;
+            //throw new ArgumentException($"Invalid quantity \"{quantity}\" specified!", nameof(quantity));
 
             // Clamping is needed because x - x can be negative with floating point numbers. If we don't
             // clamp here, the caller always has to call GetMoles(), clamp, then SetMoles().
@@ -168,7 +171,7 @@ namespace Content.Shared.Atmos
             switch (ratio)
             {
                 case <= 0:
-                    return new GasMixture(Volume){Temperature = Temperature};
+                    return new GasMixture(Volume) { Temperature = Temperature };
                 case > 1:
                     ratio = 1;
                     break;
@@ -177,9 +180,9 @@ namespace Content.Shared.Atmos
             var removed = new GasMixture(Volume) { Temperature = Temperature };
 
             Moles.CopyTo(removed.Moles.AsSpan());
-            NumericsHelpers.Multiply(removed.Moles, ratio);
+            TensorPrimitives.Multiply(removed.Moles, ratio, removed.Moles);
             if (!Immutable)
-                NumericsHelpers.Sub(Moles, removed.Moles);
+                TensorPrimitives.Subtract(Moles, removed.Moles, Moles);
 
             for (var i = 0; i < Moles.Length; i++)
             {
@@ -223,7 +226,7 @@ namespace Content.Shared.Atmos
         public void Multiply(float multiplier)
         {
             if (Immutable) return;
-            NumericsHelpers.Multiply(Moles, multiplier);
+            TensorPrimitives.Multiply(Moles, multiplier, Moles);
         }
 
         void ISerializationHooks.AfterDeserialization()
@@ -243,7 +246,7 @@ namespace Content.Shared.Atmos
                 if (Moles[i] == 0)
                     continue;
 
-                molesPerGas.Add(((Gas) i).ToString(), Moles[i]);
+                molesPerGas.Add(((Gas)i).ToString(), Moles[i]);
             }
 
             return new GasMixtureStringRepresentation(TotalMoles, Temperature, Pressure, molesPerGas);

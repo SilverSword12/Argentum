@@ -1,19 +1,19 @@
-﻿using System.Numerics;
 using Content.Shared.Maps;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using System.Numerics;
 
 namespace Content.Server.Maps;
 
 /// <summary>
 /// This system handles transferring <see cref="TileHistoryComponent"/> data when a grid is split.
 /// </summary>
-public sealed class TileGridSplitSystem : EntitySystem
+public sealed partial class TileGridSplitSystem : EntitySystem
 {
-    [Dependency] private readonly SharedMapSystem _maps = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private SharedMapSystem _maps = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     public override void Initialize()
     {

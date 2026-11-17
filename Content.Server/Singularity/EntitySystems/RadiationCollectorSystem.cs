@@ -1,7 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Content.Server.Atmos.EntitySystems;
-using Content.Server.Atmos.Components;
 using Content.Server.Popups;
 using Content.Server.Power.Components;
 using Content.Server.Power.EntitySystems;
@@ -15,22 +12,25 @@ using Content.Shared.Singularity.Components;
 using Content.Shared.Timing;
 using Robust.Shared.Containers;
 using Robust.Shared.Timing;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Content.Server.Singularity.EntitySystems;
 
-public sealed class RadiationCollectorSystem : EntitySystem
+public sealed partial class RadiationCollectorSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _gameTiming = default!;
-    [Dependency] private readonly PopupSystem _popupSystem = default!;
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly SharedContainerSystem _containerSystem = default!;
-    [Dependency] private readonly UseDelaySystem _useDelay = default!;
+    [Dependency] private IGameTiming _gameTiming = default!;
+    [Dependency] private PopupSystem _popupSystem = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedContainerSystem _containerSystem = default!;
+    [Dependency] private UseDelaySystem _useDelay = default!;
 
     private const string GasTankContainer = "gas_tank";
 
     public override void Initialize()
     {
         base.Initialize();
+        SubscribeLocalEvent<RadiationCollectorComponent, ComponentInit>(OnComponentInit);
         SubscribeLocalEvent<RadiationCollectorComponent, ActivateInWorldEvent>(OnActivate);
         SubscribeLocalEvent<RadiationCollectorComponent, OnIrradiatedEvent>(OnRadiation);
         SubscribeLocalEvent<RadiationCollectorComponent, ExaminedEvent>(OnExamined);
@@ -39,6 +39,13 @@ public sealed class RadiationCollectorSystem : EntitySystem
         SubscribeLocalEvent<RadiationCollectorComponent, EntInsertedIntoContainerMessage>(OnTankChanged);
         SubscribeLocalEvent<RadiationCollectorComponent, EntRemovedFromContainerMessage>(OnTankChanged);
         SubscribeLocalEvent<NetworkBatteryPostSync>(PostSync);
+    }
+
+    public void SetChargeModifier(EntityUid uid, float modifier, RadiationCollectorComponent? component = null)
+    {
+        if (!Resolve(uid, ref component))
+            return;
+        component.ChargeModifier = modifier;
     }
 
     private bool TryGetLoadedGasTank(EntityUid uid, [NotNullWhen(true)] out GasTankComponent? gasTankComponent)
@@ -54,10 +61,18 @@ public sealed class RadiationCollectorSystem : EntitySystem
         return true;
     }
 
+    private void OnComponentInit(EntityUid uid, RadiationCollectorComponent component, ComponentInit args)
+    {
+        TryGetLoadedGasTank(uid, out var gasTank);
+        UpdateTankAppearance(uid, component, gasTank);
+        UpdateMachineAppearance(uid, component);
+    }
+
     private void OnMapInit(EntityUid uid, RadiationCollectorComponent component, MapInitEvent args)
     {
         TryGetLoadedGasTank(uid, out var gasTank);
         UpdateTankAppearance(uid, component, gasTank);
+        UpdateMachineAppearance(uid, component);
     }
 
     private void OnTankChanged(EntityUid uid, RadiationCollectorComponent component, ContainerModifiedMessage args)

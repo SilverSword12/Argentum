@@ -1,15 +1,15 @@
-using System.Linq;
 using Content.Shared.Storage.Components;
 using Content.Shared.Storage.EntitySystems;
 using Robust.Client.GameObjects;
 using Robust.Shared.Utility;
+using System.Linq;
 
 namespace Content.Client.Storage.Systems;
 
-public sealed class ItemMapperSystem : SharedItemMapperSystem
+public sealed partial class ItemMapperSystem : SharedItemMapperSystem
 {
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
-    [Dependency] private readonly SpriteSystem _sprite = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SpriteSystem _sprite = default!;
 
     public override void Initialize()
     {

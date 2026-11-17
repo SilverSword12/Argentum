@@ -33,7 +33,7 @@
   - type: EntityTableContainerFill
     containers:
       entity_storage:
-        id: AmeControllerUnanchored
+        id: AmeControllerFlatpack
 
 # Singularity
 
@@ -118,17 +118,6 @@
 
 - type: entity
   parent: CrateEngineering
-  id: CrateEngineeringGenerator
-  name:  generator crate
-  suffix: DEBUG
-  components:
-  - type: EntityTableContainerFill
-    containers:
-      entity_storage:
-        id: DebugGenerator # TODO change to flatpack
-
-- type: entity
-  parent: CrateEngineering
   id: CrateEngineeringSolar
   name: solar assembly crate
   description: A kit with solar flatpacks and glass to construct ten solar panels.
@@ -143,19 +132,23 @@
           amount: 2
 
 - type: entity
-  parent: CrateEngineeringSecure
-  id: CrateEngineeringShuttle
-  name: shuttle powering crate
-  description: A crate containing all needs for shuttle powering.
+  parent: CrateEngineering
+  id: CrateEngineeringSolarStarter
+  name: solar starter kit crate
+  description: A kit with solar flatpacks and glass to construct ten solar panels. Comes with boards for a solar tracker and solar control console.
   components:
   - type: EntityTableContainerFill
     containers:
       entity_storage: !type:AllSelector
         children:
-        - id: WallmountSubstationElectronics
-        - id: WallmountGeneratorAPUElectronics
-        - id: HandheldGPSBasic
-        - id: InflatableDoorStack1
+        - id: SolarAssemblyFlatpack
+          amount: 10
+        - id: SheetGlass10
+          amount: 2
+        - id: SolarTrackerElectronics
+          amount: 1
+        - id: SolarControlComputerCircuitboard
+          amount: 1
 
 - type: entity
   parent: CrateEngineeringSecure
@@ -189,3 +182,17 @@
     containers:
       entity_storage:
         id: TeslaGroundingRodFlatpack
+
+
+- type: entity
+  id: EngineTegFlatPacks
+  parent: CrateEngineeringSecure
+  name: teg crate flatpacks
+  description: Two Circulators, One Engine, and a headache
+  components:
+  - type: StorageFill
+    contents:
+      - id: TegFlatpack
+      - id: TegCirculatorFlatpack
+      - id: TegCirculatorFlatpack
+

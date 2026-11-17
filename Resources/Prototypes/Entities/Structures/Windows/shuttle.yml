@@ -12,8 +12,9 @@
     fuelCost: 15
     doAfterDelay: 3
   - type: Damageable
-    damageContainer: StructuralInorganic
     damageModifierSet: RGlass
+  - type: Injurable
+    damageContainer: StructuralInorganic
   - type: Destructible
     thresholds:
     - trigger:
@@ -51,6 +52,8 @@
     trackAllDamage: true
     damageOverlay:
       sprite: Structures/Windows/cracks.rsi
+  - type: ExaminableDamage # persi - damage visuals
+    messages: WindowMessages
   - type: StaticPrice
     price: 150
 
@@ -78,6 +81,9 @@
   - type: Icon
     sprite: Structures/Windows/shuttle_window_diagonal.rsi
     state: state0
+  - type: Construction
+    graph: WindowDiagonal
+    node: shuttleWindowDiagonal
   - type: Fixtures
     fixtures:
       fix1:

@@ -1,7 +1,3 @@
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
 using Content.Server.Administration.Managers;
 using Content.Server.Chat.Managers;
 using Content.Server.Connection.IPIntel;
@@ -15,9 +11,13 @@ using Robust.Server.Player;
 using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Network;
-using Robust.Shared.Prototypes;
 using Robust.Shared.Player;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 /*
  * TODO: Remove baby jail code once a more mature gateway process is established. This code is only being issued as a stopgap to help with potential tiding in the immediate future.
@@ -50,19 +50,19 @@ namespace Content.Server.Connection
     /// </summary>
     public sealed partial class ConnectionManager : IConnectionManager
     {
-        [Dependency] private readonly IPlayerManager _plyMgr = default!;
-        [Dependency] private readonly IServerNetManager _netMgr = default!;
-        [Dependency] private readonly IServerDbManager _db = default!;
-        [Dependency] private readonly IConfigurationManager _cfg = default!;
-        [Dependency] private readonly ILocalizationManager _loc = default!;
-        [Dependency] private readonly ServerDbEntryManager _serverDbEntry = default!;
-        [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-        [Dependency] private readonly IGameTiming _gameTiming = default!;
-        [Dependency] private readonly ILogManager _logManager = default!;
-        [Dependency] private readonly IChatManager _chatManager = default!;
-        [Dependency] private readonly IHttpClientHolder _http = default!;
-        [Dependency] private readonly IAdminManager _adminManager = default!;
-        [Dependency] private readonly IEntityManager _entityManager = default!;
+        [Dependency] private IPlayerManager _plyMgr = default!;
+        [Dependency] private IServerNetManager _netMgr = default!;
+        [Dependency] private IServerDbManager _db = default!;
+        [Dependency] private IConfigurationManager _cfg = default!;
+        [Dependency] private ILocalizationManager _loc = default!;
+        [Dependency] private ServerDbEntryManager _serverDbEntry = default!;
+        [Dependency] private IPrototypeManager _prototypeManager = default!;
+        [Dependency] private IGameTiming _gameTiming = default!;
+        [Dependency] private ILogManager _logManager = default!;
+        [Dependency] private IChatManager _chatManager = default!;
+        [Dependency] private IHttpClientHolder _http = default!;
+        [Dependency] private IAdminManager _adminManager = default!;
+        [Dependency] private IEntityManager _entityManager = default!;
 
         private GameTicker? _ticker;
 
@@ -269,7 +269,7 @@ namespace Content.Server.Connection
                 }
 
                 var minOverallMinutes = _cfg.GetCVar(CCVars.PanicBunkerMinOverallMinutes);
-                var overallTime = ( await _db.GetPlayTimes(e.UserId)).Find(p => p.Tracker == PlayTimeTrackingShared.TrackerOverall);
+                var overallTime = (await _db.GetPlayTimes(e.UserId)).Find(p => p.Tracker == PlayTimeTrackingShared.TrackerOverall);
                 var haveMinOverallTime = overallTime != null && overallTime.TimeSpent.TotalMinutes > minOverallMinutes;
 
                 // Use the custom reason if it exists & they don't have the minimum time

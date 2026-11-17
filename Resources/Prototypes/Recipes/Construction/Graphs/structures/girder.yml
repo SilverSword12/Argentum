@@ -13,6 +13,15 @@
               amount: 2
               doAfter: 1
 
+        - to: bronzeGirder
+          completed:
+            - !type:SnapToGrid
+              southRotation: true
+          steps:
+            - material: Bronze
+              amount: 2
+              doAfter: 1
+
     - node: girder
       entity: Girder
       edges:
@@ -62,6 +71,16 @@
               amount: 2
             - tool: Welding
               doAfter: 10
+
+        - to: miningWallTemp
+          completed:
+            - !type:SnapToGrid
+              southRotation: true
+          conditions:
+            - !type:EntityAnchored
+          steps:
+            - tool: Screwing 
+              doAfter: 2
 
         - to: silverWall
           completed:
@@ -134,6 +153,30 @@
               amount: 2
               doAfter: 2
 
+        - to: titaniumWall
+          completed:
+            - !type:SnapToGrid
+              southRotation: true
+          conditions:
+            - !type:EntityAnchored {}
+          steps:
+            - material: Titanium
+              amount: 2
+              doAfter: 2
+            - tool: Welding
+              doAfter: 10
+
+        - to: bronzeGirder
+          completed:
+            - !type:SnapToGrid
+              southRotation: true
+          conditions:
+            - !type:EntityAnchored {}
+          steps:
+            - material: Bronze
+              amount: 2
+              doAfter: 1
+
     - node: wall
       entity: WallSolid
       edges:
@@ -170,6 +213,40 @@
             - tool: Welding
               doAfter: 10
             - tool: Prying
+              doAfter: 10
+    
+    - node: miningWallTemp
+      entity: Girder
+      edges:
+        - to: girder
+          steps:
+          - tool: Screwing
+            doAfter: 2
+        
+        - to: miningWall
+          steps:
+          - material: Steel
+            amount: 4
+            doAfter: 1
+          - material: Plastic
+            amount: 2
+            doAfter: 1
+          - tool: Welding
+            doAfter: 8
+
+    - node: miningWall
+      entity: WallMining
+      edges:
+        - to: girder
+          completed:
+            - !type:GivePrototype
+              prototype: SheetSteel1
+              amount: 4
+            - !type:GivePrototype
+              prototype: SheetPlastic1
+              amount: 2
+          steps:
+            - tool: Welding
               doAfter: 10
 
     - node: silverWall
@@ -266,6 +343,19 @@
               amount: 2
               doAfter: 1
 
+        - to: titaniumShuttleWall
+          completed:
+            - !type:SnapToGrid
+              southRotation: true
+          conditions:
+            - !type:EntityAnchored { }
+          steps:
+            - material: Titanium
+              amount: 4
+              doAfter: 1
+            - tool: Welding
+              doAfter: 5
+
         - to: shuttleWall
           completed:
             - !type:SnapToGrid
@@ -280,19 +370,6 @@
               doAfter: 2
             - material: Plasteel
               amount: 2
-              doAfter: 1
-
-        - to: diagonalshuttleWall
-          conditions:
-            - !type:EntityAnchored { }
-          steps:
-            - material: Steel
-              amount: 1
-              doAfter: 1
-            - tool: Welding
-              doAfter: 4
-            - material: Plasteel
-              amount: 1
               doAfter: 1
 
         - to: girder
@@ -359,6 +436,110 @@
                   data: 0
             - tool: Cutting
               doAfter: 1
+
+    - node: titaniumWall
+      entity: WallTitanium
+      edges:
+        - to: girder
+          completed:
+            - !type:SpawnPrototype
+              prototype: SheetTitanium1
+              amount: 2
+          steps:
+            - tool: Welding
+              doAfter: 10
+            - tool: Prying
+              doAfter: 10
+
+    - node: titaniumShuttleWall
+      entity: WallShuttleTitanium
+      edges:
+      - to: reinforcedGirder
+        completed:
+        - !type:SpawnPrototype
+          prototype: SheetTitanium1
+          amount: 4
+        steps:
+        - tool: Cutting
+          doAfter: 1
+          completed:
+          - !type:VisualizerDataInt
+            key: "enum.ReinforcedWallVisuals.DeconstructionStage"
+            data: 5
+        - tool: Screwing
+          doAfter: 1
+        - tool: Welding
+          doAfter: 5
+          completed:
+          - !type:VisualizerDataInt
+            key: "enum.ReinforcedWallVisuals.DeconstructionStage"
+            data: 4
+        - tool: Prying
+          doAfter: 1
+        - tool: Anchoring
+          doAfter: 1
+          completed:
+          - !type:VisualizerDataInt
+            key: "enum.ReinforcedWallVisuals.DeconstructionStage"
+            data: 3
+        - tool: Welding
+          doAfter: 10
+          completed:
+          - !type:VisualizerDataInt
+              key: "enum.ReinforcedWallVisuals.DeconstructionStage"
+              data: 2
+        - tool: Prying
+          doAfter: 1
+          completed:
+          - !type:VisualizerDataInt
+              key: "enum.ReinforcedWallVisuals.DeconstructionStage"
+              data: 1
+        - tool: Screwing
+          doAfter: 1
+          completed:
+          - !type:VisualizerDataInt
+            key: "enum.ReinforcedWallVisuals.DeconstructionStage"
+            data: 0
+        - tool: Cutting
+          doAfter: 1
+        
+
+    - node: bronzeGirder
+      entity: BronzeGirder
+      edges:
+        - to: girder
+          completed:
+            - !type:GivePrototype
+              prototype: SheetBronze1
+              amount: 1
+          steps:
+            - tool: Prying
+              doAfter: 5
+
+        - to: bronzeWall
+          completed:
+            - !type:SnapToGrid
+              southRotation: true
+          conditions:
+            - !type:EntityAnchored {}
+          steps:
+            - material: Bronze
+              amount: 2
+              doAfter: 1
+
+    - node: bronzeWall
+      entity: WallBronze
+      edges:
+        - to: bronzeGirder
+          completed:
+            - !type:GivePrototype
+              prototype: SheetBronze1
+              amount: 2
+          steps:
+            - tool: Welding
+              doAfter: 8
+            - tool: Prying
+              doAfter: 8
 
     - node: reinforcedWallChitin
       entity: WallReinforcedChitin
@@ -468,40 +649,6 @@
                   data: 0
             - tool: Cutting
               doAfter: 4
-
-    - node: diagonalshuttleWall
-      entity: WallShuttleDiagonal
-      edges:
-        - to: reinforcedGirder
-          completed:
-            - !type:SpawnPrototype
-              prototype: SheetPlasteel1
-              amount: 1
-            - !type:SpawnPrototype
-              prototype: SheetSteel1
-              amount: 1
-          steps:
-          #To-Do: Add deconstruct visuals
-            - tool: Welding
-              doAfter: 5
-            - tool: Cutting
-              doAfter: 1
-            - tool: Screwing
-              doAfter: 1
-            - tool: Welding
-              doAfter: 5
-            - tool: Prying
-              doAfter: 1
-            - tool: Anchoring
-              doAfter: 1
-            - tool: Welding
-              doAfter: 10
-            - tool: Prying
-              doAfter: 1
-            - tool: Screwing
-              doAfter: 1
-            - tool: Cutting
-              doAfter: 1
 
     - node: wallrust
       entity: WallSolidRust

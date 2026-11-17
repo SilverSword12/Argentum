@@ -1,13 +1,12 @@
 using Content.Shared.PDA;
 using Content.Shared.PDA.Ringer;
-using Content.Shared.Store.Components;
 
 namespace Content.Client.PDA.Ringer;
 
 /// <summary>
 /// Handles the client-side logic for <see cref="SharedRingerSystem"/>.
 /// </summary>
-public sealed class RingerSystem : SharedRingerSystem
+public sealed partial class RingerSystem : SharedRingerSystem
 {
     /// <inheritdoc/>
     public override void Initialize()

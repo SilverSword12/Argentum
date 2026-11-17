@@ -18,6 +18,8 @@
     color: "#0000ff"
   - type: StaticPrice
     price: 500
+  - type: Tag
+    tags: [ TreasureDataDisk ]
 
 - type: entity
   parent: BaseItem
@@ -40,6 +42,8 @@
         harddisk_micro: ""
   - type: StaticPrice
     price: 275
+  - type: Tag
+    tags: [ TreasureOldComputer ]
 
 - type: entity
   parent: BaseItem
@@ -55,6 +59,8 @@
     storedRotation: -90
   - type: StaticPrice
     price: 350
+  - type: Tag
+    tags: [ TreasureOldComputer ]
 
 - type: entity
   parent: BaseItem
@@ -70,6 +76,8 @@
     storedRotation: -90
   - type: StaticPrice
     price: 300
+  - type: Tag
+    tags: [ TreasureOldComputer ]
 
 - type: entity
   parent: BaseItem
@@ -84,7 +92,9 @@
   - type: Item
     size: Tiny
   - type: StaticPrice
-    price: 750
+    price: 600
+  - type: Tag
+    tags: [ TreasureOldCPU ]
 
 - type: entity
   parent: BaseItem
@@ -108,6 +118,8 @@
         stabilizer: ""
   - type: StaticPrice
     price: 120
+  - type: Tag
+    tags: [ TreasureSampleTube ]
 
 - type: entityTable
   id: TreasureCoinPile
@@ -140,52 +152,28 @@
       weight: 5
 
 - type: entity
-  parent: BaseItem
+  parent: CoinIron
   id: TreasureCoinIron
-  name: coin
-  description: A flat bit of metal. If it was still in circulation, inflation would've made it worthless. Since it isn't, it's worth enough to keep in a book.
-  components:
-  - type: Sprite
-    sprite: Objects/Misc/coins.rsi
-    state: coin_iron
-  - type: Item
-    size: Tiny
-  - type: StaticPrice
-    price: 75
+  categories: [ HideSpawnMenu ]
 
 - type: entity
-  parent: TreasureCoinIron
+  parent: CoinSilver
   id: TreasureCoinSilver
-  components:
-  - type: Sprite
-    state: coin_silver
-  - type: StaticPrice
-    price: 125
+  categories: [ HideSpawnMenu ]
 
 - type: entity
-  parent: TreasureCoinIron
+  parent: CoinGold
   id: TreasureCoinGold
-  components:
-  - type: Sprite
-    state: coin_gold
-  - type: StaticPrice
-    price: 175
+  categories: [ HideSpawnMenu ]
 
 - type: entity
-  parent: TreasureCoinIron
+  parent: CoinAdamantine
   id: TreasureCoinAdamantine
-  components:
-  - type: Sprite
-    state: coin_adamantine
-  - type: StaticPrice
-    price: 250
+  categories: [ HideSpawnMenu ]
 
 - type: entity
-  parent: TreasureCoinIron
+  parent: CoinDiamond
   id: TreasureCoinDiamond
-  components:
-  - type: Sprite
-    state: coin_diamond
-  - type: StaticPrice
-    price: 500
+  categories: [ HideSpawnMenu ]
+  
 

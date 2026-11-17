@@ -17,6 +17,9 @@ public sealed partial class PaperComponent : Component
     [DataField("stampedBy"), AutoNetworkedField]
     public List<StampDisplayInfo> StampedBy { get; set; } = new();
 
+    [DataField("signedBy"), AutoNetworkedField]
+    public HashSet<string> SignedBy { get; set; } = new();
+
     /// <summary>
     ///     Stamp to be displayed on the paper, state from bureaucracy.rsi
     /// </summary>
@@ -75,7 +78,9 @@ public sealed partial class PaperComponent : Component
     public enum PaperVisuals : byte
     {
         Status,
-        Stamp
+        Stamp,
+        Invoice,
+        Signed,
     }
 
     [Serializable, NetSerializable]

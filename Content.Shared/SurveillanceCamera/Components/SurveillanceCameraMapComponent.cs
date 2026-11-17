@@ -1,6 +1,6 @@
-using System.Numerics;
 using Robust.Shared.GameStates;
 using Robust.Shared.Serialization;
+using System.Numerics;
 
 namespace Content.Shared.SurveillanceCamera.Components;
 
@@ -13,6 +13,7 @@ public sealed partial class SurveillanceCameraMapComponent : Component
     /// <summary>
     /// Dictionary of cameras on on the current grid.
     /// </summary>
+    [ViewVariables]
     [AutoNetworkedField]
     public Dictionary<NetEntity, CameraMarker> Cameras = new();
 }

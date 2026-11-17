@@ -1,9 +1,9 @@
-using System.Linq;
 using Content.Shared.CCVar;
 using Content.Shared.Input;
 using Robust.Client.Input;
 using Robust.Shared.Configuration;
 using Robust.Shared.Console;
+using System.Linq;
 
 namespace Content.Client.Commands;
 
@@ -11,10 +11,10 @@ namespace Content.Client.Commands;
 /// Sets the a <see cref="CCVars.DebugQuickInspect"/> CVar to the name of a component, which allows the client to quickly open a VV window for that component
 /// by using the Alt+C or Alt+B hotkeys.
 /// </summary>
-public sealed class QuickInspectCommand : LocalizedEntityCommands
+public sealed partial class QuickInspectCommand : LocalizedEntityCommands
 {
-    [Dependency] private readonly IConfigurationManager _configurationManager = default!;
-    [Dependency] private readonly IInputManager _inputManager = default!;
+    [Dependency] private IConfigurationManager _configurationManager = default!;
+    [Dependency] private IInputManager _inputManager = default!;
 
     public override string Command => "quickinspect";
 

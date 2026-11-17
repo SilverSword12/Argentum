@@ -1,16 +1,16 @@
+using Content.Shared.Examine;
 using Content.Shared.IdentityManagement;
+using Content.Shared.Interaction;
 using Content.Shared.Tools.Components;
 using Content.Shared.Tools.Systems;
-using Content.Shared.Interaction;
-using Content.Shared.Examine;
 using Content.Shared.Verbs;
 
 namespace Content.Shared.Tools.EntitySystems;
 
-public sealed class ToolOpenableSystem : EntitySystem
+public sealed partial class ToolOpenableSystem : EntitySystem
 {
-    [Dependency] private readonly SharedToolSystem _tool = default!;
-    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
+    [Dependency] private SharedToolSystem _tool = default!;
+    [Dependency] private SharedAppearanceSystem _appearance = default!;
 
     public override void Initialize()
     {
@@ -51,7 +51,7 @@ public sealed class ToolOpenableSystem : EntitySystem
         if (toolToToggle == null || neededToolQuantity == null)
             return false;
 
-        return _tool.UseTool(toolToToggle.Value, user, entity, time, neededToolQuantity, evt);
+        return _tool.UseTool(toolToToggle.Value, user, entity, time, neededToolQuantity.Value, evt);
     }
 
     private void OnOpenableStateToggled(Entity<ToolOpenableComponent> entity, ref ToolOpenableDoAfterEventToggleOpen args)
